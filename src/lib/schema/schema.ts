@@ -12,15 +12,23 @@ import {
 export const items = pgTable("items", {
   id: text("id").primaryKey().unique().notNull(),
   name: text("name").unique().notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  modifiedAt: timestamp("last_modified_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  modifiedAt: timestamp("last_modified_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const vendors = pgTable("vendors", {
   id: text("id").primaryKey().unique().notNull(),
   name: text("name").unique().notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-  modifiedAt: timestamp("last_modified_at").defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  modifiedAt: timestamp("last_modified_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
 });
 
 export const purchases = pgTable("purchases", {
@@ -28,13 +36,17 @@ export const purchases = pgTable("purchases", {
   vendorId: text("vendor_id")
     .references(() => vendors.id)
     .notNull(),
-  purchasedAt: timestamp("purchased_at").notNull(),
+  purchasedAt: timestamp("purchased_at", { withTimezone: true }).notNull(),
   purchasedItemId: text("purchased_item_id")
     .array()
-    .default(sql`ARRAY[]::text[]`),
-  // TODO: add Not null
-  createdAt: timestamp("created_at").defaultNow(),
-  modifiedAt: timestamp("last_modified_at").defaultNow(),
+    .default(sql`ARRAY[]::text[]`)
+    .notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  modifiedAt: timestamp("last_modified_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
   totalPrice: integer("total_price").notNull(),
 });
 
@@ -49,5 +61,5 @@ export const purchasedItems = pgTable("purchased_items", {
   quantityInHundreds: integer("quantity_in_hundreds").notNull(),
   pricePerUnit: integer("price_per_unit").notNull(),
   totalPrice: integer("total_price").notNull(),
-  isDeleted: boolean("is_deleted").default(false),
+  isDeleted: boolean("is_deleted").default(false).notNull(),
 });

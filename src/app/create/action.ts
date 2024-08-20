@@ -143,6 +143,7 @@ export async function makePurchase(prevState: any, formData: FormData) {
           vendorId,
           purchasedAt: new Date(purchasedAt),
           totalPrice: parseInt(totalPrice),
+          createdAt: new Date(),
         })
         .returning({ id: purchases.id });
 
