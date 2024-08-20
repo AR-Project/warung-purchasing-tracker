@@ -32,7 +32,11 @@ export default function ComboVendorForm({
   const [vendorsSelection, setVendorsSelection] = useState<Vendor[]>([]);
 
   const [query, setQuery] = useState("");
+  const [isQueryChanged, setIsQueryChanged] = useState<boolean>(false);
+
   const [delayedQuery] = useDelayQuery(query);
+  const [isDelayedQueryChanged, setIsDelayedQueryChanged] =
+    useState<boolean>(false);
 
   const [newVendorName, setNewVendorName] = useState<string | undefined>();
 
@@ -49,9 +53,23 @@ export default function ComboVendorForm({
   };
 
   useEffect(() => {
+    setIsQueryChanged(true);
+  }, [query]);
+
+  if (isQueryChanged) {
     setVendorsSelection([]);
-    if (delayedQuery.length < 2) return;
+    setNewVendorName("");
+    setIsQueryChanged(false);
+  }
+
+  useEffect(() => {
+    setIsDelayedQueryChanged(true);
+  }, [delayedQuery]);
+
+  if (isDelayedQueryChanged) {
+    setVendorsSelection([]);
     (async () => {
+      if (delayedQuery.length < 3) return;
       setLoading(true);
       try {
         const response = await searchVendors(delayedQuery);
@@ -72,7 +90,8 @@ export default function ComboVendorForm({
         setLoading(false);
       }
     })();
-  }, [delayedQuery]);
+    setIsDelayedQueryChanged(false);
+  }
 
   return (
     <div className="flex flex-col gap-2 w-full">

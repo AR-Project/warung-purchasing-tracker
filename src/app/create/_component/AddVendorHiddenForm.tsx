@@ -1,5 +1,5 @@
 "use client";
-import { type SetStateAction, useCallback, useEffect } from "react";
+import { type SetStateAction, useCallback, useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
@@ -22,8 +22,13 @@ export default function AddVendorHiddenForm<T>({
     createNewVendor,
     {}
   );
+  const [isFormStateChanged, setIsFormStateChanged] = useState<boolean>(false);
 
   useEffect(() => {
+    setIsFormStateChanged(true);
+  }, [state]);
+
+  if (isFormStateChanged) {
     if (state.message) {
       toast.success(state.message);
       if (state.data && name) setSelected({ id: state.data, name });
@@ -33,7 +38,8 @@ export default function AddVendorHiddenForm<T>({
     if (state.error) {
       toast.error(state.error);
     }
-  }, [state]);
+    setIsFormStateChanged(false);
+  }
 
   return (
     <>

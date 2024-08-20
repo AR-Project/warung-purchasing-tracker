@@ -36,7 +36,11 @@ export default function ComboItemForm({ appendItem }: Props) {
   const [itemsSelection, setItemsSelection] = useState<Item[]>([]);
 
   const [query, setQuery] = useState("");
+  const [isQueryChanged, setIsQueryChanged] = useState<boolean>(false);
+
   const [delayedQuery] = useDelayQuery(query, 500);
+  const [isDelayedQueryChanged, setIsDelayedQueryChanged] =
+    useState<boolean>(false);
 
   const [newItemName, setNewItemName] = useState<string | undefined>();
 
@@ -67,7 +71,28 @@ export default function ComboItemForm({ appendItem }: Props) {
   };
 
   const itemFieldRef = useRef<HTMLInputElement>(null);
-  const numericFormRef = useRef<HTMLFormElement>(null);
+
+  const searchItemsAction = async (delayedQuery: string) => {
+    if (delayedQuery.length < 3) return;
+    setLoading(true);
+    try {
+      const response = await searchItems(delayedQuery);
+      if (response.status === 200) {
+        const data = (await response.json()) as unknown as Item[];
+        setItemsSelection(data);
+        setNewItemName(undefined);
+      } else {
+        setNewItemName(query);
+        setItemsSelection([]);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        toast.error(error.message);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const enableSubmitButton = () => {
     const isItemSelected = selectedItem.id !== "";
@@ -106,34 +131,23 @@ export default function ComboItemForm({ appendItem }: Props) {
   };
 
   useEffect(() => {
-    setError(false);
-    setItemsSelection([]);
+    setIsQueryChanged(true);
   }, [query]);
 
+  if (isQueryChanged) {
+    setItemsSelection([]);
+    setError(false);
+    setIsQueryChanged(false);
+  }
+
   useEffect(() => {
-    if (delayedQuery.length < 3) return;
-    (async () => {
-      setLoading(true);
-      try {
-        const response = await searchItems(delayedQuery);
-        if (response.status === 200) {
-          const data = (await response.json()) as unknown as Item[];
-          setItemsSelection(data);
-          setNewItemName(undefined);
-        } else {
-          setNewItemName(query);
-          setItemsSelection([]);
-        }
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        }
-        toast.error("unknown error");
-      } finally {
-        setLoading(false);
-      }
-    })();
+    setIsDelayedQueryChanged(true);
   }, [delayedQuery]);
+
+  if (isDelayedQueryChanged) {
+    searchItemsAction(delayedQuery);
+    setIsDelayedQueryChanged(false);
+  }
 
   return (
     <div className="flex flex-col gap-2">
