@@ -6,7 +6,7 @@ export function useDelayQuery(query: string, timeoutInMs: number = 800) {
   useEffect(() => {
     const timeOutId = setTimeout(() => setDelayedQuery(query), timeoutInMs);
     return () => clearTimeout(timeOutId);
-  }, [query]);
+  }, [query, timeoutInMs]);
 
   return [delayedQuery] as const;
 }

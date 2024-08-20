@@ -21,20 +21,12 @@ export default function EditItemHiddenForm({
     editItem,
     {}
   );
+  const [isFormStateChanged, setIsFormStateChanged] = useState<boolean>(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState<string>(selectedItem.name);
 
-  function open() {
-    setIsOpen(true);
-  }
-
-  function close() {
-    setNewName("");
-    setIsOpen(false);
-  }
-
-  function formStateChangeHandler() {
+  if (isFormStateChanged) {
     if (state.message) {
       toast.success(state.message);
       if (state.data && newName)
@@ -45,10 +37,21 @@ export default function EditItemHiddenForm({
     if (state.error) {
       toast.error(state.error);
     }
+
+    setIsFormStateChanged(false);
+  }
+
+  function open() {
+    setIsOpen(true);
+  }
+
+  function close() {
+    setNewName("");
+    setIsOpen(false);
   }
 
   useEffect(() => {
-    formStateChangeHandler();
+    setIsFormStateChanged(true);
   }, [state]);
 
   return (
@@ -73,13 +76,13 @@ export default function EditItemHiddenForm({
               transition
               className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
             >
-              <form action={formAction} className="flex flex-row gap-0.5">
-                <DialogTitle
-                  as="h3"
-                  className="text-base/7 font-medium text-white"
-                >
-                  Masukkan nama baru:
-                </DialogTitle>
+              <DialogTitle
+                as="h3"
+                className="text-base/7 font-medium text-white"
+              >
+                Masukkan nama baru:
+              </DialogTitle>
+              <form action={formAction} className="flex flex-col gap-2">
                 <input
                   className="bg-gray-800 w-full p-2"
                   type="hidden"
@@ -87,7 +90,7 @@ export default function EditItemHiddenForm({
                   id="item-name"
                   value={selectedItem.id}
                 />
-                <div className="mt-4">
+                <div>
                   <input
                     className="bg-gray-800 w-full p-2"
                     type="text"

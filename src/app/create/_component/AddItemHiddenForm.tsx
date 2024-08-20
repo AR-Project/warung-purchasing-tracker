@@ -1,5 +1,5 @@
 "use client";
-import { type SetStateAction, useCallback, useEffect } from "react";
+import { type SetStateAction, useCallback, useEffect, useState } from "react";
 import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
@@ -23,16 +23,25 @@ export default function AddItemHiddenForm({
     {}
   );
 
-  useEffect(() => {
+  const [isStateUpdated, setIsStateUpdated] = useState<boolean>(false);
+
+  if (isStateUpdated) {
     if (state.message) {
       toast.success(state.message);
-      if (state.data && name) setSelectedItem({ id: state.data, name });
-      setNewItemName(undefined);
+      if (state.data && name) {
+        setSelectedItem({ id: state.data, name });
+        setNewItemName(undefined);
+      }
     }
 
     if (state.error) {
       toast.error(state.error);
     }
+    setIsStateUpdated(false);
+  }
+
+  useEffect(() => {
+    setIsStateUpdated(true);
   }, [state]);
 
   return (
