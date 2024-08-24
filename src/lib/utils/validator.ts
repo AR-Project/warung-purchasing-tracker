@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 /**
  * Check if Form Data entry Value is string and not null.
  */
@@ -21,3 +23,19 @@ export const anyNumberToNumber = (value: unknown) => {
   if (typeof value !== "number") return 0;
   return value;
 };
+
+/** Check if string is a valid date */
+export function isDateStringValid(dateStr: string) {
+  return DateTime.fromISO(dateStr).isValid;
+}
+
+export function isISODateStrValid(dateStr: unknown): dateStr is string {
+  if (typeof dateStr !== "string") return false;
+
+  const date = dateStr.split("-");
+  const [year, month, day] = date;
+
+  if (date.length !== 3) return false;
+  if (year.length !== 4 || month.length !== 2 || day.length !== 2) return false;
+  return true;
+}

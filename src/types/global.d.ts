@@ -42,4 +42,33 @@ declare global {
   };
 
   type CreatePurchasedItemsPayload = PurchasedItemPayload[];
+
+  type DisplaySingleItem = {
+    id: string;
+    name: string;
+    quantityInHundreds: number;
+    pricePerUnit: number;
+  };
+
+  type DisplaySinglePurchase = {
+    id: string;
+    vendorId: string;
+    vendorName: string;
+    purchasedItemId: string[];
+    purchasesAt: Date;
+    totalPrice: number;
+    items: DisplaySingleItem[];
+    createdAt: Date;
+  };
+  type DisplayPurchases = DisplaySinglePurchase[];
+
+  type DisplayPerSingleItem = {
+    name: string;
+    purchaseAt: Date;
+    quantityInHundreds: number;
+    pricePerUnit: number;
+    totalPrice: number;
+    vendor: string;
+  };
+  type DisplayItems = DisplayPerSingleItem[];
 }
