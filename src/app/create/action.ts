@@ -2,13 +2,11 @@
 
 import db from "@/infrastructure/database/db";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { eq } from "drizzle-orm";
 
 import { items, purchasedItems, purchases, vendors } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
-
-import { between, eq } from "drizzle-orm";
-import { isString } from "../../lib/utils/validator";
-import { error } from "console";
+import { isString } from "@/lib/utils/validator";
 
 export async function createNewItem(prevState: any, formData: FormData) {
   const name = formData.get("name");
@@ -155,7 +153,10 @@ export async function makePurchase(prevState: any, formData: FormData) {
       const purchasedItemId = payload.map((item) => item.id);
 
       await tx.insert(purchasedItems).values(payload);
-      await tx.update(purchases).set({ purchasedItemId });
+      await tx
+        .update(purchases)
+        .set({ purchasedItemId })
+        .where(eq(purchases.id, newPurchase.id));
       return newPurchase.id;
     });
 
