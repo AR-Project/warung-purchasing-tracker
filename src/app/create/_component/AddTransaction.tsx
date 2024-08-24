@@ -82,7 +82,7 @@ export default function AddTransaction() {
       <div className="flex flex-row gap-1">
         <input
           ref={datePickerRef}
-          className="hidden"
+          className="w-[0px]"
           type="date"
           name="date"
           id="date"
