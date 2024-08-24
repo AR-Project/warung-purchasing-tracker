@@ -3,6 +3,7 @@
 import { formatNumberToIDR } from "@/lib/utils/formatter";
 import { useState } from "react";
 import EditActivePurchasedItem from "./EditActivePurchasedItem";
+import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 
 type MoveItemFn = (index: number, direction: "up" | "down") => void;
 type DeleteItemFn = (index: number) => void;
@@ -33,23 +34,6 @@ export function ItemCard({
   editPurchasedItem,
 }: ItemCardProps) {
   const [hover, setHover] = useState<boolean>(false);
-
-  const hundredsToString = (number: number) => {
-    if (number % 100 === 0) return (number / 100).toString();
-    return (number / 100).toFixed(2);
-  };
-
-  const PrettyQuantity = ({ number }: { number: number }) => {
-    const quantity = hundredsToString(item.quantityInHundreds).split(".");
-    return (
-      <div className="flex flex-row items-baseline min-w-10">
-        <div className=" font-black text-xl">{quantity[0]}</div>
-        {quantity.length > 1 && (
-          <div className=" text-xs text-white/40">,{quantity[1]}</div>
-        )}
-      </div>
-    );
-  };
 
   return (
     <div className=" w-full max-w-[500px] mx-auto flex flex-row gap-3 ">
