@@ -16,8 +16,6 @@ import { RxCross2 } from "react-icons/rx";
 
 const INITIAL: Vendor = { id: "", name: "" };
 
-// TODO: Drill vendorSelection and setVendorSelection from parent
-
 type Props = {
   setSelectedVendor: Dispatch<SetStateAction<Vendor>>;
   selectedVendor: Vendor;
