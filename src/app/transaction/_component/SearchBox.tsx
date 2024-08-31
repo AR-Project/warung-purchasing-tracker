@@ -13,9 +13,7 @@ import { useRouter } from "next/navigation";
 import { HiSearch } from "react-icons/hi";
 
 import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
-import { searchItems } from "@/lib/api";
 
-import EditItemHiddenForm from "@/app/create/_component/EditItemHiddenForm";
 import { ResetItemInputButton } from "@/app/create/_component/ResetItemInputButton";
 import Tooltip from "@/presentation/component/Tooltip";
 
@@ -23,9 +21,15 @@ const INITIAL: Vendor = { id: "", name: "" };
 
 type Props = {
   activeName: string | undefined;
+  searchHandler: (query: string) => Promise<Response>;
+  placeholder?: string;
 };
 
-export default function ItemPicker({ activeName }: Props) {
+export default function SearchBox({
+  activeName,
+  searchHandler,
+  placeholder = "Cari item...",
+}: Props) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -61,7 +65,7 @@ export default function ItemPicker({ activeName }: Props) {
     if (delayedQuery.length < 3) return;
     setLoading(true);
     try {
-      const response = await searchItems(delayedQuery);
+      const response = await searchHandler(delayedQuery);
       if (response.status === 200) {
         const data = (await response.json()) as unknown as Item[];
         setItemsSelection(data);
@@ -152,15 +156,9 @@ export default function ItemPicker({ activeName }: Props) {
             } px-2 h-10 w-full border ${
               error ? "border-red-500" : "border-gray-600"
             }`}
-            placeholder="Ketik nama item..."
+            placeholder={placeholder}
             disabled={selectedItem.name !== ""}
           />
-          {/* {displayEditButton() && (
-            <EditItemHiddenForm
-              selectedItem={selectedItem}
-              setSelectedItem={setSelectedItem}
-            />
-          )} */}
 
           {selectedItem.id !== "" && (
             <div className="group relative">
