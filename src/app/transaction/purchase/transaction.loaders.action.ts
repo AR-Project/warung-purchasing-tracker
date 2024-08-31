@@ -2,7 +2,7 @@ import db from "@/infrastructure/database/db";
 import { purchases, vendors, purchasedItems, items } from "@/lib/schema/schema";
 import { eq, between, desc } from "drizzle-orm";
 
-export async function transactionLoader(): Promise<DisplayPurchases> {
+export async function transactionLoader(): Promise<DisplaySinglePurchase[]> {
   return await db.transaction(async (tx) => {
     const purchaseTransactions = await tx
       .select({

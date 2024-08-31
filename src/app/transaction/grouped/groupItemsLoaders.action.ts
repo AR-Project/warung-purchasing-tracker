@@ -9,19 +9,15 @@ export async function groupedPurchasedItemsLoader({
   keyword,
 }: SearchFilter): Promise<DisplayGroupedItem[]> {
   if (range && keyword) {
-    console.log("by name date");
     return await fetchWithNameAndDate({
       range,
       keyword,
     });
   } else if (range) {
-    console.log("by date");
     return await fetchWithDate(range);
   } else if (keyword) {
-    console.log("by name");
     return await fetchWithName(keyword);
   } else {
-    console.log("default");
     return defaultFetch();
   }
 }
