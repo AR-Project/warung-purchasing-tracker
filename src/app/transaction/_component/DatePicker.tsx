@@ -6,33 +6,18 @@ import { DateTime } from "luxon";
 import { RxCross2, RxReset } from "react-icons/rx";
 
 import { shortDateWithDay, superShortDate } from "@/lib/utils/formatter";
-import { isISODateStrValid } from "@/lib/utils/validator";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import Tooltip from "@/presentation/component/Tooltip";
+import { z } from "zod";
 
 type Props = {
-  activeDateRange?: {
-    from: string;
-    to: string;
-  };
+  activeDateRange: RangeFilter | undefined;
 };
 
 export default function DatePicker({ activeDateRange }: Props) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const router = useRouter();
-
-  const searchParamFrom = searchParams.get("from");
-  const searchParamTo = searchParams.get("to");
-
-  function isParamsExist() {
-    if (
-      !isISODateStrValid(searchParamFrom) ||
-      !isISODateStrValid(searchParamTo)
-    )
-      return false;
-    return true;
-  }
 
   const [dateFrom, setDateFrom] = useState<string | undefined>(
     activeDateRange ? activeDateRange.from : undefined
@@ -45,34 +30,34 @@ export default function DatePicker({ activeDateRange }: Props) {
   const dateFromRef = useRef<HTMLInputElement>(null);
   const dateToRef = useRef<HTMLInputElement>(null);
 
-  const createDateFilterQueryString = useCallback(
-    (from: string, to: string) => {
-      const params = new URLSearchParams();
-      params.set("from", from);
-      params.set("to", to);
+  const createDateFilterQueryString = (from: string, to: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("from", from);
+    params.set("to", to);
 
-      return params.toString();
-    },
-    []
-  );
+    return params.toString();
+  };
 
-  const isDateSelectionValid = dateFrom && dateTo;
+  const removeDateFilterQueryString = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("from");
+    params.delete("to");
+    return params.toString();
+  };
 
   const onApplyDateFilterHandler = () => {
-    if (!isDateSelectionValid) return;
+    if (!(dateFrom && dateTo)) return;
     setIsOpen(false);
     router.push(pathname + "?" + createDateFilterQueryString(dateFrom, dateTo));
   };
 
   const onClearDateFilter = () => {
-    setDateFrom(undefined);
-    setDateTo(undefined);
-    router.push(pathname);
+    router.push(pathname + "?" + removeDateFilterQueryString());
   };
 
   const onResetDateSelection = () => {
-    setDateFrom(undefined);
-    setDateTo(undefined);
+    setDateFrom("");
+    setDateTo("");
   };
 
   return (
@@ -80,7 +65,7 @@ export default function DatePicker({ activeDateRange }: Props) {
       <div className="flex flex-row w-full">
         <button
           className={` grow border h-8 w-full flex flex-row justify-center items-center gap-3  ${
-            isParamsExist()
+            activeDateRange
               ? "hover:bg-green-600 bg-green-800 border-gray-400"
               : "hover:bg-gray-600 bg-gray-800 border-gray-600"
           }`}
@@ -169,7 +154,7 @@ export default function DatePicker({ activeDateRange }: Props) {
         <button
           className="disabled:cursor-not-allowed disabled:text-gray-400 disabled:bg-gray-800 h-8 px-2 border bg-green-800 border-gray-400 disabled:border-gray-600"
           onClick={onApplyDateFilterHandler}
-          disabled={!isDateSelectionValid}
+          disabled={!(dateFrom && dateTo)}
         >
           Terapkan
         </button>

@@ -7,6 +7,15 @@ declare global {
     error?: string;
   };
 
+  type RangeFilter = { from: string; to: string };
+
+  type SearchFilter = {
+    range?: RangeFilter;
+    keyword?: string;
+  };
+
+  type SearchParams = { [key: string]: string | string[] | undefined };
+
   type CreateItemPayload = {
     name: string;
   };
@@ -70,5 +79,13 @@ declare global {
     totalPrice: number;
     vendor: string;
   };
+
   type DisplayItems = DisplayPerSingleItem[];
+  type DisplayGroupedItem = {
+    name: string;
+    id: string;
+    totalQuantityInHundred: number;
+    averagePricePerUnit: number;
+    totalPrice: number;
+  };
 }

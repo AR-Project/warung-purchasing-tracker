@@ -21,7 +21,9 @@ export const shortDateWithDay = (date: Date) => {
 export const shortDate = (date: Date) => {
   return DateTime.fromJSDate(date).toFormat("dd/mm/yy");
 };
-export const superShortDate = (date: string) => {
+export const superShortDate = (date: string | undefined) => {
+  if (date === undefined) return "";
+
   return DateTime.fromISO(date).setLocale("id").toLocaleString({
     day: "2-digit",
     month: "2-digit",

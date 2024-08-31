@@ -17,13 +17,6 @@ export async function transactionLoader(): Promise<DisplayPurchases> {
       .from(purchases)
       .innerJoin(vendors, eq(purchases.vendorId, vendors.id))
       .orderBy(desc(purchases.purchasedAt));
-    // .where(
-    //   between(
-    //     purchases.purchasedAt,
-    //     new Date("2024-06-01"),
-    //     new Date("2024-06-31")
-    //   )
-    // );
 
     const allPurchasedItems = await tx
       .select({

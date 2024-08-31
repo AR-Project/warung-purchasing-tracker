@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import { z } from "zod";
 
 /**
  * Check if Form Data entry Value is string and not null.
@@ -38,4 +39,51 @@ export function isISODateStrValid(dateStr: unknown): dateStr is string {
   if (date.length !== 3) return false;
   if (year.length !== 4 || month.length !== 2 || day.length !== 2) return false;
   return true;
+}
+
+export function isValidDate(value: unknown): string {
+  const schema = z.string().date();
+  try {
+    return schema.parse(value);
+  } catch {
+    return "";
+  }
+}
+
+function dateRangeValidator(params: SearchParams): RangeFilter | undefined {
+  const dateSchema = z.string().date();
+  try {
+    const from = dateSchema.parse(params.from);
+    const to = dateSchema.parse(params.to);
+
+    const fromDate = DateTime.fromISO(from).toMillis();
+    const toDate = DateTime.fromISO(to).toMillis();
+
+    if (toDate - fromDate < 0) {
+      throw new Error("Invalid Date");
+    }
+
+    return {
+      from: from,
+      to: to,
+    };
+  } catch {
+    return;
+  }
+}
+
+function queryValidator(params: SearchParams): string | undefined {
+  const keywordSchema = z.string();
+  try {
+    return keywordSchema.parse(params.q);
+  } catch {
+    return;
+  }
+}
+
+export function parseSearchParams(params: SearchParams): SearchFilter {
+  return {
+    range: dateRangeValidator(params),
+    keyword: queryValidator(params),
+  };
 }

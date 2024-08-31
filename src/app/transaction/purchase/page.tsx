@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { transactionLoader } from "./purchase/transaction.loaders.action";
-import { SinglePurchaseCard } from "./_component/SinglePurchaseCard";
+import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
+import { transactionLoader } from "./transaction.loaders.action";
 
 export default async function Page() {
   const tx = await transactionLoader();
@@ -16,5 +16,14 @@ export default async function Page() {
     return JSON.stringify(object, null, "\t");
   }
 
-  return <h1>Pick One...</h1>;
+  return (
+    <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">
+      {tx.map((singlePurchase) => (
+        <SinglePurchaseCard
+          singlePurchase={singlePurchase}
+          key={singlePurchase.id}
+        />
+      ))}
+    </section>
+  );
 }
