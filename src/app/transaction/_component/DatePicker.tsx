@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DateTime } from "luxon";
 import { RxCross2, RxReset } from "react-icons/rx";
@@ -8,7 +8,6 @@ import { RxCross2, RxReset } from "react-icons/rx";
 import { shortDateWithDay, superShortDate } from "@/lib/utils/formatter";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
 import Tooltip from "@/presentation/component/Tooltip";
-import { z } from "zod";
 
 type Props = {
   activeDateRange: RangeFilter | undefined;
@@ -34,7 +33,6 @@ export default function DatePicker({ activeDateRange }: Props) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("from", from);
     params.set("to", to);
-
     return params.toString();
   };
 
@@ -159,7 +157,6 @@ export default function DatePicker({ activeDateRange }: Props) {
           Terapkan
         </button>
       </div>
-      <div></div>
     </>
   );
 }
