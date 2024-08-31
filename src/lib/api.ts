@@ -1,3 +1,5 @@
+"use client";
+
 export const searchItems = async (query: string) => {
   const response = await fetch("/api/search/items", {
     method: "POST",

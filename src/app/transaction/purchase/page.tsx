@@ -1,23 +1,28 @@
 import Link from "next/link";
 import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
 import { transactionLoader } from "./transaction.loaders.action";
+import SearchBox from "../_component/SearchBox";
+import { parseSearchParams } from "@/lib/utils/validator";
+import { searchVendors } from "@/lib/api";
+import DatePicker from "../_component/DatePicker";
 
-export default async function Page() {
-  const tx = await transactionLoader();
+type Props = {
+  searchParams: SearchParams;
+};
 
-  /** #TODO: Implement display based on these
-   * - Based on month
-   * - FUTURE:Based on calendar
-   *    - Highlight dates that purchase happen
-   *    - Pop up transaction details from that date
-   */
+export default async function Page({ searchParams }: Props) {
+  const filter = parseSearchParams(searchParams);
 
-  function prettyStringify(object: any) {
-    return JSON.stringify(object, null, "\t");
-  }
+  const tx = await transactionLoader(filter);
 
   return (
     <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">
+      <SearchBox
+        activeName={filter.keyword}
+        searchHandler={searchVendors}
+        placeholder="Cari Vendor..."
+      />
+      <DatePicker activeDateRange={filter.range} />
       {tx.map((singlePurchase) => (
         <SinglePurchaseCard
           singlePurchase={singlePurchase}
@@ -27,3 +32,10 @@ export default async function Page() {
     </section>
   );
 }
+
+/** #TODO: Implement display based on these
+ * - Based on month
+ * - FUTURE:Based on calendar
+ *    - Highlight dates that purchase happen
+ *    - Pop up transaction details from that date
+ */
