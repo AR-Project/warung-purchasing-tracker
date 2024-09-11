@@ -85,7 +85,6 @@ declare global {
     name: string;
     id: string;
     totalQuantityInHundred: number;
-    averagePricePerUnit: number;
     totalPrice: number;
   };
 }
