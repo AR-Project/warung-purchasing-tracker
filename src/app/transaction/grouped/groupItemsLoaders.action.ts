@@ -32,7 +32,6 @@ async function fetchWithName(keyword: string): Promise<DisplayGroupedItem[]> {
       totalQuantityInHundred: sum(purchasedItems.quantityInHundreds).mapWith(
         Number
       ),
-      averagePricePerUnit: sql<number>`cast(avg(${purchasedItems.pricePerUnit}) as int)`,
       totalPrice: sum(purchasedItems.totalPrice).mapWith(Number),
     })
     .from(purchasedItems)
@@ -62,7 +61,6 @@ async function fetchWithNameAndDate({
       totalQuantityInHundred: sum(purchasedItems.quantityInHundreds).mapWith(
         Number
       ),
-      averagePricePerUnit: sql<number>`cast(avg(${purchasedItems.pricePerUnit}) as int)`,
       totalPrice: sum(purchasedItems.totalPrice).mapWith(Number),
     })
     .from(purchasedItems)
@@ -81,7 +79,6 @@ async function defaultFetch(): Promise<DisplayGroupedItem[]> {
       totalQuantityInHundred: sum(purchasedItems.quantityInHundreds).mapWith(
         Number
       ),
-      averagePricePerUnit: sql<number>`cast(avg(${purchasedItems.pricePerUnit}) as int)`,
       totalPrice: sum(purchasedItems.totalPrice).mapWith(Number),
     })
     .from(purchasedItems)
@@ -102,10 +99,6 @@ async function fetchWithDate({
   const dateTo = DateTime.fromISO(to).endOf("day").toJSDate();
 
   const dateFilter = between(purchases.purchasedAt, dateFrom, dateTo);
-  const dateAndItemIdFilter = and(
-    between(purchases.purchasedAt, dateFrom, dateTo),
-    eq(purchasedItems.itemId, "TODO:ITEM-ID")
-  );
 
   return await db
     .select({
@@ -114,7 +107,6 @@ async function fetchWithDate({
       totalQuantityInHundred: sum(purchasedItems.quantityInHundreds).mapWith(
         Number
       ),
-      averagePricePerUnit: sql<number>`cast(avg(${purchasedItems.pricePerUnit}) as int)`,
       totalPrice: sum(purchasedItems.totalPrice).mapWith(Number),
     })
     .from(purchasedItems)
