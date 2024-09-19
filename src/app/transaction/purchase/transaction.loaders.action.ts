@@ -44,6 +44,7 @@ async function filteredFetch(filter: SQL): Promise<DisplaySinglePurchase[]> {
         purchasesAt: purchases.purchasedAt,
         totalPrice: purchases.totalPrice,
         createdAt: purchases.createdAt,
+        imageId: purchases.imageId,
       })
       .from(purchases)
       .innerJoin(vendors, eq(purchases.vendorId, vendors.id))
@@ -83,6 +84,7 @@ async function defaultFetch(): Promise<DisplaySinglePurchase[]> {
         purchasesAt: purchases.purchasedAt,
         totalPrice: purchases.totalPrice,
         createdAt: purchases.createdAt,
+        imageId: purchases.imageId,
       })
       .from(purchases)
       .innerJoin(vendors, eq(purchases.vendorId, vendors.id))

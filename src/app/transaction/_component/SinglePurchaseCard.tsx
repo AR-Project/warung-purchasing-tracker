@@ -4,6 +4,8 @@ import {
   shortDate,
 } from "@/lib/utils/formatter";
 import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
+import Link from "next/link";
+import { MdReceiptLong } from "react-icons/md";
 
 type Props = {
   singlePurchase: DisplaySinglePurchase;
@@ -28,8 +30,18 @@ export function SinglePurchaseCard({ singlePurchase }: Props) {
           <DisplaySingleItem key={item.id} item={item} />
         ))}
       </div>
-      <div className="text-xs italic uppercase px-2 py-1 text-gray-500 text-right">
-        {shortDate(singlePurchase.createdAt)}
+      <div className=" flex flex-row justify-center">
+        {singlePurchase.imageId && (
+          // TODO: Pop Up Image
+          <Link
+            className=" flex flex-row items-center gap-2 text-gray-500"
+            href={`/api/image/${singlePurchase.imageId}.jpg`}
+            target="_blank"
+          >
+            <MdReceiptLong />
+            <span className="text-sm">Show Receipt</span>
+          </Link>
+        )}
       </div>
     </div>
   );

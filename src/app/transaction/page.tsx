@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 export default async function Page() {
-  return <h1>Pick One...</h1>;
+  redirect("/transaction/purchase");
 }

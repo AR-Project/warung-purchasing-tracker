@@ -68,6 +68,7 @@ declare global {
     totalPrice: number;
     items: DisplaySingleItem[];
     createdAt: Date;
+    imageId: string | null;
   };
   type DisplayPurchases = DisplaySinglePurchase[];
 

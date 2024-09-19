@@ -17,6 +17,7 @@ import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
 import AddItemHiddenForm from "./AddItemHiddenForm";
 import EditItemHiddenForm from "./EditItemHiddenForm";
 import { ResetItemInputButton } from "./ResetItemInputButton";
+import { MdAdd } from "react-icons/md";
 
 type Props = {
   appendItem: (item: PurchasedItem) =>
@@ -68,6 +69,7 @@ export default function ComboItemForm({ appendItem }: Props) {
     setUnitPrice("");
     setTotalPrice("");
     setQuantity("");
+    setError(false);
   };
 
   const itemFieldRef = useRef<HTMLInputElement>(null);
@@ -248,7 +250,9 @@ export default function ComboItemForm({ appendItem }: Props) {
           className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-fit ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed"
           disabled={!enableSubmitButton()}
         >
-          Tambah item
+          <div className="flex flex-row gap-2 items-baseline">
+            <MdAdd /> Tambah item
+          </div>
         </button>
         {error && (
           <p className="text-red-500 text-xs uppercase italic">

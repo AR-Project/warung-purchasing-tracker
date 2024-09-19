@@ -1,5 +1,11 @@
 "use client";
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import {
+  type Dispatch,
+  type SetStateAction,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Combobox,
   ComboboxInput,
@@ -13,6 +19,7 @@ import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 import AddVendorHiddenForm from "./AddVendorHiddenForm";
 import { searchVendors } from "@/lib/api";
 import { RxCross2 } from "react-icons/rx";
+import { MdLocationOn } from "react-icons/md";
 
 const INITIAL: Vendor = { id: "", name: "" };
 
@@ -37,6 +44,8 @@ export default function ComboVendorForm({
     useState<boolean>(false);
 
   const [newVendorName, setNewVendorName] = useState<string | undefined>();
+
+  const comboInputRef = useRef<HTMLInputElement>(null);
 
   const comboBoxOnChangeHandler = (value: NoInfer<Vendor> | null) => {
     value && setSelectedVendor(value);
@@ -99,7 +108,14 @@ export default function ComboVendorForm({
           onChange={comboBoxOnChangeHandler}
           onClose={onCloseComboBox}
         >
+          <button
+            onClick={() => comboInputRef.current?.focus()}
+            className="flex flex-row justify-center items-center h-10 aspect-square border-t border-l border-b border-gray-600 bg-gray-800"
+          >
+            <MdLocationOn />
+          </button>
           <ComboboxInput
+            ref={comboInputRef}
             aria-label="Assignee"
             displayValue={comboBoxDisplayValue}
             onChange={(event) => setQuery(event.target.value)}
