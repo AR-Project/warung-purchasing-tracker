@@ -9,9 +9,21 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
+export const images = pgTable("images", {
+  id: text("id").primaryKey().unique().notNull(),
+  fileExtension: text("file_extension").notNull().default(".jpg"),
+  originalFileName: text("original_filename").notNull(),
+  uploadedAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+});
+
 export const items = pgTable("items", {
   id: text("id").primaryKey().unique().notNull(),
   name: text("name").unique().notNull(),
+  imageId: text("image_id").references(() => images.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),
@@ -36,6 +48,9 @@ export const purchases = pgTable("purchases", {
   vendorId: text("vendor_id")
     .references(() => vendors.id)
     .notNull(),
+  imageId: text("image_id").references(() => images.id, {
+    onDelete: "set null",
+  }),
   purchasedAt: timestamp("purchased_at", { withTimezone: true }).notNull(),
   purchasedItemId: text("purchased_item_id")
     .array()
