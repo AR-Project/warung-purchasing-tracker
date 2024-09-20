@@ -14,7 +14,7 @@ import { HiSearch } from "react-icons/hi";
 
 import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 
-import { ResetItemInputButton } from "@/app/create/_component/ResetItemInputButton";
+import { ResetItemInputButton } from "@/app/create/_presentation/ResetItemInputButton";
 import Tooltip from "@/presentation/component/Tooltip";
 
 const INITIAL: Vendor = { id: "", name: "" };
