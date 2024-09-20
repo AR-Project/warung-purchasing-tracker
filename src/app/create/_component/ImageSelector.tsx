@@ -4,7 +4,6 @@ import React, {
   ChangeEvent,
   Dispatch,
   SetStateAction,
-  useEffect,
   useRef,
   useState,
 } from "react";
@@ -57,7 +56,7 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
     if (file) userImageFileReader(file, imageReaderCb);
   }, file);
 
-  useStateChanged<Blob | null>(() => {
+  useStateChanged(() => {
     if (resizedFile === null) resetCanvas();
   }, resizedFile);
 
@@ -82,14 +81,6 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
 
   return (
     <div className="relative">
-      {file && (
-        <button
-          className="absolute z-10 h-8 aspect-square flex items-center justify-center top-0 right-0 text-xl hover:text-red-500 border border-gray-600/50 bg-gray-500/50  text-white/50 rounded-sm"
-          onClick={resetCanvas}
-        >
-          <MdDelete />
-        </button>
-      )}
       <input
         className="hidden"
         ref={inputRef}
@@ -98,7 +89,14 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
         accept="image/*"
         onChange={inputFileOnChangeHandler}
       />
-      {!file && (
+      {file ? (
+        <button
+          className="absolute z-10 h-8 aspect-square flex items-center justify-center top-0 right-0 text-xl hover:text-red-500 border border-gray-600/50 bg-gray-500/50  text-white/50 rounded-sm"
+          onClick={resetCanvas}
+        >
+          <MdDelete />
+        </button>
+      ) : (
         <button
           className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto"
           onClick={() => inputRef.current?.showPicker()}

@@ -2,9 +2,9 @@
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
 import { useRef, useState } from "react";
-import EditActivePurchasedItem from "./EditActivePurchasedItem";
 import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 import { MdDelete } from "react-icons/md";
+import EditItemDataOnCart from "../_component/EditItemOnCartData";
 
 type MoveItemFn = (index: number, direction: "up" | "down") => void;
 type DeleteItemFn = (index: number) => void;
@@ -68,8 +68,8 @@ export function ItemCard({
           isActive ? "w-[110px]" : "w-[0px]"
         }`}
       >
-        <EditActivePurchasedItem
-          editPurchasedItem={editPurchasedItem}
+        <EditItemDataOnCart
+          updateItem={editPurchasedItem}
           purchasedItem={item}
           itemIndex={index}
         />

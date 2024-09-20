@@ -28,11 +28,11 @@ function MakePurchaseHiddenForm({
   );
 
   useStateChanged<FormState<string>>(() => {
+    if (state.error) toast.error(state.error);
     if (state.message) {
       toast.success(state.message);
       clearFrom();
     }
-    if (state.error) toast.error(state.error);
   }, state);
 
   const purchasedPayload: PurchasedItemPayload[] = itemsList.map((item) => ({
@@ -43,15 +43,13 @@ function MakePurchaseHiddenForm({
   }));
 
   const isDataValid = () => {
-    if (purchasedPayload.length > 0 && purchasedAt && vendorId && totalPurchase)
-      return true;
-    return false;
+    return (
+      purchasedPayload.length > 0 && purchasedAt && vendorId && totalPurchase
+    );
   };
 
   function interceptAction(formData: FormData) {
-    if (image) {
-      formData.append("image", image, "hidden-upload.jpg");
-    }
+    if (image) formData.append("image", image, "hidden-upload.jpg");
     formAction(formData);
   }
 

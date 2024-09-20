@@ -7,6 +7,7 @@ import { ImCancelCircle, ImCheckmark } from "react-icons/im";
 
 import { editItem } from "../action";
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 type Props = {
   selectedItem: Item;
@@ -21,25 +22,18 @@ export default function EditItemHiddenForm({
     editItem,
     {}
   );
-  const [isFormStateChanged, setIsFormStateChanged] = useState<boolean>(false);
 
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState<string>(selectedItem.name);
 
-  if (isFormStateChanged) {
-    if (state.message) {
+  useStateChanged(() => {
+    if (state.error) toast.error(state.error);
+    if (state.message && state.data && newName) {
       toast.success(state.message);
-      if (state.data && newName)
-        setSelectedItem((prevItem) => ({ ...prevItem, name: newName }));
+      setSelectedItem((prevItem) => ({ ...prevItem, name: newName }));
       close();
     }
-
-    if (state.error) {
-      toast.error(state.error);
-    }
-
-    setIsFormStateChanged(false);
-  }
+  }, state);
 
   function open() {
     setIsOpen(true);
@@ -49,10 +43,6 @@ export default function EditItemHiddenForm({
     setNewName("");
     setIsOpen(false);
   }
-
-  useEffect(() => {
-    setIsFormStateChanged(true);
-  }, [state]);
 
   return (
     <>

@@ -15,15 +15,15 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "react-toastify";
 
 type Props = {
-  editPurchasedItem: (updatedItem: PurchasedItem, index: number) => void;
+  updateItem: (updatedItem: PurchasedItem, index: number) => void;
   purchasedItem: PurchasedItem;
   itemIndex: number;
 };
 
-export default function EditActivePurchasedItem({
+export default function EditItemDataOnCart({
   itemIndex,
   purchasedItem,
-  editPurchasedItem,
+  updateItem,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPurchasedItem, setCurrentPurchasedItem] =
@@ -35,11 +35,11 @@ export default function EditActivePurchasedItem({
     currentPurchasedItem.pricePerUnit
   );
 
-  function open() {
+  function openDialogBox() {
     setIsOpen(true);
   }
 
-  function close() {
+  function closeDialogBox() {
     setIsOpen(false);
   }
 
@@ -55,7 +55,7 @@ export default function EditActivePurchasedItem({
       typeof quantity === "number" ? quantity * 100 : 0;
     const finalPricePerUnit = typeof price === "number" ? price : 0;
 
-    editPurchasedItem(
+    updateItem(
       {
         ...currentPurchasedItem,
         quantityInHundreds: finalQuantityInHundreds,
@@ -65,13 +65,13 @@ export default function EditActivePurchasedItem({
       itemIndex
     );
     toast.success("Item diperbarui");
-    close();
+    closeDialogBox();
   };
 
   return (
     <>
       <Button
-        onClick={open}
+        onClick={openDialogBox}
         className="rounded-md bg-gray-800 h-10 aspect-square flex flex-row items-center justify-center text-sm font-medium  focus:outline-none data-[hover]:border data-[hover]:border-white data-[focus]:outline-1 data-[focus]:outline-white text-gray-400 data-[hover]:text-gray-100"
         tabIndex={-1}
       >
@@ -81,7 +81,7 @@ export default function EditActivePurchasedItem({
         open={isOpen}
         as="div"
         className="absolute z-10 focus:outline-none"
-        onClose={close}
+        onClose={closeDialogBox}
       >
         <DialogBackdrop className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
         <div className="fixed top-0 inset-0 z-10 w-screen overflow-y-auto">
@@ -160,7 +160,7 @@ export default function EditActivePurchasedItem({
                   </Button>
                   <Button
                     className="BTN-CANCEL flex flex-row gap-2 p-2 items-center bg-gray-500 border border-gray-500 rounded-md  w-fit hover:bg-gray-400"
-                    onClick={close}
+                    onClick={closeDialogBox}
                   >
                     <ImCancelCircle className="text-xl text-gray-300" /> Batal
                   </Button>
