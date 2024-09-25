@@ -1,6 +1,6 @@
 "use client";
 import { usePathname, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Combobox,
   ComboboxInput,
@@ -16,6 +16,7 @@ import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 
 import { ResetItemInputButton } from "@/app/create/_presentation/ResetItemInputButton";
 import Tooltip from "@/presentation/component/Tooltip";
+import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 const INITIAL: Vendor = { id: "", name: "" };
 
@@ -39,13 +40,11 @@ export default function SearchBox({
   const [itemsSelection, setItemsSelection] = useState<Item[]>([]);
 
   const [query, setQuery] = useState(activeName ? activeName : "");
-  const [isQueryChanged, setIsQueryChanged] = useState<boolean>(false);
-
   const [delayedQuery] = useDelayQuery(query, 500);
-  const [isDelayedQueryChanged, setIsDelayedQueryChanged] =
-    useState<boolean>(false);
 
   const [selectedItem, setSelectedItem] = useState<Item>({ id: "", name: "" });
+
+  const itemFieldRef = useRef<HTMLInputElement>(null);
 
   const comboBoxOnChangeHandler = (value: NoInfer<Item> | null) => {
     value && setSelectedItem(value);
@@ -59,8 +58,6 @@ export default function SearchBox({
     return item.name;
   };
 
-  const itemFieldRef = useRef<HTMLInputElement>(null);
-
   const searchItemsAction = async (delayedQuery: string) => {
     if (delayedQuery.length < 3) return;
     setLoading(true);
@@ -69,13 +66,9 @@ export default function SearchBox({
       if (response.status === 200) {
         const data = (await response.json()) as unknown as Item[];
         setItemsSelection(data);
-      } else {
-        setItemsSelection([]);
-      }
+      } else setItemsSelection([]);
     } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
+      if (error instanceof Error) toast.error(error.message);
     } finally {
       setLoading(false);
     }
@@ -83,46 +76,26 @@ export default function SearchBox({
 
   const enableSubmitButton = () => {
     const isItemSelected = selectedItem.id !== "";
-
     if (isItemSelected) return true;
     return false;
   };
 
-  const displayEditButton = () => {
-    const isItemSelected = selectedItem.id !== "";
-    const isQueryEmpty = query === "";
-
-    if (isItemSelected && isQueryEmpty) return true;
-    return false;
-  };
-
-  useEffect(() => {
-    setIsQueryChanged(true);
-  }, [query]);
-
-  if (isQueryChanged) {
+  useStateChanged(() => {
     setItemsSelection([]);
     setError(false);
-    setIsQueryChanged(false);
-  }
+  }, query);
 
-  useEffect(() => {
-    setIsDelayedQueryChanged(true);
-  }, [delayedQuery]);
-
-  if (isDelayedQueryChanged) {
+  useStateChanged(() => {
     searchItemsAction(delayedQuery);
-    setIsDelayedQueryChanged(false);
-  }
+  }, delayedQuery);
 
   const setNameQuery = (name: string) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set("q", name);
-
     return params.toString();
   };
 
-  const removeNameQuery = () => {
+  const clearSearchQuery = () => {
     const params = new URLSearchParams(searchParams.toString());
     params.delete("q");
     return params.toString();
@@ -133,7 +106,7 @@ export default function SearchBox({
   };
 
   const resetComboForm = () => {
-    router.push(pathname + "?" + removeNameQuery());
+    router.push(pathname + "?" + clearSearchQuery());
     setSelectedItem(INITIAL);
     setQuery("");
   };
@@ -193,14 +166,6 @@ export default function SearchBox({
           </ComboboxOptions>
         </div>
       </Combobox>
-
-      <div className="flex flex-row-reverse">
-        {error && (
-          <p className="text-red-500 text-xs uppercase italic">
-            Barang sudah terdaftar. Ganti atau ubah barang
-          </p>
-        )}
-      </div>
     </div>
   );
 }
