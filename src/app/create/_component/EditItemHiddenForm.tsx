@@ -5,9 +5,9 @@ import { toast } from "react-toastify";
 import { FiEdit } from "react-icons/fi";
 import { ImCancelCircle, ImCheckmark } from "react-icons/im";
 
-import { editItem } from "../action";
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
+import { editItem } from "../editItem.action";
 
 type Props = {
   selectedItem: Item;

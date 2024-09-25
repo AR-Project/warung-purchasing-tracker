@@ -4,8 +4,7 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-
-import { createNewItem } from "../action";
+import { newItemAction } from "../newItem.action";
 
 type Props = {
   name: string | undefined;
@@ -19,7 +18,7 @@ export default function AddItemHiddenForm({
   setNewItemName,
 }: Props) {
   const [state, formAction] = useFormState<FormState<string>, FormData>(
-    createNewItem,
+    newItemAction,
     {}
   );
 
