@@ -5,21 +5,25 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { useEffect, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { LuLoader2 } from "react-icons/lu";
 import { NumericFormat } from "react-number-format";
+import { MdAdd } from "react-icons/md";
 
 import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 import { searchItems } from "@/lib/api";
 import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
 
-import AddItemHiddenForm from "./AddItemHiddenForm";
-import EditItemHiddenForm from "./EditItemHiddenForm";
-import { ResetItemInputButton } from "./ResetItemInputButton";
+import { ResetItemInputButton } from "../_presentation/ResetItemInputButton";
+import { useStateChanged } from "@/presentation/hooks/useStateChanged";
+
+const EditItemHiddenForm = dynamic(() => import("./EditItemHiddenForm"));
+const AddItemHiddenForm = dynamic(() => import("./AddItemHiddenForm"));
 
 type Props = {
-  appendItem: (item: PurchasedItem) =>
+  appendItemOnCart: (item: PurchasedItem) =>
     | {
         error: string;
       }
@@ -30,17 +34,13 @@ const INITIAL: Vendor = { id: "", name: "" };
 
 type NumberFormState = number | "";
 
-export default function ComboItemForm({ appendItem }: Props) {
+export default function ComboItemForm({ appendItemOnCart }: Props) {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<boolean>(false);
   const [itemsSelection, setItemsSelection] = useState<Item[]>([]);
 
   const [query, setQuery] = useState("");
-  const [isQueryChanged, setIsQueryChanged] = useState<boolean>(false);
-
   const [delayedQuery] = useDelayQuery(query, 500);
-  const [isDelayedQueryChanged, setIsDelayedQueryChanged] =
-    useState<boolean>(false);
 
   const [newItemName, setNewItemName] = useState<string | undefined>();
 
@@ -49,6 +49,8 @@ export default function ComboItemForm({ appendItem }: Props) {
   const [quantity, setQuantity] = useState<NumberFormState>("");
   const [unitPrice, setUnitPrice] = useState<NumberFormState>("");
   const [totalPrice, setTotalPrice] = useState<NumberFormState>("");
+
+  const itemFieldRef = useRef<HTMLInputElement>(null);
 
   const comboBoxOnChangeHandler = (value: NoInfer<Item> | null) => {
     value && setSelectedItem(value);
@@ -61,6 +63,7 @@ export default function ComboItemForm({ appendItem }: Props) {
   const comboBoxDisplayValue = (item: Item) => {
     return newItemName ? newItemName : item.name;
   };
+
   const resetComboForm = () => {
     setSelectedItem(INITIAL);
     setNewItemName(undefined);
@@ -68,9 +71,8 @@ export default function ComboItemForm({ appendItem }: Props) {
     setUnitPrice("");
     setTotalPrice("");
     setQuantity("");
+    setError(false);
   };
-
-  const itemFieldRef = useRef<HTMLInputElement>(null);
 
   const searchItemsAction = async (delayedQuery: string) => {
     if (delayedQuery.length < 3) return;
@@ -113,7 +115,7 @@ export default function ComboItemForm({ appendItem }: Props) {
   };
 
   const finalizeItem = () => {
-    const result = appendItem({
+    const result = appendItemOnCart({
       itemId: selectedItem.id,
       name: selectedItem.name,
       quantityInHundreds: anyNumberToHundred(quantity),
@@ -130,24 +132,14 @@ export default function ComboItemForm({ appendItem }: Props) {
     setError(true);
   };
 
-  useEffect(() => {
-    setIsQueryChanged(true);
-  }, [query]);
-
-  if (isQueryChanged) {
+  useStateChanged(() => {
     setItemsSelection([]);
     setError(false);
-    setIsQueryChanged(false);
-  }
+  }, query);
 
-  useEffect(() => {
-    setIsDelayedQueryChanged(true);
-  }, [delayedQuery]);
-
-  if (isDelayedQueryChanged) {
+  useStateChanged(() => {
     searchItemsAction(delayedQuery);
-    setIsDelayedQueryChanged(false);
-  }
+  }, delayedQuery);
 
   return (
     <div className="flex flex-col gap-2">
@@ -248,7 +240,9 @@ export default function ComboItemForm({ appendItem }: Props) {
           className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-fit ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed"
           disabled={!enableSubmitButton()}
         >
-          Tambah item
+          <div className="flex flex-row gap-2 items-baseline">
+            <MdAdd /> Tambah item
+          </div>
         </button>
         {error && (
           <p className="text-red-500 text-xs uppercase italic">

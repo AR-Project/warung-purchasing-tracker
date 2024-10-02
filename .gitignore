@@ -44,3 +44,6 @@ next-env.d.ts
 
 # excalidraw file
 *.excalidraw
+
+#default images upload location
+/images

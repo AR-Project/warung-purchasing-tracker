@@ -1,5 +1,5 @@
 "use client";
-import { type Dispatch, type SetStateAction, useEffect, useState } from "react";
+import { type Dispatch, type SetStateAction, useRef, useState } from "react";
 import {
   Combobox,
   ComboboxInput,
@@ -11,12 +11,16 @@ import { LuLoader2 } from "react-icons/lu";
 
 import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 import AddVendorHiddenForm from "./AddVendorHiddenForm";
-import { searchVendors } from "@/lib/api";
+import {
+  ISearchVendorsWithCallBack,
+  searchVendors,
+  searchVendorsWithCallback,
+} from "@/lib/api";
 import { RxCross2 } from "react-icons/rx";
+import { MdLocationOn } from "react-icons/md";
+import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 const INITIAL: Vendor = { id: "", name: "" };
-
-// TODO: Drill vendorSelection and setVendorSelection from parent
 
 type Props = {
   setSelectedVendor: Dispatch<SetStateAction<Vendor>>;
@@ -32,13 +36,11 @@ export default function ComboVendorForm({
   const [vendorsSelection, setVendorsSelection] = useState<Vendor[]>([]);
 
   const [query, setQuery] = useState("");
-  const [isQueryChanged, setIsQueryChanged] = useState<boolean>(false);
-
   const [delayedQuery] = useDelayQuery(query);
-  const [isDelayedQueryChanged, setIsDelayedQueryChanged] =
-    useState<boolean>(false);
 
   const [newVendorName, setNewVendorName] = useState<string | undefined>();
+
+  const comboInputRef = useRef<HTMLInputElement>(null);
 
   const comboBoxOnChangeHandler = (value: NoInfer<Vendor> | null) => {
     value && setSelectedVendor(value);
@@ -52,99 +54,100 @@ export default function ComboVendorForm({
     return newVendorName ? newVendorName : item.name;
   };
 
-  useEffect(() => {
-    setIsQueryChanged(true);
-  }, [query]);
-
-  if (isQueryChanged) {
+  useStateChanged(() => {
     setVendorsSelection([]);
     setNewVendorName("");
-    setIsQueryChanged(false);
-  }
+  }, query);
 
-  useEffect(() => {
-    setIsDelayedQueryChanged(true);
-  }, [delayedQuery]);
+  const searchVendorsAction = async (delayedQuery: string) => {
+    if (delayedQuery.length < 4) return;
+    setLoading(true);
 
-  if (isDelayedQueryChanged) {
-    setVendorsSelection([]);
-    (async () => {
-      if (delayedQuery.length < 3) return;
-      setLoading(true);
-      try {
-        const response = await searchVendors(delayedQuery);
-        if (response.status === 200) {
-          const data = (await response.json()) as unknown as Item[];
-          setVendorsSelection(data);
-          setNewVendorName(undefined);
-        } else {
-          setNewVendorName(query);
-          setVendorsSelection([]);
-        }
-      } catch (error) {
+    const config: ISearchVendorsWithCallBack<Item[]> = {
+      query: delayedQuery,
+      onSuccess: (data) => {
+        setVendorsSelection(data);
+        setNewVendorName(undefined);
+      },
+      onFail: () => {
+        setNewVendorName(query);
+        setVendorsSelection([]);
+      },
+      onError: (error) => {
         if (error instanceof Error) {
           toast.error(error.message);
+        } else {
+          toast.error("unknown error");
         }
-        toast.error("unknown error");
-      } finally {
-        setLoading(false);
-      }
-    })();
-    setIsDelayedQueryChanged(false);
-  }
+      },
+    };
+
+    await searchVendorsWithCallback(config);
+    setLoading(false);
+  };
+
+  useStateChanged(() => {
+    setVendorsSelection([]);
+    searchVendorsAction(delayedQuery);
+  }, delayedQuery);
 
   return (
-    <div className="flex flex-col gap-2 w-full">
-      <div className="flex flex-row items-center ">
-        <Combobox
-          value={selectedVendor}
-          onChange={comboBoxOnChangeHandler}
-          onClose={onCloseComboBox}
+    <div className="flex flex-row items-center ">
+      <Combobox
+        value={selectedVendor}
+        onChange={comboBoxOnChangeHandler}
+        onClose={onCloseComboBox}
+      >
+        <button
+          onClick={() => comboInputRef.current?.focus()}
+          className="flex flex-row justify-center items-center h-10 aspect-square border-t border-l border-b border-gray-600 bg-gray-800"
         >
-          <ComboboxInput
-            aria-label="Assignee"
-            displayValue={comboBoxDisplayValue}
-            onChange={(event) => setQuery(event.target.value)}
-            className="bg-gray-800 px-2 h-10 w-full border border-gray-600"
-            placeholder="Tempat Belanja"
-          />
-          <AddVendorHiddenForm
-            name={newVendorName}
-            setSelected={setSelectedVendor}
-            setNewName={setNewVendorName}
-          />
-          {selectedVendor.id !== "" && (
-            <button
-              className="border border-gray-600 bg-gray-800 aspect-square h-10 flex items-center justify-center w-fit ml-auto"
-              tabIndex={-1}
-              title="Reset Form"
-              onClick={() => {
-                setSelectedVendor(INITIAL);
-                setNewVendorName(undefined);
-                setQuery("");
-              }}
-            >
-              <RxCross2 />
-            </button>
-          )}
-
-          {loading && <LuLoader2 className="ml-3 animate-spin text-3xl" />}
-          <ComboboxOptions
-            anchor="bottom"
-            className="border bg-gray-800 empty:invisible"
+          <MdLocationOn />
+        </button>
+        <ComboboxInput
+          ref={comboInputRef}
+          aria-label="Assignee"
+          displayValue={comboBoxDisplayValue}
+          onChange={(event) => setQuery(event.target.value)}
+          className="bg-gray-800 px-2 h-10 w-full border border-gray-600"
+          placeholder="Tempat Belanja"
+        />
+        <AddVendorHiddenForm
+          name={newVendorName}
+          setSelected={setSelectedVendor}
+          setNewName={setNewVendorName}
+        />
+        {selectedVendor.id !== "" && (
+          <button
+            className="border border-gray-600 bg-gray-800 aspect-square h-10 flex items-center justify-center w-fit ml-auto"
+            tabIndex={-1}
+            title="Reset Form"
+            onClick={() => {
+              setSelectedVendor(INITIAL);
+              setNewVendorName(undefined);
+              setQuery("");
+            }}
           >
-            {vendorsSelection.map((item) => (
-              <ComboboxOption
-                key={item.id}
-                value={item}
-                className="data-[focus]:bg-gray-500 p-3"
-              >
-                {item.name}
-              </ComboboxOption>
-            ))}
-          </ComboboxOptions>
-        </Combobox>
-      </div>
+            <RxCross2 />
+          </button>
+        )}
+
+        {loading && <LuLoader2 className="ml-3 animate-spin text-3xl" />}
+        <ComboboxOptions
+          anchor="bottom"
+          className="border bg-gray-800 empty:invisible"
+        >
+          {vendorsSelection.map((item) => (
+            <ComboboxOption
+              key={item.id}
+              value={item}
+              className="data-[focus]:bg-gray-500 p-3"
+            >
+              {item.name}
+            </ComboboxOption>
+          ))}
+        </ComboboxOptions>
+      </Combobox>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
-import { RxCross2 } from "react-icons/rx";
+
+import { MdUndo } from "react-icons/md";
 
 type Props = {
   resetComboForm: () => void;
@@ -12,7 +13,7 @@ export function ResetItemInputButton({ resetComboForm }: Props) {
       onClick={resetComboForm}
       tabIndex={-1}
     >
-      <RxCross2 />
+      <MdUndo />
     </button>
   );
 }

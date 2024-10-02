@@ -2,14 +2,16 @@
 
 import { useFormState } from "react-dom";
 import { makePurchase } from "../action";
-import { useEffect } from "react";
 import { toast } from "react-toastify";
+import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 type Props = {
   purchasedAt: string;
   vendorId: string;
   itemsList: PurchasedItem[];
   totalPurchase: number;
+  image: Blob | null;
+  clearFrom: () => void;
 };
 
 function MakePurchaseHiddenForm({
@@ -17,11 +19,21 @@ function MakePurchaseHiddenForm({
   vendorId,
   itemsList,
   totalPurchase,
+  image,
+  clearFrom,
 }: Props) {
   const [state, formAction] = useFormState<FormState<string>, FormData>(
     makePurchase,
     {}
   );
+
+  useStateChanged<FormState<string>>(() => {
+    if (state.error) toast.error(state.error);
+    if (state.message) {
+      toast.success(state.message);
+      clearFrom();
+    }
+  }, state);
 
   const purchasedPayload: PurchasedItemPayload[] = itemsList.map((item) => ({
     itemId: item.itemId,
@@ -31,18 +43,18 @@ function MakePurchaseHiddenForm({
   }));
 
   const isDataValid = () => {
-    if (purchasedPayload.length > 0 && purchasedAt && vendorId && totalPurchase)
-      return true;
-    return false;
+    return (
+      purchasedPayload.length > 0 && purchasedAt && vendorId && totalPurchase
+    );
   };
 
-  useEffect(() => {
-    if (state.message) toast.success(state.message);
-    if (state.error) toast.error(state.error);
-  }, [state]);
+  function interceptAction(formData: FormData) {
+    if (image) formData.append("image", image, "hidden-upload.jpg");
+    formAction(formData);
+  }
 
   return (
-    <form action={formAction}>
+    <form action={interceptAction}>
       <input type="hidden" name="vendor-id" value={vendorId} />
       <input type="hidden" name="purchased-at" value={purchasedAt} />
       <input type="hidden" name="total-price" value={totalPurchase} />

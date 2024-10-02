@@ -7,6 +7,15 @@ declare global {
     error?: string;
   };
 
+  type RangeFilter = { from: string; to: string };
+
+  type SearchFilter = {
+    range?: RangeFilter;
+    keyword?: string;
+  };
+
+  type SearchParams = { [key: string]: string | string[] | undefined };
+
   type CreateItemPayload = {
     name: string;
   };
@@ -42,4 +51,57 @@ declare global {
   };
 
   type CreatePurchasedItemsPayload = PurchasedItemPayload[];
+
+  type DisplaySingleItem = {
+    id: string;
+    name: string;
+    quantityInHundreds: number;
+    pricePerUnit: number;
+  };
+
+  type DisplaySinglePurchase = {
+    id: string;
+    vendorId: string;
+    vendorName: string;
+    purchasedItemId: string[];
+    purchasesAt: Date;
+    totalPrice: number;
+    items: DisplaySingleItem[];
+    createdAt: Date;
+    imageId: string | null;
+  };
+  type DisplayPurchases = DisplaySinglePurchase[];
+
+  type PurchaseEditor = {
+    id: string;
+    vendorId: string;
+    vendorName: string;
+    purchasedItemId: string[];
+    purchasesAt: Date;
+    totalPrice: number;
+    items: PurchasedItemsEditor[];
+    createdAt: Date;
+    imageId: string | null;
+  };
+
+  type PurchasedItemsEditor = DisplaySingleItem & {
+    itemId: string;
+  };
+
+  type DisplayPerSingleItem = {
+    name: string;
+    purchaseAt: Date;
+    quantityInHundreds: number;
+    pricePerUnit: number;
+    totalPrice: number;
+    vendor: string;
+  };
+
+  type DisplayItems = DisplayPerSingleItem[];
+  type DisplayGroupedItem = {
+    name: string;
+    id: string;
+    totalQuantityInHundred: number;
+    totalPrice: number;
+  };
 }

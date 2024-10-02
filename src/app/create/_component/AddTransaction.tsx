@@ -1,64 +1,66 @@
 "use client";
-import { useRef, useState } from "react";
-import { DateTime } from "luxon";
-import { PiCalendarDotsBold } from "react-icons/pi";
+import { Suspense, useState } from "react";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
-import ComboItemForm from "./ComboItemForm";
-import ComboVendorForm from "./ComboVendorForm";
-import { ItemCard } from "./ItemCard";
 import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
+import ImageSelector from "./ImageSelector";
+import { ItemCard } from "../_presentation/ItemOnCartCard";
+import dynamic from "next/dynamic";
+import DatePicker from "./DatePicker";
+
+const ComboItemForm = dynamic(() => import("./ComboItemForm"));
+const ComboVendorForm = dynamic(() => import("./ComboVendorForm"));
 
 const INITIAL: Vendor = { id: "", name: "" };
 
 export default function AddTransaction() {
-  const [itemslist, setItemsList] = useState<PurchasedItem[]>([]);
+  const [itemsOnCart, setItemOnCart] = useState<PurchasedItem[]>([]);
+  const [selectedItemOnCart, setSelectedItemOnCart] = useState<string>("");
+
   const [selectedVendor, setSelectedVendor] = useState<Vendor>(INITIAL);
   const [txDate, setTxDate] = useState<string>("");
+  const [resizedImage, setResizedImage] = useState<Blob | null>(null);
 
-  const appendItem = (item: PurchasedItem) => {
+  // Manipulate Item List
+  const appendItemOnCart = (item: PurchasedItem) => {
     const isAlreadyAdded =
-      itemslist.filter((addedItem) => addedItem.itemId == item.itemId).length >
-      0;
+      itemsOnCart.filter((addedItem) => addedItem.itemId == item.itemId)
+        .length > 0;
 
     if (isAlreadyAdded) return { error: "Tambahkan item lain" };
-    setItemsList((prevItems) => [...prevItems, item]);
+    setItemOnCart((prevItems) => [...prevItems, item]);
   };
 
-  const deleteItem = (itemIndex: number) => {
-    setItemsList((prevItems) =>
-      [...prevItems].filter((_, index) => index != itemIndex)
-    );
-  };
-
-  const editPurchasedItem = (updatedItem: PurchasedItem, index: number) => {
-    setItemsList((prevItemsList) => {
+  const updateItemOnCart = (updatedItem: PurchasedItem, index: number) => {
+    setItemOnCart((prevItemsList) => {
       const newList = [...prevItemsList];
       newList[index] = updatedItem;
       return newList;
     });
   };
 
-  const prettyDate = () => {
-    return DateTime.fromISO(txDate).setLocale("id").toLocaleString({
-      weekday: "short",
-      month: "long",
-      day: "2-digit",
+  const deleteItemOnCart = (itemIndex: number) => {
+    setItemOnCart((prevItems) =>
+      [...prevItems].filter((_, index) => index != itemIndex)
+    );
+  };
+
+  const itemOnCartClickHandler = (itemId: string) => {
+    setSelectedItemOnCart((prev) => {
+      return prev == itemId ? "" : itemId;
     });
   };
 
-  const datePickerRef = useRef<HTMLInputElement>(null);
-
-  const totalPurchase = itemslist.reduce(
+  const totalPurchase = itemsOnCart.reduce(
     (accumulator, item) => accumulator + item.totalPrice,
     0
   );
 
   const moveItem = (index: number, direction: "up" | "down") => {
-    const length = itemslist.length;
+    const length = itemsOnCart.length;
     if (index < 0 || index >= length) return;
 
-    setItemsList((prevItemList) => {
+    setItemOnCart((prevItemList) => {
       const newList = [...prevItemList];
       if (direction === "up" && index > 0) {
         [newList[index], newList[index - 1]] = [
@@ -77,66 +79,67 @@ export default function AddTransaction() {
     });
   };
 
+  function resetAddTxForm() {
+    setTxDate("");
+    setSelectedVendor(INITIAL);
+    setResizedImage(null);
+    setItemOnCart([]);
+  }
+
   return (
     <div className="flex flex-col p-4 gap-3 w-full max-w-[700px] mx-auto">
-      <div className="flex flex-row gap-1">
-        <input
-          ref={datePickerRef}
-          className="hidden"
-          type="date"
-          name="date"
-          id="date"
-          onChange={(e) => setTxDate(e.target.value)}
-        />
-        <button
-          className="basis-1/3 bg-blue-900 h-10 border border-gray-500 flex flex-row items-center gap-3 px-2"
-          onClick={() => datePickerRef.current?.showPicker()}
-          title="Tanggal Transaksi"
-        >
-          <PiCalendarDotsBold />
-          {txDate !== "" ? (
-            prettyDate()
-          ) : (
-            <span className="text-white/50 italic text-xs">
-              tanggal transaksi...
-            </span>
-          )}
-        </button>
-        <div className=" basis-2/3">
-          <ComboVendorForm
-            selectedVendor={selectedVendor}
-            setSelectedVendor={setSelectedVendor}
-          />
-        </div>
-      </div>
+      <DatePicker txDate={txDate} setTxDate={setTxDate} />
 
-      {itemslist.length === 0 && (
-        <span className="w-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
+      <Suspense fallback={<span>loading...</span>}>
+        <ComboVendorForm
+          selectedVendor={selectedVendor}
+          setSelectedVendor={setSelectedVendor}
+        />
+      </Suspense>
+
+      <ImageSelector
+        resizedFile={resizedImage}
+        setResizedFile={setResizedImage}
+      />
+
+      {itemsOnCart.length === 0 && (
+        <span className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
           Transaksi kosong...
         </span>
       )}
+      {itemsOnCart.length > 0 && (
+        <div className="max-h-64 overflow-y-scroll flex flex-col font-mono">
+          {itemsOnCart.map((item, index) => (
+            <ItemCard
+              key={item.itemId}
+              onClick={itemOnCartClickHandler}
+              isActive={selectedItemOnCart == item.itemId}
+              item={item}
+              index={index}
+              moveItem={moveItem}
+              deleteItem={deleteItemOnCart}
+              editPurchasedItem={updateItemOnCart}
+            />
+          ))}
+        </div>
+      )}
 
-      {itemslist.map((item, index) => (
-        <ItemCard
-          key={item.itemId}
-          item={item}
-          index={index}
-          moveItem={moveItem}
-          deleteItem={deleteItem}
-          editPurchasedItem={editPurchasedItem}
-        />
-      ))}
-
-      <h4 className="text-xl font-black text-center bg-gray-800 p-2">
+      <h4 className="text-xl font-black text-center border border-gray-700 p-2">
         {formatNumberToIDR(totalPurchase)}
       </h4>
-      <ComboItemForm appendItem={appendItem} />
+      <Suspense fallback={<span>loading...</span>}>
+        <ComboItemForm appendItemOnCart={appendItemOnCart} />
+      </Suspense>
+
       <MakePurchaseHiddenForm
         purchasedAt={txDate}
         vendorId={selectedVendor.id}
-        itemsList={itemslist}
+        itemsList={itemsOnCart}
         totalPurchase={totalPurchase}
+        image={resizedImage}
+        clearFrom={resetAddTxForm}
       />
+      <button onClick={() => resetAddTxForm()}>Reset</button>
     </div>
   );
 }

@@ -4,8 +4,7 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-
-import { createNewVendor } from "../action";
+import { newVendor } from "@/app/_globalAction/newVendor.action";
 
 type Props<T> = {
   name: string | undefined;
@@ -19,7 +18,7 @@ export default function AddVendorHiddenForm<T>({
   setNewName,
 }: Props<Vendor>) {
   const [state, formAction] = useFormState<FormState<string>, FormData>(
-    createNewVendor,
+    newVendor,
     {}
   );
   const [isFormStateChanged, setIsFormStateChanged] = useState<boolean>(false);
