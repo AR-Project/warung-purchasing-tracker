@@ -72,6 +72,22 @@ declare global {
   };
   type DisplayPurchases = DisplaySinglePurchase[];
 
+  type PurchaseEditor = {
+    id: string;
+    vendorId: string;
+    vendorName: string;
+    purchasedItemId: string[];
+    purchasesAt: Date;
+    totalPrice: number;
+    items: PurchasedItemsEditor[];
+    createdAt: Date;
+    imageId: string | null;
+  };
+
+  type PurchasedItemsEditor = DisplaySingleItem & {
+    itemId: string;
+  };
+
   type DisplayPerSingleItem = {
     name: string;
     purchaseAt: Date;
