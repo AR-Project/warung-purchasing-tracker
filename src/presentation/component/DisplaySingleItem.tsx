@@ -13,7 +13,10 @@ export function DisplaySingleItem({ item }: { item: DisplaySingleItem }) {
         </div>
       </div>
       <p>
-        {formatNumberToIDR(item.pricePerUnit * (item.quantityInHundreds / 100))}
+        {formatNumberToIDR(
+          item.pricePerUnit * (item.quantityInHundreds / 100),
+          "short"
+        )}
       </p>
     </div>
   );
