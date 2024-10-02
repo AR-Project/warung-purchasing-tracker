@@ -4,8 +4,7 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-
-import { newVendor } from "../newVendor.action";
+import { newVendor } from "@/app/_globalAction/newVendor.action";
 
 type Props<T> = {
   name: string | undefined;
