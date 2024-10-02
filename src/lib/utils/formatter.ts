@@ -29,8 +29,17 @@ export const shortDate = (date: Date) => {
   return DateTime.fromJSDate(date).toFormat("dd/mm/yy");
 };
 
-export const stringToDate = (dateString: string | undefined) => {
+export const stringToDate = (dateString: string | Date | undefined) => {
   if (dateString === undefined) return "";
+
+  if (dateString instanceof Date) {
+    return DateTime.fromJSDate(dateString).setLocale("id").toLocaleString({
+      weekday: "long",
+      month: "long",
+      day: "2-digit",
+      year: "numeric",
+    });
+  }
 
   return DateTime.fromISO(dateString).setLocale("id").toLocaleString({
     weekday: "long",
