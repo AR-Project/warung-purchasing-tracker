@@ -23,12 +23,14 @@ export default async function Page({ searchParams }: Props) {
         placeholder="Cari Vendor..."
       />
       <DatePicker activeDateRange={filter.range} />
-      {tx.map((singlePurchase) => (
-        <SinglePurchaseCard
-          singlePurchase={singlePurchase}
-          key={singlePurchase.id}
-        />
-      ))}
+      <div className="grid grid-cols-2 gap-3">
+        {tx.map((singlePurchase) => (
+          <SinglePurchaseCard
+            singlePurchase={singlePurchase}
+            key={singlePurchase.id}
+          />
+        ))}
+      </div>
     </section>
   );
 }
