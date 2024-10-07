@@ -7,6 +7,13 @@ declare global {
     error?: string;
   };
 
+  type FormStateWithTimestamp<T = void> = {
+    message?: string;
+    data?: T;
+    error?: string;
+    timestamp?: string;
+  };
+
   type RangeFilter = { from: string; to: string };
 
   type SearchFilter = {
