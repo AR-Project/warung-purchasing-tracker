@@ -11,13 +11,13 @@ type Props = {
   currentDate: Date;
   purchaseId: string;
   activeEditor: EditorType | null;
-  setActiveEditor: Dispatch<SetStateAction<EditorType | null>>;
+  selectEditor: (type: EditorType | null) => void;
 };
 
 export default function PurchaseDateEditor({
   purchaseId,
   currentDate,
-  setActiveEditor,
+  selectEditor,
   activeEditor,
 }: Props) {
   const [newDate, setNewDate] = useState<string>();
@@ -25,7 +25,7 @@ export default function PurchaseDateEditor({
   const isActive = activeEditor === "purchase-date";
 
   function closeEditor() {
-    setActiveEditor(null);
+    selectEditor(null);
   }
 
   function setDate(dateString: string | undefined) {
@@ -39,7 +39,7 @@ export default function PurchaseDateEditor({
         {/* Displayer */}
         <div className="z-10 flex flex-row justify-between items-center w-full border border-gray-600/30">
           <div className="px-2">{stringToDate(currentDate)}</div>
-          <ShowEditorButton onClick={() => setActiveEditor("purchase-date")} />
+          <ShowEditorButton onClick={() => selectEditor("purchase-date")} />
         </div>
 
         {/* Pop Up */}

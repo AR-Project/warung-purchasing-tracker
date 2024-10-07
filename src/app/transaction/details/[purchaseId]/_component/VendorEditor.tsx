@@ -13,14 +13,14 @@ type VendorEditorProps = {
   purchaseId: string;
   activeEditor: string | null;
   currentName: string;
-  setActiveEditor: Dispatch<SetStateAction<EditorType | null>>;
+  selectEditor: (type: EditorType | null) => void;
 };
 
 export default function VendorEditor({
   activeEditor,
   purchaseId,
   currentName,
-  setActiveEditor,
+  selectEditor,
 }: VendorEditorProps) {
   const [newPurchaseVendorId, setNewPurchaseVendorId] = useState<string>("");
 
@@ -31,7 +31,7 @@ export default function VendorEditor({
   }
 
   function closeEditor() {
-    setActiveEditor(null);
+    selectEditor(null);
     setNewPurchaseVendorId("");
   }
 
@@ -42,7 +42,7 @@ export default function VendorEditor({
         {/* Displayer */}
         <div className="flex flex-row w-full justify-between items-center border border-gray-600/30">
           <div className="px-2">{currentName}</div>
-          <ShowEditorButton onClick={() => setActiveEditor("vendor")} />
+          <ShowEditorButton onClick={() => selectEditor("vendor")} />
         </div>
 
         {/* Pop-up Editor */}
