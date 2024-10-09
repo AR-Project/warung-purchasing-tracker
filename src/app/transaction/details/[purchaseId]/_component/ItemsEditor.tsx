@@ -22,17 +22,13 @@ export default function ItemsEditor({
   selectEditor,
   activeEditor,
 }: Props) {
-  const [enableDelete, setEnableDelete] = useState<boolean>(false);
-
   const [previousEditor, setPreviousEditor] = useState<EditorType | null>(null);
-
   if (previousEditor !== activeEditor) {
-    setEnableDelete(activeEditor !== "delete-item" ? false : true);
     setPreviousEditor(activeEditor);
   }
 
-  function toggleEnableDelete() {
-    setEnableDelete((prev) => !prev);
+  function toggleDelete() {
+    selectEditor(activeEditor == "delete-item" ? null : "delete-item");
   }
 
   const [formAction] = useForm(
@@ -51,13 +47,13 @@ export default function ItemsEditor({
           <div className="flex relative w-full" key={item.id}>
             <div
               className={`
-                ${enableDelete && "pr-12"}
+                ${activeEditor == "delete-item" && "pr-12"}
                 p-2 w-full
                 `}
             >
               <DisplaySingleItem item={item} />
               <DeletePurchaseSingleItemForm
-                isActive={enableDelete}
+                isActive={activeEditor === "delete-item"}
                 purchaseId={purchaseId}
                 purchaseItemId={item.id}
                 formAction={formAction}
@@ -66,19 +62,19 @@ export default function ItemsEditor({
           </div>
         ))}
       </div>
-      <div className="flex flex-row gap-2 p-2">
+      <div className="">
         <button
           className={`${
             activeEditor === "delete-item"
               ? "text-white bg-blue-800"
               : " bg-blue-950"
           } h-8 px-3 border border-gray-500/50 `}
-          onClick={() => {
-            toggleEnableDelete();
-            selectEditor(enableDelete ? null : "delete-item");
-          }}
+          onClick={() => toggleDelete()}
         >
           Delete Items
+        </button>
+        <button className="h-8 px-3 border border-gray-500/50 bg-blue-800 text-white/30">
+          Modify Item
         </button>
         <button className="h-8 px-3 border border-gray-500/50 bg-blue-800 text-white/30 cursor-not-allowed">
           Change Order
