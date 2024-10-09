@@ -37,7 +37,7 @@ export default function DeletePurchaseSingleItemForm({
       />
       <button
         type="submit"
-        className="bg-blue-800 h-10 aspect-square flex flex-row justify-center items-center text-xl"
+        className="bg-black rounded-sm text-red-600 border border-red-800 h-10 aspect-square flex flex-row justify-center items-center text-xl"
       >
         <MdDelete />
       </button>
