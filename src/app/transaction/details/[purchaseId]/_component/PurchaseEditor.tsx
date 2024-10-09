@@ -10,7 +10,8 @@ export type EditorType =
   | "purchase-date"
   | "sort-item"
   | "add-item"
-  | "delete-item";
+  | "delete-item"
+  | "edit-data-item";
 
 type Props = {
   purchase: PurchaseEditor;
@@ -39,6 +40,7 @@ export function PurchaseEditor({ purchase }: Props) {
       />
       <ItemsEditor
         items={purchase.items}
+        totalPrice={purchase.totalPrice}
         activeEditor={activeEditor}
         purchaseId={purchase.id}
         selectEditor={selectEditor}
