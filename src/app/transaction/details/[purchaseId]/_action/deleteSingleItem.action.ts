@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { DateTime } from "luxon";
 
@@ -13,70 +13,80 @@ export async function deleteSingleItemAction(
   formData: FormData
 ): Promise<FormStateWithTimestamp<void>> {
   const purchaseIdRaw = formData.get("purchase-id");
-  const purchasedItemIdRaw = formData.get("purchase-item-id");
+  const purchasedItemIdToDeleteRaw = formData.get("purchase-item-id");
 
   const schema = z.object({
     purchaseId: z.string(),
-    purchasedItemId: z.string(),
+    purchasedItemIdToDelete: z.string(),
   });
 
+  let invariantError: string | undefined;
   try {
     const payload = schema.parse({
       purchaseId: purchaseIdRaw,
-      purchasedItemId: purchasedItemIdRaw,
+      purchasedItemIdToDelete: purchasedItemIdToDeleteRaw,
     });
 
     await db.transaction(async (tx) => {
-      const purchase = await tx
+      const currentPurchase = await tx
         .select()
         .from(purchases)
         .where(eq(purchases.id, payload.purchaseId));
 
-      const purchasedItem = await tx
+      const purchasedItemToDelete = await tx
         .select()
         .from(purchasedItems)
-        .where(eq(purchasedItems.id, payload.purchasedItemId));
+        .where(eq(purchasedItems.id, payload.purchasedItemIdToDelete));
 
-      if (purchase.length == 0 || purchasedItem.length == 0) {
+      if (currentPurchase.length == 0 || purchasedItemToDelete.length == 0) {
+        invariantError = "invalid Item";
         tx.rollback();
       }
 
-      // validate purchasedItemId on purchase
-      const oldPurchasedItemIds = structuredClone(purchase[0].purchasedItemId);
-      const isPurchasedItemExist = oldPurchasedItemIds.includes(
-        payload.purchasedItemId
+      const oldPurchasedItemIds = structuredClone(
+        currentPurchase[0].purchasedItemId
+      );
+      const isPurchasedItemToDeleteExist = oldPurchasedItemIds.includes(
+        payload.purchasedItemIdToDelete
       );
 
-      if (!isPurchasedItemExist) {
+      if (!isPurchasedItemToDeleteExist) {
+        invariantError = "Item lost";
         tx.rollback();
       }
 
-      // update purchases.purchasedItemId / delete current purchaseItemsId
       const updatedPurchasedItemIds = oldPurchasedItemIds.filter(
-        (id) => id !== payload.purchasedItemId
+        (id) => id !== payload.purchasedItemIdToDelete
       );
 
-      // BUG: Calculate new total price
+      const [deletedItem] = purchasedItemToDelete;
+
+      const totalPriceForDeletedPurchasedItem =
+        deletedItem.pricePerUnit * (deletedItem.quantityInHundreds / 100);
+
+      const newTotalPrice =
+        currentPurchase[0].totalPrice - totalPriceForDeletedPurchasedItem;
+
       await tx
         .update(purchases)
         .set({
           purchasedItemId: updatedPurchasedItemIds,
           modifiedAt: new Date(),
+          totalPrice: newTotalPrice,
         })
         .where(eq(purchases.id, payload.purchaseId))
         .returning({ id: purchases.id });
 
-      // delete rows on purchasedItems by its id
       await tx
         .delete(purchasedItems)
-        .where(eq(purchasedItems.id, payload.purchasedItemId));
+        .where(eq(purchasedItems.id, payload.purchasedItemIdToDelete));
     });
 
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Item deleted`, timestamp: Date.now().toString() };
   } catch (error) {
-    if (error instanceof Error) {
-      return { error: error.message };
+    if (error instanceof DrizzleError) {
+      return { error: invariantError ? invariantError : error.message };
     }
 
     return { error: "internal error", timestamp: Date.now().toString() };
