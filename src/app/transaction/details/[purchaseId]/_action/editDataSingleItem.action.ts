@@ -3,7 +3,6 @@
 import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { DateTime } from "luxon";
 
 import db from "@/infrastructure/database/db";
 import { purchasedItems, purchases } from "@/lib/schema/schema";
@@ -90,7 +89,7 @@ export async function editDataSingleItem(
 
     revalidatePath(`/transaction/details/${purchaseId}`);
     const response = {
-      message: `Item deleted`,
+      message: `Item Updated`,
       timestamp: Date.now().toString(),
     };
     console.log(response);
