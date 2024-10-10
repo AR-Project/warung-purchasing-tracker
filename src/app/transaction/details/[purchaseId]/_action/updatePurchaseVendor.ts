@@ -42,12 +42,12 @@ export async function updatePurchaseVendor(prevState: any, formData: FormData) {
         .returning({ id: purchases.id });
     });
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
-    return { message: `Vendor changed` };
+    return { message: `Vendor changed`, timestamp: Date.now().toString() };
   } catch (error) {
     if (error instanceof DrizzleError) {
-      return { error: "invalid Payload" };
+      return { error: "invalid Payload", timestamp: Date.now().toString() };
     }
 
-    return { error: "internal error" };
+    return { error: "internal error", timestamp: Date.now().toString() };
   }
 }

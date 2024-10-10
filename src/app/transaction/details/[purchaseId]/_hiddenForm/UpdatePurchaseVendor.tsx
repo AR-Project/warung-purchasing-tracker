@@ -6,6 +6,7 @@ import { MdSave, MdUndo } from "react-icons/md";
 
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 import { updatePurchaseVendor } from "../_action/updatePurchaseVendor";
+import { useForm } from "@/presentation/hooks/useForm";
 
 type Props<T> = {
   purchaseId: string;
@@ -18,21 +19,14 @@ export default function UpdatePurchaseVendorHiddenForm({
   newPurchaseVendorId,
   onSuccess,
 }: Props<Vendor>) {
-  const [state, formAction] = useFormState<FormState<void>, FormData>(
+  const [formAction] = useForm(
     updatePurchaseVendor,
-    {}
-  );
-
-  useStateChanged(() => {
-    if (state.message) {
-      toast.success(state.message);
+    (msg, err) => {
+      toast.success(msg);
       onSuccess();
-    }
-
-    if (state.error) {
-      toast.error(state.error);
-    }
-  }, state);
+    },
+    (err) => toast.error(err)
+  );
 
   return (
     <form action={formAction} className="flex flex-row ">
