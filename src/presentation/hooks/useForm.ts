@@ -13,7 +13,15 @@ type OnSuccessCallback<ReturnedData = any> = (
 
 type OnErrorCallback = (error: string) => void;
 
-/** ServerAction wrapper. Exposing onSuccess and onError Callback. */
+/** ServerAction wrapper. Exposing onSuccess and onError Callback.
+ *
+ * NOTE: For this hooks works properly, serverAction response
+ * should include `timestamp` properties.
+ *
+ *
+ * @example {..., timestamp: Date.Now().toString()}
+ *
+ */
 export function useForm<ReturnedData = any>(
   serverAction: ServerActionWithState<ReturnedData>,
   onSuccess: OnSuccessCallback<ReturnedData>,
