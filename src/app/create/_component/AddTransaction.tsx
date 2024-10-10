@@ -116,7 +116,6 @@ export default function AddTransaction() {
               isActive={selectedItemOnCart == item.itemId}
               item={item}
               index={index}
-              moveItem={moveItem}
               deleteItem={deleteItemOnCart}
               editPurchasedItem={updateItemOnCart}
             />
