@@ -32,7 +32,7 @@ export function useForm<ReturnedData = any>(
     FormData
   >(serverAction, {});
 
-  const [previousState, setPreviousState] = useState<string>();
+  const [previousState, setPreviousState] = useState<string | number>();
 
   if (state.timestamp !== previousState) {
     if (state.message) {

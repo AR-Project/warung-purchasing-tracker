@@ -11,7 +11,7 @@ declare global {
     message?: string;
     data?: T;
     error?: string;
-    timestamp?: string;
+    timestamp?: string | number;
   };
 
   type RangeFilter = { from: string; to: string };
