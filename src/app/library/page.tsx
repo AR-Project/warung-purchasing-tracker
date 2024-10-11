@@ -1,12 +1,12 @@
 import React from "react";
+
 import ImageUploader from "../_component/ImageUploader";
-import db from "@/infrastructure/database/db";
-import { images } from "@/lib/schema/schema";
 import RemoveImage from "../_component/RemoveImage";
 import Image from "next/image";
+import { imagesLoader } from "./_loader/imagesLoader";
 
 export default async function UploadImage() {
-  const imagesList = await db.select().from(images);
+  const imagesList = await imagesLoader();
 
   return (
     <>
