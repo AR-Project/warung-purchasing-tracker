@@ -1,11 +1,13 @@
-import Link from "next/link";
-import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
-import { transactionLoader } from "./transaction.loaders.action";
-import SearchBox from "../_component/SearchBox";
+import { Suspense } from "react";
+
 import { parseSearchParams } from "@/lib/utils/validator";
 import { searchVendors } from "@/lib/api";
+
+import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
+import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
-import { Suspense } from "react";
+
+import { transactionLoader } from "./transaction.loaders.action";
 
 type Props = {
   searchParams: SearchParams;
@@ -39,3 +41,5 @@ export default async function Page({ searchParams }: Props) {
     </section>
   );
 }
+
+export const dynamic = "force-dynamic";

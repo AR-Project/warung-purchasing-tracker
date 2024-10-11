@@ -49,3 +49,5 @@ function Quantity({ quantity }: { quantity: number }) {
     </div>
   );
 }
+
+export const dynamic = "force-dynamic";

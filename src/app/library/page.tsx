@@ -27,3 +27,5 @@ export default async function UploadImage() {
     </>
   );
 }
+
+export const dynamic = "force-dynamic";
