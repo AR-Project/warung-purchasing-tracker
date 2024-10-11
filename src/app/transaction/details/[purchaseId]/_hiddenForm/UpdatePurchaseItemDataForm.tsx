@@ -1,23 +1,37 @@
 "use client";
 
+import { useForm } from "@/presentation/hooks/useForm";
 import { Button } from "@headlessui/react";
 import { MdSave } from "react-icons/md";
+import { editDataSingleItem } from "../_action/editDataSingleItem.action";
+import { toast } from "react-toastify";
+import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
 
 type Props = {
   purchaseId: string;
   purchaseItemId: string;
   updatedQuantityInHundred: number | "";
   updatedPricePerUnit: number | "";
-  formAction: (payload: FormData) => void;
+  onSuccess: () => void;
 };
 
-export default function ItemDataForm({
+export default function UpdatePurchaseItemDataForm({
   purchaseId,
   purchaseItemId,
   updatedQuantityInHundred,
   updatedPricePerUnit,
-  formAction,
+  onSuccess,
 }: Props) {
+  const [formAction, isPending] = useServerActionWithState(
+    editDataSingleItem,
+    (msg) => {
+      onSuccess();
+      toast.success(msg);
+    },
+    (err) => {
+      toast.error(err);
+    }
+  );
   return (
     <form action={formAction}>
       <input
@@ -48,7 +62,13 @@ export default function ItemDataForm({
         type="submit"
         className=" rounded-md  border border-gray-600 bg-blue-800 h-10 gap-2 px-2 flex flex-row justify-center items-center hover:bg-blue-600"
       >
-        <MdSave className="text-xl" /> Simpan
+        {isPending ? (
+          <>Sedang diproses... </>
+        ) : (
+          <>
+            <MdSave className="text-xl" /> Simpan
+          </>
+        )}
       </Button>
     </form>
   );
