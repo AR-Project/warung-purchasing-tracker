@@ -37,8 +37,12 @@ export async function singlePurchaseLoader(purchaseId: string) {
       const purchasedTransactionsWithItem = purchaseTransactions.map(
         (purchase) => ({
           ...purchase,
-          items: allPurchasedItems.filter((item) =>
-            purchase.purchasedItemId?.includes(item.id)
+          items: purchaseTransactions[0].purchasedItemId.map(
+            (purchaseItemId) => {
+              return allPurchasedItems.filter(
+                (item) => item.id === purchaseItemId
+              )[0];
+            }
           ),
         })
       );
