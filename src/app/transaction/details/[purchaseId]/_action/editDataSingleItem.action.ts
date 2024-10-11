@@ -2,7 +2,7 @@
 
 import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
-import { revalidatePath } from "next/cache";
+import { revalidateTag } from "next/cache";
 
 import db from "@/infrastructure/database/db";
 import { purchasedItems, purchases } from "@/lib/schema/schema";
@@ -26,8 +26,6 @@ export async function editDataSingleItem(
     updatedPricePerUnit: formData.get("updated-price-per-unit"),
     updatedQuantityInHundred: formData.get("updated-quantity-in-hundred"),
   };
-
-  console.log(payloadRaw.updatedPricePerUnit);
 
   try {
     const payload = schema.parse(payloadRaw);
@@ -80,19 +78,18 @@ export async function editDataSingleItem(
       await tx
         .update(purchasedItems)
         .set({
-          totalPrice: newTotalPrice,
+          totalPrice: updatedPurchasedItemTotalPrice,
           quantityInHundreds: parseInt(updatedQuantityInHundred),
           pricePerUnit: parseInt(updatedPricePerUnit),
         })
         .where(eq(purchasedItems.id, purchaseItemIdToUpdate));
     });
 
-    revalidatePath(`/transaction/details/${purchaseId}`);
+    revalidateTag(purchaseId);
     const response = {
       message: `Item Updated`,
-      timestamp: Date.now().toString(),
+      timestamp: Date.now(),
     };
-    console.log(response);
 
     return response;
   } catch (error) {
@@ -100,8 +97,6 @@ export async function editDataSingleItem(
       return { error: invariantError ? invariantError : error.message };
     }
 
-    // console.log(error);
-
-    return { error: "internal error", timestamp: Date.now().toString() };
+    return { error: "internal error", timestamp: Date.now() };
   }
 }
