@@ -3,13 +3,11 @@
 import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
-import { DateTime } from "luxon";
 
 import db from "@/infrastructure/database/db";
 import { purchasedItems, purchases } from "@/lib/schema/schema";
 
 export async function deleteSingleItemAction(
-  prevState: any,
   formData: FormData
 ): Promise<FormStateWithTimestamp<void>> {
   const purchaseIdRaw = formData.get("purchase-id");
@@ -86,7 +84,10 @@ export async function deleteSingleItemAction(
     return { message: `Item deleted`, timestamp: Date.now().toString() };
   } catch (error) {
     if (error instanceof DrizzleError) {
-      return { error: invariantError ? invariantError : error.message };
+      return {
+        error: invariantError ? invariantError : error.message,
+        timestamp: Date.now().toString(),
+      };
     }
 
     return { error: "internal error", timestamp: Date.now().toString() };
