@@ -177,14 +177,14 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
           />
           {loading && <LuLoader2 className="ml-3 animate-spin text-3xl" />}
           <ComboboxOptions
-            anchor="bottom"
-            className="border bg-gray-800 empty:invisible"
+            anchor="bottom start"
+            className="border bg-gray-800 empty:invisible z-50 flex flex-col w-[400px]"
           >
             {itemsSelection.map((item) => (
               <ComboboxOption
                 key={item.id}
                 value={item}
-                className="data-[focus]:bg-gray-500 p-3"
+                className="data-[focus]:bg-gray-500 p-3 w-full"
               >
                 {item.name}
               </ComboboxOption>
