@@ -4,6 +4,7 @@ import { groupedPurchasedItemsLoader } from "./groupItemsLoaders.action";
 import SearchBox from "../_component/SearchBox";
 import { searchItems } from "@/lib/api";
 import { FaAngleDown } from "react-icons/fa";
+import { Suspense } from "react";
 
 type Props = {
   searchParams: SearchParams;
@@ -12,11 +13,14 @@ export default async function Page({ searchParams }: Props) {
   const filter = parseSearchParams(searchParams);
   const tx = await groupedPurchasedItemsLoader(filter);
 
-  // FUTURE: Display history price and quantity per purchase
   return (
     <div className="flex flex-col p-2 w-full max-w-[550px] mx-auto">
-      <SearchBox activeName={filter.keyword} searchHandler={searchItems} />
-      <DatePicker activeDateRange={filter.range} />
+      <Suspense>
+        <SearchBox activeName={filter.keyword} searchHandler={searchItems} />
+      </Suspense>
+      <Suspense>
+        <DatePicker activeDateRange={filter.range} />
+      </Suspense>
       <div className="flex flex-col py-5">
         {tx.map((item) => (
           <button
