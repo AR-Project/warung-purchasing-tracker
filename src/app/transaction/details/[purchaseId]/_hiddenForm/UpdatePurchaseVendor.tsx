@@ -1,12 +1,8 @@
-"use client";
-
-import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
-import { MdSave, MdUndo } from "react-icons/md";
+import { MdSave } from "react-icons/md";
 
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 import { updatePurchaseVendor } from "../_action/updatePurchaseVendor";
-import { useForm } from "@/presentation/hooks/useForm";
+import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
 
 type Props<T> = {
   purchaseId: string;
@@ -19,7 +15,7 @@ export default function UpdatePurchaseVendorHiddenForm({
   newPurchaseVendorId,
   onSuccess,
 }: Props<Vendor>) {
-  const [formAction] = useForm(
+  const [formAction] = useServerActionWithState(
     updatePurchaseVendor,
     (msg, err) => {
       toast.success(msg);
