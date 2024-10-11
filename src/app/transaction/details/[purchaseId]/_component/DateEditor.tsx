@@ -1,10 +1,11 @@
-import { Dispatch, SetStateAction, useState } from "react";
+import { useState } from "react";
 
 import { stringToDate } from "@/lib/utils/formatter";
 import { EditorType } from "./PurchaseEditor";
+import SingleDatePicker from "./SingleDatePicker";
+
 import ShowEditorButton from "../_presentation/ShowEditorButton";
 import CloseEditorButton from "../_presentation/CloseEditorButton";
-import SingleDatePicker from "./SingleDatePicker";
 import UpdatePurchaseDateHiddenForm from "../_hiddenForm/UpdatePurchaseDateForm";
 
 type Props = {
