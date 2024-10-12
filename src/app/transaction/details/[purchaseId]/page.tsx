@@ -5,6 +5,8 @@ import PurchaseItemUpdater from "./_component/PurchaseItemUpdater";
 import PurchaseItemDisplayer from "./_component/PurchaseItemDisplayer";
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
 import { BackButton } from "./_presentation/BackButton";
+import { notFound } from "next/navigation";
+import PurchaseDeleteDialog from "./_component/PurchaseDeleteDialog";
 
 type Props = {
   params: { purchaseId: string };
@@ -12,7 +14,9 @@ type Props = {
 
 export default async function Page({ params }: Props) {
   const details = await singlePurchaseLoader(params.purchaseId);
-  if (!details) return <div>Transaction Not Found</div>;
+  if (!details) {
+    notFound();
+  }
 
   const { items: purchaseItems, totalPrice, id: purchaseId } = details;
 
@@ -37,6 +41,7 @@ export default async function Page({ params }: Props) {
         >
           Change Item Order
         </Link>
+        <PurchaseDeleteDialog purchaseId={purchaseId} />
       </div>
     </div>
   );
