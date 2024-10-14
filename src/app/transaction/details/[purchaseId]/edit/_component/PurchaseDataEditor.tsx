@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import VendorEditor from "./VendorEditor";
-import PurchaseDateEditor from "./DateEditor";
+import PurchaseDateEditor from "./PurchaseDateEditor";
 
 export type EditorType =
   | "vendor"
@@ -16,7 +16,7 @@ type Props = {
   purchase: PurchaseEditor;
 };
 
-export function PurchaseEditor({ purchase }: Props) {
+export function PurchaseDataEditor({ purchase }: Props) {
   const [activeEditor, setActiveEditor] = useState<EditorType | null>(null);
 
   function selectEditor(type: EditorType | null) {
@@ -25,17 +25,17 @@ export function PurchaseEditor({ purchase }: Props) {
 
   return (
     <div className="flex flex-col w-full gap-3 mb-10">
-      <VendorEditor
-        currentName={purchase.vendorName}
-        activeEditor={activeEditor}
-        selectEditor={selectEditor}
-        purchaseId={purchase.id}
-      />
       <PurchaseDateEditor
         currentDate={purchase.purchasesAt}
         activeEditor={activeEditor}
         purchaseId={purchase.id}
         selectEditor={selectEditor}
+      />
+      <VendorEditor
+        currentName={purchase.vendorName}
+        activeEditor={activeEditor}
+        selectEditor={selectEditor}
+        purchaseId={purchase.id}
       />
     </div>
   );

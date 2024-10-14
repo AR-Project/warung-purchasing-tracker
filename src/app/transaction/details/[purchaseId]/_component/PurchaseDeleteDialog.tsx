@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { deletePurchase } from "../_action/deletePurchase.action";
+import { deletePurchase } from "../edit/_action/deletePurchase.action";
 
 type Props = {
   purchaseId: string;
@@ -53,7 +53,7 @@ export default function PurchaseDeleteDialog({ purchaseId }: Props) {
         onClick={open}
         className="h-8 border border-white/50 px-2 bg-red-950 rounded-sm text-white focus:outline-none data-[hover]:bg-red-800 data-[focus]:outline-1 data-[focus]:outline-white"
       >
-        Delete Purchase
+        Delete Current Purchase
       </Button>
 
       <Dialog
@@ -86,10 +86,11 @@ function Panel({ onDeleteHandler, closeDialog }: PanelProps) {
       className="w-full max-w-xs rounded-sm border border-gray-300/70 bg-gray-800 p-6 duration-200 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
     >
       <DialogTitle as="h3" className="text-lg font-bold text-white">
-        Hapus Transaksi?
+        Hapus transaksi secara permanen?
       </DialogTitle>
       <p className="mt-2 text-base/5 text-white/50">
-        Transaksi yang telah dihapus akan hilang secara permanen
+        Transaksi yang telah dihapus akan hilang secara permanen dari database
+        dan tidak bisa dikembalikan.
       </p>
       <div className="mt-4 flex flex-row gap-3">
         <Button

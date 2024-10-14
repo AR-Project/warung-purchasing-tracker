@@ -1,12 +1,11 @@
 import { useState } from "react";
 
 import { stringToDate } from "@/lib/utils/formatter";
-import { EditorType } from "./PurchaseEditor";
+import { EditorType } from "./PurchaseDataEditor";
 import SingleDatePicker from "./SingleDatePicker";
-
-import ShowEditorButton from "../_presentation/ShowEditorButton";
 import CloseEditorButton from "../_presentation/CloseEditorButton";
-import UpdatePurchaseDateHiddenForm from "../_hiddenForm/UpdatePurchaseDateForm";
+import ShowEditorButton from "../_presentation/ShowEditorButton";
+import UpdatePurchaseDateHiddenForm from "./UpdatePurchaseDateForm";
 
 type Props = {
   currentDate: Date;

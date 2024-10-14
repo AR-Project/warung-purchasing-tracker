@@ -7,8 +7,7 @@
 import { useState } from "react";
 import { NumericFormat } from "react-number-format";
 import { MdEdit } from "react-icons/md";
-
-import UpdatePurchaseItemDataForm from "../edit/_hiddenForm/UpdatePurchaseItemDataForm";
+import UpdatePurchaseItemDataForm from "../_hiddenForm/UpdatePurchaseItemDataForm";
 
 type Props = {
   purchaseId: string;

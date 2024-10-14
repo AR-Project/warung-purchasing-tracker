@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
-
 import { searchVendors } from "@/lib/api";
+import { useState } from "react";
 import UpdatePurchaseVendorHiddenForm from "../_hiddenForm/UpdatePurchaseVendor";
-import Selector from "./Selector";
-import { EditorType } from "./PurchaseEditor";
-import ShowEditorButton from "../_presentation/ShowEditorButton";
 import CloseEditorButton from "../_presentation/CloseEditorButton";
+import ShowEditorButton from "../_presentation/ShowEditorButton";
+import { EditorType } from "./PurchaseDataEditor";
+import Selector from "./Selector";
 
 type VendorEditorProps = {
   purchaseId: string;

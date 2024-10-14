@@ -2,15 +2,14 @@
 
 import { Suspense, useState } from "react";
 import { ImCancelCircle } from "react-icons/im";
-import { EditorType } from "./PurchaseEditor";
 import { FaPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import ComboItemForm from "@/app/create/_component/ComboItemForm";
 import { ItemCard } from "@/app/create/_presentation/ItemOnCartCard";
 import { useForm } from "@/presentation/hooks/useForm";
-import { updatePurchaseItemAction } from "../_action/updatePurchaseItem.action";
-import UpdatePurchaseItemForm from "../_hiddenForm/UpdatePurchaseItemForm";
+import { updatePurchaseItemAction } from "../edit/_action/updatePurchaseItem.action";
+import UpdatePurchaseItemForm from "../edit/_hiddenForm/UpdatePurchaseItemForm";
 
 type Props = {
   purchaseId: string;
@@ -85,7 +84,7 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
         className="rounded-sm bg-blue-800 h-8 border border-gray-500 px-2 flex flex-row items-center justify-center  focus:outline-none data-[hover]:border data-[hover]:border-white data-[focus]:outline-1 data-[focus]:outline-white text-gray-200 data-[hover]:text-gray-100"
       >
         <FaPlus className="text-lg pr-2" />
-        Add Item
+        Add More Item
       </button>
       <div
         className={`${
