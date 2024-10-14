@@ -3,7 +3,7 @@ import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 
 export function DisplaySingleItem({ item }: { item: DisplaySingleItem }) {
   return (
-    <div className="font-mono max-w-[350px] flex flex-col leading-tight uppercase w-full ">
+    <div className="font-mono  flex flex-col leading-tight uppercase w-full ">
       <div className="font-bold">{item.name}</div>
       <div className=" flex flex-row justify-between gap-3">
         <div className="opacity-60 flex flex-row">
