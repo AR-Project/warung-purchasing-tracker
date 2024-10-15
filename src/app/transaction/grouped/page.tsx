@@ -9,6 +9,8 @@ import { Suspense } from "react";
 type Props = {
   searchParams: SearchParams;
 };
+
+/** @deprecated */
 export default async function Page({ searchParams }: Props) {
   const filter = parseSearchParams(searchParams);
   const tx = await groupedPurchasedItemsLoader(filter);

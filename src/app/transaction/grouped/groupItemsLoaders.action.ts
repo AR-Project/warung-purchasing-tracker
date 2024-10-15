@@ -21,7 +21,9 @@ export async function groupedPurchasedItemsLoader({
     return defaultFetch();
   }
 }
-
+/**
+ * @deprecated
+ */
 async function fetchWithName(keyword: string): Promise<DisplayGroupedItem[]> {
   const nameFilter = ilike(items.name, keyword);
 

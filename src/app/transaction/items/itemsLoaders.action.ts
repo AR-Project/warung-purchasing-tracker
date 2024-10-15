@@ -5,6 +5,9 @@ import { items, purchasedItems, purchases, vendors } from "@/lib/schema/schema";
 import { eq, sum, between, sql, desc, avg, asc, and, ilike } from "drizzle-orm";
 import { DateTime } from "luxon";
 
+/**
+ * @deprecated
+ */
 export async function purchasedItemsLoader({
   range,
   keyword,
