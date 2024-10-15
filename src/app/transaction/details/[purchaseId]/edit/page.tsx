@@ -7,6 +7,7 @@ import { singlePurchaseLoader } from "../_loader/singlePurchase.loader";
 import { BackButton } from "./_presentation/BackButton";
 import { PurchaseDataEditor } from "./_component/PurchaseDataEditor";
 import PurchaseItemEditor from "./_component/PurchaseItemEditor";
+import { CgReorder } from "react-icons/cg";
 
 type Props = {
   params: { purchaseId: string };
@@ -21,7 +22,7 @@ export default async function Page({ params }: Props) {
   const { items: purchaseItems, totalPrice, id: purchaseId } = details;
 
   return (
-    <div className="flex flex-col w-full max-w-md m-auto">
+    <div className="flex flex-col w-full max-w-md m-auto gap-2">
       <div className="flex flex-row  items-center justify-between mb-4">
         <div className="flex flex-row  items-center gap-3">
           <BackButton />
@@ -31,13 +32,14 @@ export default async function Page({ params }: Props) {
       </div>
 
       <PurchaseDataEditor purchase={details} />
+      <div className="_SEPARATOR w-full border-b border-white/20"></div>
 
-      <div className="flex flex-row gap-2 m-auto">
+      <div className="flex flex-row gap-2 m-auto justify-end w-full">
         <Link
-          className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center cursor-not-allowed"
-          href="#"
+          className=" border border-gray-500/10 bg-blue-800  h-10 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center"
+          href="./edit/sort-purchase-items"
         >
-          Change Item Order
+          <CgReorder className="text-2xl" /> Reorder Items
         </Link>
       </div>
 
@@ -50,6 +52,8 @@ export default async function Page({ params }: Props) {
       </div>
 
       <PurchaseItemUpdater purchaseId={purchaseId} />
+      <div className="_SEPARATOR w-full border-b border-white/20"></div>
+      {/* TODO: Image editor */}
     </div>
   );
 }
