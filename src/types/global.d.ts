@@ -61,6 +61,7 @@ declare global {
 
   type DisplaySingleItem = {
     id: string;
+    itemId: string;
     name: string;
     quantityInHundreds: number;
     pricePerUnit: number;
