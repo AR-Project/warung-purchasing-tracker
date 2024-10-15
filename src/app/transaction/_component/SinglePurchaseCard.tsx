@@ -35,7 +35,7 @@ export function SinglePurchaseCard({ singlePurchase }: Props) {
       {singlePurchase.imageId && (
         <Link
           className="h-8 flex flex-row items-center gap-2 text-gray-500 w-full justify-center border-gray-700 border-r border-b border-l"
-          href={`/api/image/${singlePurchase.imageId}.jpg`}
+          href={`/api/image/${singlePurchase.imageId}`}
           target="_blank"
         >
           <MdReceiptLong />

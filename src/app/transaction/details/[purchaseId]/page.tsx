@@ -63,8 +63,8 @@ type DisplayImageProps = {
 function DisplayImage({ imageId }: DisplayImageProps) {
   return (
     <div className="max-w-[100px] object-contain">
-      <Link href={`/api/image/${imageId}.jpg`}>
-        <img src={`/api/image/${imageId}.jpg`} alt="" />
+      <Link href={`/api/image/${imageId}`}>
+        <img src={`/api/image/${imageId}`} alt="" />
       </Link>
     </div>
   );

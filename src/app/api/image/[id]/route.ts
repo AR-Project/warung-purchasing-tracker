@@ -4,8 +4,14 @@ import { promises as fs } from "fs";
 
 type Params = { params: { id: string } };
 
+const IMAGE_EXTENSION = ".jpg";
+
 export async function GET(req: Request, { params }: Params) {
-  const imagePath = path.join(process.cwd(), "images", `${params.id}`);
+  const imagePath = path.join(
+    process.cwd(),
+    "images",
+    `${params.id}${IMAGE_EXTENSION}`
+  );
 
   try {
     const imageBuffer = await fs.readFile(imagePath);
