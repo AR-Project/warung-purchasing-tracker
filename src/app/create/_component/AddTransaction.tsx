@@ -4,7 +4,7 @@ import { Suspense, useState } from "react";
 import { formatNumberToIDR } from "@/lib/utils/formatter";
 import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
 import ImageSelector from "./ImageSelector";
-import { ItemCard } from "../_presentation/ItemOnCartCard";
+import { ItemOnCartCard } from "../_presentation/ItemOnCartCard";
 import dynamic from "next/dynamic";
 import DatePicker from "./DatePicker";
 
@@ -110,7 +110,7 @@ export default function AddTransaction() {
       {itemsOnCart.length > 0 && (
         <div className="max-h-64 overflow-y-scroll flex flex-col font-mono">
           {itemsOnCart.map((item, index) => (
-            <ItemCard
+            <ItemOnCartCard
               key={item.itemId}
               onClick={itemOnCartClickHandler}
               isActive={selectedItemOnCart == item.itemId}

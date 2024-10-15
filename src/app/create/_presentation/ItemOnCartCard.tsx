@@ -29,7 +29,7 @@ type DeleteButtonProps = {
   index: number;
 };
 
-export function ItemCard({
+export function ItemOnCartCard({
   item,
   index,
   isActive,

@@ -6,7 +6,7 @@ import { FaPlus } from "react-icons/fa";
 import { toast } from "react-toastify";
 
 import ComboItemForm from "@/app/create/_component/ComboItemForm";
-import { ItemCard } from "@/app/create/_presentation/ItemOnCartCard";
+import { ItemOnCartCard } from "@/app/create/_presentation/ItemOnCartCard";
 import { useForm } from "@/presentation/hooks/useForm";
 import { updatePurchaseItemAction } from "../edit/_action/updatePurchaseItem.action";
 import UpdatePurchaseItemForm from "../edit/_hiddenForm/UpdatePurchaseItemForm";
@@ -106,7 +106,7 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
             {!isCartEmpty && (
               <div className="max-h-64 overflow-y-scroll flex flex-col font-mono">
                 {itemsOnCart.map((item, index) => (
-                  <ItemCard
+                  <ItemOnCartCard
                     key={item.itemId}
                     onClick={itemOnCartClickHandler}
                     isActive={selectedItemOnCart == item.itemId}
