@@ -24,7 +24,7 @@ export function PurchaseDataEditor({ purchase }: Props) {
   }
 
   return (
-    <div className="flex flex-col w-full gap-3 mb-10">
+    <div className="flex flex-col w-full gap-3 mb-5">
       <PurchaseDateEditor
         currentDate={purchase.purchasesAt}
         activeEditor={activeEditor}
