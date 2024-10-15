@@ -13,12 +13,7 @@ export default async function UploadImage() {
       <div className="grid grid-cols-3 gap-4">
         {imagesList.map((image) => (
           <div key={image.id} className="aspect-square relative">
-            <Image
-              key={image.id}
-              src={`/api/image/${image.id}${image.fileExtension}`}
-              fill
-              alt=""
-            />
+            <Image key={image.id} src={`/api/image/${image.id}`} fill alt="" />
             <RemoveImage id={image.id} />
           </div>
         ))}
