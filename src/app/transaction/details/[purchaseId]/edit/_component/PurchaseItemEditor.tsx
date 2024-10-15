@@ -23,7 +23,7 @@ export default function PurchaseItemEditor({
   totalPrice,
 }: Props) {
   return (
-    <div className="border border-gray-600/30 flex flex-col gap-3 mx-auto max-w-md">
+    <div className=" flex flex-col gap-3 mx-auto max-w-md">
       {purchaseItems.map((purchaseItem) => (
         <div
           className="flex flex-row justify-between gap-2"
