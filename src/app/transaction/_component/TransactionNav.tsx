@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 type Links = {
   href: string;
+  tag: string;
   label: string;
 };
 
@@ -14,24 +15,22 @@ export default function TransactionNavigation() {
   const links: Links[] = [
     {
       href: "/transaction/purchase",
+      tag: "purchase",
       label: "By Purchase",
     },
     {
-      href: "/transaction/items",
+      href: "/transaction/item",
+      tag: "item",
       label: "By Item",
-    },
-    {
-      href: "/transaction/grouped",
-      label: "By Grouped Items",
     },
   ];
 
   return (
-    <div className="flex flex-row gap-2 mb-4 text-sm">
+    <div className="flex flex-row gap-2 mb-4 text-sm max-w-md mx-auto">
       {links.map((link) => (
         <Link
-          className={`rounded-full py-1.5 ${
-            path === link.href
+          className={`rounded-full h-8 flex flex-row justify-center items-center italic ${
+            path.includes(link.tag)
               ? "bg-sky-600 hover:bg-sky-500 "
               : "bg-blue-900 hover:bg-blue-800"
           } border border-gray-500  px-4 w-fit hover:border-gray-200  `}
