@@ -1,11 +1,12 @@
 "use client";
 
-import { useForm } from "@/presentation/hooks/useForm";
 import { Button } from "@headlessui/react";
 import { MdSave } from "react-icons/md";
-import { editDataSingleItem } from "../_action/editDataSingleItem.action";
 import { toast } from "react-toastify";
+
 import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
+
+import { editDataSingleItem } from "../_action/editDataSingleItem.action";
 
 type Props = {
   purchaseId: string;
@@ -60,7 +61,7 @@ export default function UpdatePurchaseItemDataForm({
       />
       <Button
         type="submit"
-        className=" rounded-md  border border-gray-600 bg-blue-800 h-10 gap-2 px-2 flex flex-row justify-center items-center hover:bg-blue-600"
+        className="inline-flex items-center gap-2 rounded-sm bg-blue-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-red-500 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
       >
         {isPending ? (
           <>Sedang diproses... </>
