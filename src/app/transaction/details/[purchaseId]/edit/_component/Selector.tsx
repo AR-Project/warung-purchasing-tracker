@@ -130,8 +130,8 @@ export default function Selector({
             disabled={selectedItem.name !== ""}
           />
           {newVendorMode && (
-            <span className="h-10 text-xs bg-blue-800">
-              TODO: New Vendor Mode Active
+            <span className="h-10 text-xs bg-blue-800 cursor-not-allowed">
+              Add New Vendor
             </span>
           )}
 

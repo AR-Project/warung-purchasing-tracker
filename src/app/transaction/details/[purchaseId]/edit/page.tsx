@@ -53,7 +53,6 @@ export default async function Page({ params }: Props) {
 
       <PurchaseItemUpdater purchaseId={purchaseId} />
       <div className="_SEPARATOR w-full border-b border-white/20"></div>
-      {/* TODO: Image editor */}
     </div>
   );
 }

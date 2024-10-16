@@ -58,8 +58,6 @@ export async function updatePurchaseItemAction(
         tx.rollback();
       }
 
-      // TODO: Rollback when item is already exist in existing table
-
       const totalPriceOfitemToAdd = itemsToAdd.reduce(
         (total, item) => total + item.totalPrice,
         0
