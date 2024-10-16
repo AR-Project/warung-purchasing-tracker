@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { deletePurchase } from "../edit/_action/deletePurchase.action";
+import { deletePurchase } from "../_action/deletePurchase.action";
 
 type Props = {
   purchaseId: string;

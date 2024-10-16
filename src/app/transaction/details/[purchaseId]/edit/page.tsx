@@ -1,13 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import PurchaseDeleteDialog from "../_component/PurchaseDeleteDialog";
 import PurchaseItemUpdater from "../_component/PurchaseItemUpdater";
 import { singlePurchaseLoader } from "../_loader/singlePurchase.loader";
 import { BackButton } from "./_presentation/BackButton";
 import { PurchaseDataEditor } from "./_component/PurchaseDataEditor";
 import PurchaseItemEditor from "./_component/PurchaseItemEditor";
 import { CgReorder } from "react-icons/cg";
+import PurchaseDeleteDialog from "./_component/PurchaseDeleteDialog";
 
 type Props = {
   params: { purchaseId: string };
