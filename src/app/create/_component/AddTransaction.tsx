@@ -1,13 +1,15 @@
 "use client";
 import { Suspense, useState } from "react";
+import dynamic from "next/dynamic";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
-import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
-import ImageSelector from "./ImageSelector";
+
 import { ItemOnCartCard } from "../_presentation/ItemOnCartCard";
-import dynamic from "next/dynamic";
+
+import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
 import DatePicker from "./DatePicker";
 
+const ImageSelector = dynamic(() => import("./ImageSelector"));
 const ComboItemForm = dynamic(() => import("./ComboItemForm"));
 const ComboVendorForm = dynamic(() => import("./ComboVendorForm"));
 
@@ -97,10 +99,12 @@ export default function AddTransaction() {
         />
       </Suspense>
 
-      <ImageSelector
-        resizedFile={resizedImage}
-        setResizedFile={setResizedImage}
-      />
+      <Suspense fallback={<span>loading...</span>}>
+        <ImageSelector
+          resizedFile={resizedImage}
+          setResizedFile={setResizedImage}
+        />
+      </Suspense>
 
       {itemsOnCart.length === 0 && (
         <span className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
