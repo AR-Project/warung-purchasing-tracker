@@ -1,23 +1,37 @@
 import { formatNumberToIDR } from "@/lib/utils/formatter";
 import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
-import { NumericFormat, PatternFormat } from "react-number-format";
+import Link from "next/link";
 
-export function DisplaySingleItem({ item }: { item: DisplaySingleItem }) {
+type Props = {
+  item: DisplaySingleItem;
+  disableLink?: boolean;
+};
+
+export function DisplaySingleItem({ item, disableLink = false }: Props) {
   return (
-    <div className="  font-mono w-full max-w-[500px] mx-auto flex flex-row gap-3 ">
-      <PrettyQuantity number={item.quantityInHundreds} />
-      <div className="text-sm uppercase w-full ">
+    <div className="font-mono  flex flex-col leading-tight uppercase w-full ">
+      {disableLink ? (
         <div className="font-bold">{item.name}</div>
-        <div className="text-xs flex flex-col gap-3">
-          <p>@ {formatNumberToIDR(item.pricePerUnit)}</p>
+      ) : (
+        <Link
+          href={`/transaction/item/detail/${item.itemId}`}
+          className="font-bold hover:underline"
+        >
+          {item.name}
+        </Link>
+      )}
+      <div className=" flex flex-row justify-between gap-3">
+        <div className="opacity-60 flex flex-row">
+          <PrettyQuantity number={item.quantityInHundreds} />
+          <p>⨯ {formatNumberToIDR(item.pricePerUnit, "short")}</p>
+        </div>
+        <div className="font-bold">
+          {formatNumberToIDR(
+            item.pricePerUnit * (item.quantityInHundreds / 100),
+            "short"
+          )}
         </div>
       </div>
-      <p>
-        {formatNumberToIDR(
-          item.pricePerUnit * (item.quantityInHundreds / 100),
-          "short"
-        )}
-      </p>
     </div>
   );
 }

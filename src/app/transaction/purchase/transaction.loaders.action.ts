@@ -54,6 +54,7 @@ async function filteredFetch(filter: SQL): Promise<DisplaySinglePurchase[]> {
     const allPurchasedItems = await tx
       .select({
         id: purchasedItems.id,
+        itemId: purchasedItems.itemId,
         name: items.name,
         quantityInHundreds: purchasedItems.quantityInHundreds,
         pricePerUnit: purchasedItems.pricePerUnit,
@@ -93,6 +94,7 @@ async function defaultFetch(): Promise<DisplaySinglePurchase[]> {
     const allPurchasedItems = await tx
       .select({
         id: purchasedItems.id,
+        itemId: purchasedItems.itemId,
         name: items.name,
         quantityInHundreds: purchasedItems.quantityInHundreds,
         pricePerUnit: purchasedItems.pricePerUnit,

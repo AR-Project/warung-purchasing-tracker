@@ -15,7 +15,6 @@ type ItemCardProps = {
   index: number;
   isActive: boolean;
   onClick: OnClickFn;
-  moveItem: MoveItemFn;
   deleteItem: DeleteItemFn;
   editPurchasedItem: (updatedItem: PurchasedItem, index: number) => void;
 };
@@ -30,12 +29,11 @@ type DeleteButtonProps = {
   index: number;
 };
 
-export function ItemCard({
+export function ItemOnCartCard({
   item,
   index,
   isActive,
   onClick,
-  moveItem,
   deleteItem,
   editPurchasedItem,
 }: ItemCardProps) {

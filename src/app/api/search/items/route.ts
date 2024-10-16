@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     [],
     { tags: ["items"] }
   );
-  const allItems = await getCachedItemsLoaders();
+  // const allItems = await getCachedItemsLoaders();
+  const allItems = await db.select().from(items);
 
   const fuse = new Fuse(allItems, {
     includeScore: true,

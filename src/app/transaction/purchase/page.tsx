@@ -1,10 +1,13 @@
-import Link from "next/link";
-import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
-import { transactionLoader } from "./transaction.loaders.action";
-import SearchBox from "../_component/SearchBox";
+import { Suspense } from "react";
+
 import { parseSearchParams } from "@/lib/utils/validator";
 import { searchVendors } from "@/lib/api";
+
+import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
+import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
+
+import { transactionLoader } from "./transaction.loaders.action";
 
 type Props = {
   searchParams: SearchParams;
@@ -17,25 +20,26 @@ export default async function Page({ searchParams }: Props) {
 
   return (
     <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">
-      <SearchBox
-        activeName={filter.keyword}
-        searchHandler={searchVendors}
-        placeholder="Cari Vendor..."
-      />
-      <DatePicker activeDateRange={filter.range} />
-      {tx.map((singlePurchase) => (
-        <SinglePurchaseCard
-          singlePurchase={singlePurchase}
-          key={singlePurchase.id}
+      <Suspense>
+        <SearchBox
+          activeName={filter.keyword}
+          searchHandler={searchVendors}
+          placeholder="Cari Vendor..."
         />
-      ))}
+      </Suspense>
+      <Suspense>
+        <DatePicker activeDateRange={filter.range} />
+      </Suspense>
+      <div className="grid grid-cols-2 gap-3">
+        {tx.map((singlePurchase) => (
+          <SinglePurchaseCard
+            singlePurchase={singlePurchase}
+            key={singlePurchase.id}
+          />
+        ))}
+      </div>
     </section>
   );
 }
 
-/** #TODO: Implement display based on these
- * - Based on month
- * - FUTURE:Based on calendar
- *    - Highlight dates that purchase happen
- *    - Pop up transaction details from that date
- */
+export const dynamic = "force-dynamic";

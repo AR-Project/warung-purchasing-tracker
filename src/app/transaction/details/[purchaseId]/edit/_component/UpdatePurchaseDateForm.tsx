@@ -5,21 +5,21 @@ import { toast } from "react-toastify";
 import { MdSave, MdUndo } from "react-icons/md";
 
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
-import { updatePurchaseVendor } from "../_action/updatePurchaseVendor";
+import { updatePurchaseDate } from "../_action/updatePurchaseDate.action";
 
 type Props<T> = {
   purchaseId: string;
-  newPurchaseVendorId: string;
+  newPurchaseDate: string;
   onSuccess: () => void;
 };
 
-export default function UpdatePurchaseVendorHiddenForm({
+export default function UpdatePurchaseDateHiddenForm({
   purchaseId,
-  newPurchaseVendorId,
+  newPurchaseDate,
   onSuccess,
 }: Props<Vendor>) {
   const [state, formAction] = useFormState<FormState<void>, FormData>(
-    updatePurchaseVendor,
+    updatePurchaseDate,
     {}
   );
 
@@ -44,9 +44,9 @@ export default function UpdatePurchaseVendorHiddenForm({
       />
       <input
         type="hidden"
-        name="new-purchase-vendor-id"
-        id="new-purchase-vendor-id"
-        value={newPurchaseVendorId}
+        name="new-purchase-date"
+        id="new-purchase-date"
+        value={newPurchaseDate}
       />
       <button
         type="submit"

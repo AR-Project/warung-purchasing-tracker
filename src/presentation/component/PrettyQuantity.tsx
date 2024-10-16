@@ -6,11 +6,9 @@ const hundredsToString = (number: number) => {
 export const PrettyQuantity = ({ number }: { number: number }) => {
   const quantity = hundredsToString(number).split(".");
   return (
-    <div className="flex flex-row items-baseline min-w-10">
-      <div className=" font-black text-xl">{quantity[0]}</div>
-      {quantity.length > 1 && (
-        <div className=" text-xs text-white/40">,{quantity[1]}</div>
-      )}
+    <div className="flex flex-row items-baseline min-w-9">
+      <div className="">{quantity[0]}</div>
+      {quantity.length > 1 && <div className="">,{quantity[1]}</div>}
     </div>
   );
 };

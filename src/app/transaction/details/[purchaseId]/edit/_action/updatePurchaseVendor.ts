@@ -4,13 +4,11 @@ import { DrizzleError, eq } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
 import { purchases, vendors } from "@/lib/schema/schema";
-import { generateId } from "@/lib/utils/generator";
 import { revalidatePath } from "next/cache";
 
 export async function updatePurchaseVendor(prevState: any, formData: FormData) {
   const purchaseId = formData.get("purchase-id");
   const newVendorId = formData.get("new-purchase-vendor-id");
-  console.log("updatePurchaseVendorCalled");
 
   const schema = z.object({
     purchaseId: z.string(),
@@ -28,14 +26,15 @@ export async function updatePurchaseVendor(prevState: any, formData: FormData) {
         .select()
         .from(purchases)
         .where(eq(purchases.id, payload.purchaseId));
-
       const vendor = await tx
         .select()
         .from(vendors)
         .where(eq(vendors.id, payload.newVendorId));
+
       if (purchase.length == 0 || vendor.length == 0) {
         tx.rollback();
       }
+
       await tx
         .update(purchases)
         .set({ vendorId: payload.newVendorId, modifiedAt: new Date() })
@@ -43,12 +42,12 @@ export async function updatePurchaseVendor(prevState: any, formData: FormData) {
         .returning({ id: purchases.id });
     });
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
-    return { message: `TODO: ${JSON.stringify(payload)}` };
+    return { message: `Vendor changed`, timestamp: Date.now().toString() };
   } catch (error) {
     if (error instanceof DrizzleError) {
-      return { error: "invalid Payload" };
+      return { error: "invalid Payload", timestamp: Date.now().toString() };
     }
 
-    return { error: "internal error" };
+    return { error: "internal error", timestamp: Date.now().toString() };
   }
 }

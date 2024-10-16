@@ -22,21 +22,20 @@ export function SinglePurchaseCard({ singlePurchase }: Props) {
             </time>
             <h2 className="text-xs">{singlePurchase.vendorName}</h2>
           </div>
-          <div className="font-black font-mono">
-            {formatNumberToIDR(singlePurchase.totalPrice, "short")}
-          </div>
         </hgroup>
-        <div className="px-2 py-1 flex flex-col gap-2">
+        <div className="px-2 py-1 flex flex-col gap-2 text-gray-300">
           {singlePurchase.items.map((item) => (
-            <DisplaySingleItem key={item.id} item={item} />
+            <DisplaySingleItem key={item.id} item={item} disableLink={true} />
           ))}
         </div>
-        <div className=" flex flex-row justify-center"></div>
+        <div className="font-black font-mono w-full flex flex-row justify-end px-2 bg-gray-800 py-1">
+          {formatNumberToIDR(singlePurchase.totalPrice)}
+        </div>
       </Link>
       {singlePurchase.imageId && (
         <Link
           className="h-8 flex flex-row items-center gap-2 text-gray-500 w-full justify-center border-gray-700 border-r border-b border-l"
-          href={`/api/image/${singlePurchase.imageId}.jpg`}
+          href={`/api/image/${singlePurchase.imageId}`}
           target="_blank"
         >
           <MdReceiptLong />

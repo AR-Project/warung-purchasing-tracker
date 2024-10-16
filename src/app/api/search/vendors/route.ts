@@ -14,7 +14,8 @@ export async function POST(req: Request) {
     keyword: string;
   };
 
-  const allVendors = await getCachedVendorsLoaders();
+  // const allVendors = await getCachedVendorsLoaders();
+  const allVendors = await db.select().from(vendors);
 
   const fuse = new Fuse(allVendors, {
     includeScore: true,
