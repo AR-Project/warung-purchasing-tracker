@@ -18,9 +18,8 @@ type Props = {
   purchaseId: string;
 };
 
-export default function PurchaseDeleteDialog({ purchaseId }: Props) {
+export default function PurchaseDeleteDialog(props: Props) {
   let [isOpen, setIsOpen] = useState(false);
-  const router = useRouter();
 
   function open() {
     setIsOpen(true);
@@ -28,23 +27,6 @@ export default function PurchaseDeleteDialog({ purchaseId }: Props) {
 
   function close() {
     setIsOpen(false);
-  }
-
-  const [formAction, isPending] = useServerAction(
-    deletePurchase,
-    (msg) => {
-      toast.success(msg);
-      setTimeout(() => router.push("/transaction/purchase"), 1500);
-    },
-    (err) => {
-      toast.error(err);
-    }
-  );
-
-  function onDeleteHandler() {
-    const form = new FormData();
-    form.append("purchase-id", purchaseId);
-    formAction(form);
   }
 
   return (
@@ -65,7 +47,7 @@ export default function PurchaseDeleteDialog({ purchaseId }: Props) {
         <DialogBackdrop className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <Panel closeDialog={close} onDeleteHandler={onDeleteHandler} />
+            <Panel closeDialog={close} {...props} />
           </div>
         </div>
       </Dialog>
@@ -73,12 +55,30 @@ export default function PurchaseDeleteDialog({ purchaseId }: Props) {
   );
 }
 
-type PanelProps = {
-  onDeleteHandler: () => void;
+type PanelProps = Props & {
   closeDialog: () => void;
 };
 
-function Panel({ onDeleteHandler, closeDialog }: PanelProps) {
+function Panel({ closeDialog, purchaseId }: PanelProps) {
+  const router = useRouter();
+
+  const [formAction, isPending] = useServerAction(
+    deletePurchase,
+    (msg) => {
+      toast.success(msg);
+      setTimeout(() => router.push("/transaction/purchase"), 1500);
+    },
+    (err) => {
+      toast.error(err);
+    }
+  );
+
+  function onDeleteHandler() {
+    const form = new FormData();
+    form.append("purchase-id", purchaseId);
+    formAction(form);
+  }
+
   return (
     <DialogPanel
       transition
