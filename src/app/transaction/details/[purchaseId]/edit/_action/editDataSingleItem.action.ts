@@ -5,7 +5,7 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { items, purchasedItems, purchases } from "@/lib/schema/schema";
 
 export async function editDataSingleItem(
   prevState: any,
@@ -37,7 +37,7 @@ export async function editDataSingleItem(
       updatedPricePerUnit,
     } = payload;
 
-    await db.transaction(async (tx) => {
+    const itemName = await db.transaction(async (tx) => {
       const currentPurchases = await tx
         .select({ totalPrice: purchases.totalPrice })
         .from(purchases)
@@ -49,7 +49,10 @@ export async function editDataSingleItem(
       }
 
       const currentPurchasedItem = await tx
-        .select({ totalPrice: purchasedItems.totalPrice })
+        .select({
+          totalPrice: purchasedItems.totalPrice,
+          itemId: purchasedItems.itemId,
+        })
         .from(purchasedItems)
         .where(eq(purchasedItems.id, purchaseItemIdToUpdate));
 
@@ -83,11 +86,17 @@ export async function editDataSingleItem(
           pricePerUnit: parseInt(updatedPricePerUnit),
         })
         .where(eq(purchasedItems.id, purchaseItemIdToUpdate));
+
+      const [item] = await tx
+        .select({ name: items.name })
+        .from(items)
+        .where(eq(items.id, currentPurchasedItem[0].itemId));
+      return item.name;
     });
 
     revalidateTag(purchaseId);
     const response = {
-      message: `Item Updated`,
+      message: `Data Item ${itemName} Updated`,
       timestamp: Date.now(),
     };
 
