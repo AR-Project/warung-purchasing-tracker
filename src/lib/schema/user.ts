@@ -8,10 +8,10 @@ import {
 } from "drizzle-orm/pg-core";
 
 export const userRoleEnum = pgEnum("user_role", [
-  "admin", // view, create, edit, delete tx, create user, change role
-  "manager", // view, create, edit, delete tx, create user,
-  "staff", // view, create,
-  "guest", // view,
+  "admin", // view, create, edit, delete tx, create/del user, change role,
+  "manager", // view, create, edit, delete tx, create/del user,
+  "staff", // view, create tx,
+  "guest", // view tx,
 ]);
 
 export const user = pgTable(
