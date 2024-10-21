@@ -10,7 +10,7 @@ import { images, purchasedItems, purchases } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
 import { isString } from "@/lib/utils/validator";
 
-export async function makePurchase(prevState: any, formData: FormData) {
+export async function savePurchaseAction(prevState: any, formData: FormData) {
   const vendorId = formData.get("vendor-id");
   const purchasedAt = formData.get("purchased-at");
   const itemsRaw = formData.get("items");

@@ -1,9 +1,9 @@
 "use client";
 
 import { useFormState } from "react-dom";
-import { makePurchase } from "../action";
 import { toast } from "react-toastify";
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
+import { savePurchaseAction } from "../_action/savePurchase.action";
 
 type Props = {
   purchasedAt: string;
@@ -23,7 +23,7 @@ function MakePurchaseHiddenForm({
   clearFrom,
 }: Props) {
   const [state, formAction] = useFormState<FormState<string>, FormData>(
-    makePurchase,
+    savePurchaseAction,
     {}
   );
 
