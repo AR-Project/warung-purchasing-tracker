@@ -5,7 +5,7 @@ import { items, purchasedItems, purchases } from "@/lib/schema/schema";
 
 export async function sortPurchaseItemsLoader(
   purchaseId: string
-): Promise<DisplaySingleItem[]> {
+): Promise<PurchaseItemDisplay[]> {
   return await db.transaction(async (tx) => {
     const [purchase] = await tx
       .select({ itemList: purchases.purchasedItemId })

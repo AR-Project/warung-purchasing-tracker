@@ -9,7 +9,7 @@ import { purchases, vendors, purchasedItems, items } from "@/lib/schema/schema";
 export async function transactionLoader({
   range,
   keyword,
-}: SearchFilter): Promise<DisplaySinglePurchase[]> {
+}: SearchFilter): Promise<PurchaseDisplay[]> {
   const dateFrom = range
     ? DateTime.fromISO(range.from).startOf("day").toJSDate()
     : DateTime.now().toJSDate();
@@ -33,7 +33,7 @@ export async function transactionLoader({
   }
 }
 
-async function filteredFetch(filter: SQL): Promise<DisplaySinglePurchase[]> {
+async function filteredFetch(filter: SQL): Promise<PurchaseDisplay[]> {
   return await db.transaction(async (tx) => {
     const purchaseTransactions = await tx
       .select({
@@ -74,7 +74,7 @@ async function filteredFetch(filter: SQL): Promise<DisplaySinglePurchase[]> {
   });
 }
 
-async function defaultFetch(): Promise<DisplaySinglePurchase[]> {
+async function defaultFetch(): Promise<PurchaseDisplay[]> {
   return await db.transaction(async (tx) => {
     const purchaseTransactions = await tx
       .select({

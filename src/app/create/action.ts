@@ -27,7 +27,7 @@ export async function makePurchase(prevState: any, formData: FormData) {
       error: "data Invalid",
     };
 
-  const items = JSON.parse(itemsRaw) as PurchasedItemPayload[];
+  const items = JSON.parse(itemsRaw) as CreatePurchaseItemPayload[];
 
   try {
     const id = await db.transaction(async (tx) => {

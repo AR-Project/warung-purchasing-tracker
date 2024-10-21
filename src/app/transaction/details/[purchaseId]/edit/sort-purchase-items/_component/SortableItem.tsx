@@ -6,7 +6,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { MdDragHandle, MdDragIndicator } from "react-icons/md";
 
 type Props = {
-  item: DisplaySingleItem;
+  item: PurchaseItemDisplay;
 };
 
 export function SortableItem({ item }: Props) {

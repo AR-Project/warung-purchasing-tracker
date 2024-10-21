@@ -17,17 +17,19 @@ type Props = {
 
 export default function PurchaseItemUpdater({ purchaseId }: Props) {
   // State for Item Editor
-  const [itemsOnCart, setItemOnCart] = useState<PurchasedItem[]>([]);
+  const [itemsOnCart, setItemOnCart] = useState<CreatePurchaseItemWithName[]>(
+    []
+  );
   const [selectedItemOnCart, setSelectedItemOnCart] = useState<string>("");
 
   const isCartEmpty = itemsOnCart.length === 0;
 
-  function appendItemOnCart(item: PurchasedItem) {
+  function appendItemOnCart(item: CreatePurchaseItemWithName) {
     const isAlreadyAdded =
       itemsOnCart.filter((addedItem) => addedItem.itemId == item.itemId)
         .length > 0;
 
-    if (isAlreadyAdded) return { error: "Tambahkan item lain" };
+    if (isAlreadyAdded) return "Tambahkan item lain";
     setItemOnCart((prevItems) => [...prevItems, item]);
   }
 
@@ -43,7 +45,10 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
     });
   }
 
-  function updateItemOnCart(updatedItem: PurchasedItem, index: number) {
+  function updateItemOnCart(
+    updatedItem: CreatePurchaseItemWithName,
+    index: number
+  ) {
     setItemOnCart((prevItemsList) => {
       const newList = [...prevItemsList];
       newList[index] = updatedItem;
@@ -130,7 +135,7 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
                   closeDialogBox();
                 }}
                 purchaseId={purchaseId}
-                purchaseItems={itemsOnCart}
+                payload={itemsOnCart}
               />
               <button
                 className="BTN-CANCEL flex flex-row gap-2 h-10 px-2 items-center bg-gray-500 border border-gray-500 rounded-md  w-fit hover:bg-gray-400"

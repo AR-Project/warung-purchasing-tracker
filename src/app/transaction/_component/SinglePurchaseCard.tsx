@@ -5,7 +5,7 @@ import { shortDateWithDay, formatNumberToIDR } from "@/lib/utils/formatter";
 import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
 
 type Props = {
-  singlePurchase: DisplaySinglePurchase;
+  singlePurchase: PurchaseDisplay;
 };
 
 export function SinglePurchaseCard({ singlePurchase }: Props) {

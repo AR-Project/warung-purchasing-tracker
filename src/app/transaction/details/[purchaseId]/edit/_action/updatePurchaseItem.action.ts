@@ -2,10 +2,10 @@
 
 import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases, vendors } from "@/lib/schema/schema";
-import { revalidatePath } from "next/cache";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
 
 export async function updatePurchaseItemAction(
@@ -13,14 +13,14 @@ export async function updatePurchaseItemAction(
   formData: FormData
 ) {
   const purchaseId = formData.get("purchase-id");
-  const itemsRaw = formData.get("items-to-add");
+  const listOfPurchaseItemRaw = formData.get("items-to-add");
 
   const payloadSchema = z.object({
     purchaseId: z.string(),
-    itemsStrings: z.string(),
+    listOfPurchaseItemAsStr: z.string(),
   });
 
-  const itemsSchema = z.array(
+  const listOfPurchaseItemSchema = z.array(
     z.object({
       itemId: z.string(),
       quantityInHundreds: z.number(),
@@ -34,20 +34,22 @@ export async function updatePurchaseItemAction(
   try {
     const payload = payloadSchema.parse({
       purchaseId,
-      itemsStrings: itemsRaw,
+      listOfPurchaseItemAsStr: listOfPurchaseItemRaw,
     });
 
-    const itemsToAddPayload: PurchasedItemPayload[] = itemsSchema.parse(
-      JSON.parse(payload.itemsStrings)
-    );
+    const listOfPurchaseItemPayload: CreatePurchaseItemPayload[] =
+      listOfPurchaseItemSchema.parse(
+        JSON.parse(payload.listOfPurchaseItemAsStr)
+      );
 
-    const itemsToAdd = itemsToAddPayload.map((item) => ({
-      ...item,
-      purchaseId: payload.purchaseId,
-      id: generateId(14),
-    }));
+    const listOfPurchaseItemDbPayload: CreatePurchaseItemDbPayload[] =
+      listOfPurchaseItemPayload.map((item) => ({
+        ...item,
+        purchaseId: payload.purchaseId,
+        id: generateId(14),
+      }));
 
-    const id = await db.transaction(async (tx) => {
+    await db.transaction(async (tx) => {
       const currentPurchase = await tx
         .select()
         .from(purchases)
@@ -58,19 +60,26 @@ export async function updatePurchaseItemAction(
         tx.rollback();
       }
 
-      const totalPriceOfitemToAdd = itemsToAdd.reduce(
+      const totalPriceOfitemToAdd = listOfPurchaseItemDbPayload.reduce(
         (total, item) => total + item.totalPrice,
         0
       );
-      await tx.insert(purchasedItems).values(itemsToAdd);
 
+      const updatedPurchaseTotalPrice =
+        currentPurchase[0].totalPrice + totalPriceOfitemToAdd;
+
+      const listOfPurchaseItemIdToAdd = listOfPurchaseItemDbPayload.map(
+        (item) => item.id
+      );
+
+      await tx.insert(purchasedItems).values(listOfPurchaseItemDbPayload);
       await tx
         .update(purchases)
         .set({
-          totalPrice: currentPurchase[0].totalPrice + totalPriceOfitemToAdd,
+          totalPrice: updatedPurchaseTotalPrice,
           purchasedItemId: [
             ...currentPurchase[0].purchasedItemId,
-            ...itemsToAdd.map((item) => item.id),
+            ...listOfPurchaseItemIdToAdd,
           ],
           modifiedAt: new Date(),
         })
@@ -80,7 +89,6 @@ export async function updatePurchaseItemAction(
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return {
       message: `Purchased Item Updated`,
-      data: id,
       timestamp: Date.now(),
     };
   } catch (error) {

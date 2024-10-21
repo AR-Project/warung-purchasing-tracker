@@ -7,6 +7,7 @@ declare global {
     error?: string;
   };
 
+  /**@deprecated */
   type FormStateWithTimestamp<T = void> = {
     message?: string;
     data?: T;
@@ -23,9 +24,7 @@ declare global {
 
   type SearchParams = { [key: string]: string | string[] | undefined };
 
-  type CreateItemPayload = {
-    name: string;
-  };
+  /** ENTITIES */
 
   type Item = {
     id: string;
@@ -37,6 +36,14 @@ declare global {
     name: string;
   };
 
+  /** Creator Features */
+
+  type CreateItemPayload = {
+    name: string;
+  };
+
+  // createItemDbPayload
+
   type CreateVendorsPayload = {
     name: string;
   };
@@ -46,20 +53,26 @@ declare global {
     date: Date;
   };
 
-  type PurchasedItemPayload = {
+  type CreatePurchaseItemPayload = {
     itemId: string;
     quantityInHundreds: number;
     pricePerUnit: number;
     totalPrice: number;
   };
 
-  type PurchasedItem = PurchasedItemPayload & {
+  type CreatePurchaseItemDbPayload = CreatePurchaseItemPayload & {
+    purchaseId: string;
+    id: string;
+  };
+
+  type CreatePurchaseItemWithName = CreatePurchaseItemPayload & {
     name: string;
   };
 
-  type CreatePurchasedItemsPayload = PurchasedItemPayload[];
+  /** Displayer Features */
 
-  type DisplaySingleItem = {
+  // PurchaseItemDisplay
+  type PurchaseItemDisplay = {
     id: string;
     itemId: string;
     name: string;
@@ -67,35 +80,36 @@ declare global {
     pricePerUnit: number;
   };
 
-  type DisplaySinglePurchase = {
+  // PurchaseDisplay
+  type PurchaseDisplay = {
     id: string;
     vendorId: string;
     vendorName: string;
     purchasedItemId: string[];
     purchasesAt: Date;
     totalPrice: number;
-    items: DisplaySingleItem[];
+    items: PurchaseItemDisplay[];
     createdAt: Date;
     imageId: string | null;
   };
-  type DisplayPurchases = DisplaySinglePurchase[];
 
-  type PurchaseEditor = {
+  type PurchaseToEdit = {
     id: string;
     vendorId: string;
     vendorName: string;
     purchasedItemId: string[];
     purchasesAt: Date;
     totalPrice: number;
-    items: PurchasedItemsEditor[];
+    items: PurchaseItemToEdit[];
     createdAt: Date;
     imageId: string | null;
   };
 
-  type PurchasedItemsEditor = DisplaySingleItem & {
+  type PurchaseItemToEdit = PurchaseItemDisplay & {
     itemId: string;
   };
 
+  /** @deprecated */
   type DisplayPerSingleItem = {
     name: string;
     purchaseAt: Date;
@@ -105,7 +119,7 @@ declare global {
     vendor: string;
   };
 
-  type DisplayItems = DisplayPerSingleItem[];
+  /** @deprecated */
   type DisplayGroupedItem = {
     name: string;
     id: string;

@@ -23,11 +23,7 @@ const EditItemHiddenForm = dynamic(() => import("./EditItemHiddenForm"));
 const AddItemHiddenForm = dynamic(() => import("./AddItemHiddenForm"));
 
 type Props = {
-  appendItemOnCart: (item: PurchasedItem) =>
-    | {
-        error: string;
-      }
-    | undefined;
+  appendItemOnCart: (item: CreatePurchaseItemWithName) => string | undefined;
 };
 
 const INITIAL: Vendor = { id: "", name: "" };
@@ -123,7 +119,7 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
       totalPrice: anyNumberToNumber(totalPrice),
     });
 
-    if (!result?.error) {
+    if (!result) {
       resetComboForm();
       itemFieldRef.current?.focus();
       return;

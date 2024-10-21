@@ -8,7 +8,7 @@ import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 type Props = {
   purchasedAt: string;
   vendorId: string;
-  itemsList: PurchasedItem[];
+  listOfPurchaseItem: CreatePurchaseItemWithName[];
   totalPurchase: number;
   image: Blob | null;
   clearFrom: () => void;
@@ -17,7 +17,7 @@ type Props = {
 function MakePurchaseHiddenForm({
   purchasedAt,
   vendorId,
-  itemsList,
+  listOfPurchaseItem,
   totalPurchase,
   image,
   clearFrom,
@@ -35,16 +35,26 @@ function MakePurchaseHiddenForm({
     }
   }, state);
 
-  const purchasedPayload: PurchasedItemPayload[] = itemsList.map((item) => ({
-    itemId: item.itemId,
-    quantityInHundreds: item.quantityInHundreds,
-    pricePerUnit: item.pricePerUnit,
-    totalPrice: item.totalPrice,
-  }));
+  /** Remove this data processing logic.
+   * Move to parent component.
+   * REASON: Reduce logic, so this component responsibility is focus
+   * on ONLY receiving data -> upload to server component. Not to process any data
+   */
 
-  const isDataValid = () => {
+  const listOfPurchaseItemPayload: CreatePurchaseItemPayload[] =
+    listOfPurchaseItem.map((item) => ({
+      itemId: item.itemId,
+      quantityInHundreds: item.quantityInHundreds,
+      pricePerUnit: item.pricePerUnit,
+      totalPrice: item.totalPrice,
+    }));
+
+  const isPayloadExist = () => {
     return (
-      purchasedPayload.length > 0 && purchasedAt && vendorId && totalPurchase
+      listOfPurchaseItemPayload.length > 0 &&
+      purchasedAt &&
+      vendorId &&
+      totalPurchase
     );
   };
 
@@ -61,12 +71,12 @@ function MakePurchaseHiddenForm({
       <input
         type="hidden"
         name="items"
-        value={JSON.stringify(purchasedPayload)}
+        value={JSON.stringify(listOfPurchaseItemPayload)}
       />
 
       <button
         className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto disabled:bg-blue-800/50 disabled:cursor-not-allowed disabled:text-white/50"
-        disabled={!isDataValid()}
+        disabled={!isPayloadExist()}
       >
         Simpan Transaksi
       </button>
