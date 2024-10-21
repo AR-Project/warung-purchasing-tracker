@@ -25,7 +25,6 @@ declare global {
   type SearchParams = { [key: string]: string | string[] | undefined };
 
   /** ENTITIES */
-
   type Item = {
     id: string;
     name: string;
@@ -41,8 +40,6 @@ declare global {
   type CreateItemPayload = {
     name: string;
   };
-
-  // createItemDbPayload
 
   type CreateVendorsPayload = {
     name: string;
@@ -71,7 +68,6 @@ declare global {
 
   /** Displayer Features */
 
-  // PurchaseItemDisplay
   type PurchaseItemDisplay = {
     id: string;
     itemId: string;
@@ -80,7 +76,6 @@ declare global {
     pricePerUnit: number;
   };
 
-  // PurchaseDisplay
   type PurchaseDisplay = {
     id: string;
     vendorId: string;
@@ -107,23 +102,5 @@ declare global {
 
   type PurchaseItemToEdit = PurchaseItemDisplay & {
     itemId: string;
-  };
-
-  /** @deprecated */
-  type DisplayPerSingleItem = {
-    name: string;
-    purchaseAt: Date;
-    quantityInHundreds: number;
-    pricePerUnit: number;
-    totalPrice: number;
-    vendor: string;
-  };
-
-  /** @deprecated */
-  type DisplayGroupedItem = {
-    name: string;
-    id: string;
-    totalQuantityInHundred: number;
-    totalPrice: number;
   };
 }
