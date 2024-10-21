@@ -6,8 +6,7 @@ import { searchVendors } from "@/lib/api";
 import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
 import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
-
-import { transactionLoader } from "./transaction.loaders.action";
+import { transactionLoader } from "./listOfPurchase.loader";
 
 type Props = {
   searchParams: SearchParams;

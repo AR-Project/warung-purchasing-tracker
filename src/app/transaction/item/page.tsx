@@ -1,6 +1,5 @@
 import Link from "next/link";
-
-import { listOfItemsLoader } from "./_loader/listOfItemsLoader";
+import { listOfItemsLoader } from "./_loader/listOfItem.loader";
 
 export default async function Page() {
   const listOfItems = await listOfItemsLoader();
