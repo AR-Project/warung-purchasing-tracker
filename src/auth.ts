@@ -12,6 +12,7 @@ import { revalidatePath } from "next/cache";
 declare module "next-auth/jwt" {
   interface JWT {
     userId: string;
+    parentId: string;
     username: string;
   }
 }
@@ -19,12 +20,14 @@ declare module "next-auth/jwt" {
 declare module "next-auth" {
   interface User {
     username: string;
+    parentId: string;
     userId: string;
   }
 
   interface Session {
     user: {
       userId: string;
+      parentId: string;
       username: string;
     };
   }
@@ -67,6 +70,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               username: user.username,
               hashedPassword: user.hashedPassword,
               userId: user.id,
+              parentId: user.parentId,
             })
             .from(user)
             .where(eq(user.username, username));
@@ -88,7 +92,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             );
           }
           revalidatePath("/", "layout");
-          return { username: validUser.username, userId: validUser.userId };
+          return {
+            username: validUser.username,
+            userId: validUser.userId,
+            parentId: validUser.parentId,
+          };
         } catch (error) {
           if (error instanceof Error) {
             throw new Error(error.message);

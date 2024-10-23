@@ -30,7 +30,7 @@ export async function registerUserAction(
     });
 
     if (password !== confirmPassword) {
-      invariantError = "Password tidak sama";
+      invariantError = "Password confirmation does not match.";
       throw new Error("confirm password does not match");
     }
 
@@ -41,16 +41,19 @@ export async function registerUserAction(
         .where(eq(user.username, username));
 
       if (existingUser.length > 0) {
-        invariantError = "username telah dipakai";
+        invariantError = "Username not available";
         tx.rollback();
       }
 
       const hashedPassword = await hash(password);
 
+      const id = `u-${generateId(10)}`;
+
       const [newUser] = await tx
         .insert(user)
         .values({
-          id: `u-${generateId(10)}`,
+          id: id,
+          parentId: id,
           username: username,
           hashedPassword: hashedPassword,
         })
@@ -60,7 +63,7 @@ export async function registerUserAction(
     });
 
     return {
-      message: `User successfully created: ${newUser.username} - ${newUser.id}`,
+      message: `Success creating new user: ${newUser.username} - ${newUser.id}`,
     };
   } catch (error) {
     if (error instanceof Error) {
