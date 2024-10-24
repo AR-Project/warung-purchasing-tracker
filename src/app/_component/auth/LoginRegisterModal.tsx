@@ -16,7 +16,6 @@ import { MdPerson } from "react-icons/md";
 
 import RegisterForm from "./form/RegisterForm";
 import LoginForm from "./form/LoginForm";
-import { toast } from "react-toastify";
 
 export default function LoginRegisterModal() {
   let [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -59,7 +58,7 @@ export default function LoginRegisterModal() {
   );
 }
 
-function LoginRegisterTabs() {
+export function LoginRegisterTabs() {
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   function selectTab(index: number) {
