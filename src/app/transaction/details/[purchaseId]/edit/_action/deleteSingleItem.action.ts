@@ -6,71 +6,105 @@ import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
 import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { getUserInfo } from "@/lib/utils/auth";
+import { user } from "@/lib/schema/user";
 
 export async function deleteSingleItemAction(
   formData: FormData
-): Promise<FormStateWithTimestamp<void>> {
+): Promise<FormState<void>> {
   const purchaseIdRaw = formData.get("purchase-id");
   const purchasedItemIdToDeleteRaw = formData.get("purchase-item-id");
 
-  const schema = z.object({
+  const userPayloadSchema = z.object({
     purchaseId: z.string(),
     purchasedItemIdToDelete: z.string(),
   });
 
   let invariantError: string | undefined;
+  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
   try {
-    const payload = schema.parse({
+    const { userId: loggedInUserId } = await getUserInfo();
+    const { data: payload } = userPayloadSchema.safeParse({
       purchaseId: purchaseIdRaw,
       purchasedItemIdToDelete: purchasedItemIdToDeleteRaw,
     });
+    if (!payload) {
+      invariantError = "Invalid Payload";
+      throw new Error(invariantError);
+    }
 
     await db.transaction(async (tx) => {
+      // Validate user role
+      const [currentUser] = await tx
+        .select({ role: user.role })
+        .from(user)
+        .where(eq(user.id, loggedInUserId));
+      if (!allowedRole.includes(currentUser.role)) {
+        invariantError = "Not Allowed";
+        tx.rollback();
+      }
+
+      // Validate existance of purchase
       const currentPurchase = await tx
         .select()
         .from(purchases)
         .where(eq(purchases.id, payload.purchaseId));
+      if (currentPurchase.length == 0) {
+        invariantError = "Invalid Purchase";
+        tx.rollback();
+      }
 
-      const purchasedItemToDelete = await tx
+      // Validate if loggedInUser is have authorization on current purchase
+      const { creatorId, ownerId } = currentPurchase[0];
+      if (![creatorId, ownerId].includes(loggedInUserId)) {
+        invariantError = "Not an owner / creator";
+        tx.rollback();
+      }
+
+      // Validate existance of purchaseItem
+      const purchaseItemToDelete = await tx
         .select()
         .from(purchasedItems)
         .where(eq(purchasedItems.id, payload.purchasedItemIdToDelete));
-
-      if (currentPurchase.length == 0 || purchasedItemToDelete.length == 0) {
-        invariantError = "invalid Item";
+      if (purchaseItemToDelete.length == 0) {
+        invariantError = "Invalid purchase item";
         tx.rollback();
       }
 
-      const oldPurchasedItemIds = structuredClone(
+      // Validate purchase item to delete is exist on current purchase
+      const oldListOfPurchaseItemId = structuredClone(
         currentPurchase[0].purchasedItemId
       );
-      const isPurchasedItemToDeleteExist = oldPurchasedItemIds.includes(
+      const isExistOnPurchase = oldListOfPurchaseItemId.includes(
         payload.purchasedItemIdToDelete
       );
-
-      if (!isPurchasedItemToDeleteExist) {
-        invariantError = "Item lost";
+      if (!isExistOnPurchase) {
+        invariantError = "Purchase Item not exist";
         tx.rollback();
       }
 
-      const updatedPurchasedItemIds = oldPurchasedItemIds.filter(
+      // Generate new listOfPurchaseItemId
+      const newListOfPurchaseItemId = oldListOfPurchaseItemId.filter(
         (id) => id !== payload.purchasedItemIdToDelete
       );
 
-      const [deletedItem] = purchasedItemToDelete;
+      // Temporary store deleted purchase
+      const [deletedPurchaseItem] = purchaseItemToDelete;
 
-      const totalPriceForDeletedPurchasedItem =
-        deletedItem.pricePerUnit * (deletedItem.quantityInHundreds / 100);
+      // Calculate changed data (purchase total price)
+      const deletedPurchaseItemTotalPrice =
+        deletedPurchaseItem.pricePerUnit *
+        (deletedPurchaseItem.quantityInHundreds / 100);
+      const newPurchaseTotalPrice =
+        currentPurchase[0].totalPrice - deletedPurchaseItemTotalPrice;
 
-      const newTotalPrice =
-        currentPurchase[0].totalPrice - totalPriceForDeletedPurchasedItem;
-
+      // Append change to database
       await tx
         .update(purchases)
         .set({
-          purchasedItemId: updatedPurchasedItemIds,
+          purchasedItemId: newListOfPurchaseItemId,
           modifiedAt: new Date(),
-          totalPrice: newTotalPrice,
+          totalPrice: newPurchaseTotalPrice,
         })
         .where(eq(purchases.id, payload.purchaseId))
         .returning({ id: purchases.id });
@@ -81,15 +115,20 @@ export async function deleteSingleItemAction(
     });
 
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
-    return { message: `Item deleted`, timestamp: Date.now().toString() };
+    return { message: `Item deleted` };
   } catch (error) {
-    if (error instanceof DrizzleError) {
-      return {
-        error: invariantError ? invariantError : error.message,
-        timestamp: Date.now().toString(),
-      };
+    if (invariantError) {
+      return { error: invariantError };
     }
 
-    return { error: "internal error", timestamp: Date.now().toString() };
+    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
+      return { error: "Login first" };
+    }
+
+    if (error instanceof DrizzleError) {
+      return { error: error.message };
+    }
+
+    return { error: "internal error" };
   }
 }

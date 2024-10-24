@@ -1,43 +1,50 @@
 "use server";
 
-import { eq } from "drizzle-orm";
+import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { z } from "zod";
 
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/schema";
+import { items, NewItemDbPayload } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
 import { isString } from "@/lib/utils/validator";
+import { getUserInfo } from "@/lib/utils/auth";
 
 export async function newItemAction(prevState: any, formData: FormData) {
-  const name = formData.get("name");
-
-  if (!isString(name)) {
-    return { error: "Data tidak valid" };
-  }
+  const nameRaw = formData.get("name");
+  let invariantError: string | undefined;
 
   try {
-    const itemId = await db.transaction(async (tx) => {
-      const existingItems = await tx
-        .select()
-        .from(items)
-        .where(eq(items.name, name));
-      if (existingItems.length > 0) {
-        tx.rollback();
-      }
-      const [addedItem] = await db
-        .insert(items)
-        .values({ name, id: generateId(10) })
-        .returning({ id: items.id });
-      return addedItem.id;
-    });
+    const { userId, parentId } = await getUserInfo();
+    const { data: name } = z.string().safeParse(nameRaw);
+    if (!name) {
+      invariantError = "Invalid Payload";
+      throw new Error(invariantError);
+    }
+    const newItemDbPayload: NewItemDbPayload = {
+      id: generateId(10),
+      name,
+      ownerId: parentId,
+      creatorId: userId,
+    };
+
+    const [savedItem] = await db
+      .insert(items)
+      .values(newItemDbPayload)
+      .returning({ id: items.id });
 
     revalidateTag("items");
     revalidatePath("/create");
     return {
-      message: `Item ${name} created`,
-      data: itemId,
+      message: `Item ${nameRaw} created`,
+      data: savedItem.id,
     };
   } catch (error) {
-    return { error: "Nama Item sudah dipakai" };
+    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
+      return { error: "Login first" };
+    }
+    if (invariantError) return { error: invariantError };
+    if (error instanceof DrizzleError) return { error: error.message };
+    return { error: "internal error" };
   }
 }

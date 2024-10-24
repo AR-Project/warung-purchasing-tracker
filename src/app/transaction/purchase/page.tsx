@@ -7,15 +7,22 @@ import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
 import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
 import { transactionLoader } from "./listOfPurchase.loader";
+import { auth } from "@/auth";
+import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 
 type Props = {
   searchParams: SearchParams;
 };
 
 export default async function Page({ searchParams }: Props) {
+  const session = await auth();
+  if (!session) {
+    return <LoginRequiredWarning />;
+  }
+
   const filter = parseSearchParams(searchParams);
 
-  const tx = await transactionLoader(filter);
+  const tx = await transactionLoader(filter, session.user.parentId);
 
   return (
     <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">

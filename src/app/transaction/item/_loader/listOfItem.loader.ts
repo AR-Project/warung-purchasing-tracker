@@ -1,7 +1,11 @@
 import db from "@/infrastructure/database/db";
 import { items } from "@/lib/schema/schema";
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 
-export async function listOfItemsLoader() {
-  return await db.select().from(items).orderBy(asc(items.name));
+export async function listOfItemsLoader(userId: string) {
+  return await db
+    .select()
+    .from(items)
+    .orderBy(asc(items.name))
+    .where(eq(items.ownerId, userId));
 }

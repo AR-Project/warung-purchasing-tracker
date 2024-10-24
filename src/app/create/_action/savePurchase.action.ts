@@ -4,90 +4,134 @@ import path from "path";
 import { promises as fs } from "fs";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 
 import db from "@/infrastructure/database/db";
-import { images, purchasedItems, purchases } from "@/lib/schema/schema";
+import {
+  images,
+  NewImageDbPayload,
+  NewPurchaseDbPayload,
+  purchasedItems,
+  NewPurchaseItemDbPayload,
+  purchases,
+} from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
-import { isString } from "@/lib/utils/validator";
+import { getUserInfo } from "@/lib/utils/auth";
 
 export async function savePurchaseAction(prevState: any, formData: FormData) {
-  const vendorId = formData.get("vendor-id");
-  const purchasedAt = formData.get("purchased-at");
-  const itemsRaw = formData.get("items");
-  const totalPrice = formData.get("total-price");
+  const vendorIdRaw = formData.get("vendor-id");
+  const purchasedAtRaw = formData.get("purchased-at");
+  const listOfPurchaseItemAsStrRaw = formData.get("items");
+  const totalPriceRaw = formData.get("total-price");
+
   const image = formData.get("image");
 
-  if (
-    !isString(vendorId) ||
-    !isString(purchasedAt) ||
-    !isString(itemsRaw) ||
-    !isString(totalPrice)
-  )
-    return {
-      error: "data Invalid",
-    };
+  const payloadSchema = z.object({
+    vendorId: z.string(),
+    purchasedAt: z.string().date(),
+    listOfPurchaseItemAsStr: z.string(),
+    totalPrice: z.coerce.number(),
+  });
 
-  const items = JSON.parse(itemsRaw) as CreatePurchaseItemPayload[];
+  const listOfPurchaseItemUserPayloadSchema = z.array(
+    z.object({
+      itemId: z.string(),
+      quantityInHundreds: z.coerce.number(),
+      pricePerUnit: z.coerce.number(),
+      totalPrice: z.coerce.number(),
+    })
+  );
 
   try {
-    const id = await db.transaction(async (tx) => {
+    const { userId: creatorId, parentId: ownerId } = await getUserInfo();
+
+    const { data: userPayload } = payloadSchema.safeParse({
+      vendorId: vendorIdRaw,
+      purchasedAt: purchasedAtRaw,
+      listOfPurchaseItemAsStr: listOfPurchaseItemAsStrRaw,
+      totalPrice: totalPriceRaw,
+    });
+    if (!userPayload) return { error: "Invalid payload" };
+
+    const { data: listOfPurchaseItemUserPayload } =
+      listOfPurchaseItemUserPayloadSchema.safeParse(
+        JSON.parse(userPayload.listOfPurchaseItemAsStr)
+      );
+    if (!listOfPurchaseItemUserPayload) return { error: "Invalid payload" };
+
+    const savedPurchaseId = await db.transaction(async (tx) => {
       const imageId: string | null = await tx.transaction(async (tx) => {
         try {
           const processedImageMetadata = await imageFormValidator(
             image,
-            purchasedAt
+            userPayload.purchasedAt
           );
+
           if (!processedImageMetadata) return null;
-          const [uploadedImage] = await db
+
+          const newImageDbPayoad: NewImageDbPayload = {
+            ...processedImageMetadata,
+            creatorId,
+            ownerId,
+          };
+          const [savedImage] = await tx
             .insert(images)
-            .values(processedImageMetadata)
+            .values(newImageDbPayoad)
             .returning({ imageId: images.id });
 
-          return uploadedImage.imageId;
+          return savedImage.imageId;
         } catch (error) {
           console.log(error);
-          tx.rollback();
+          tx.rollback(); // rollback on image tx scope
           return null;
         }
       });
 
-      const [newPurchase] = await tx
+      const newPurchaseDbPayload: NewPurchaseDbPayload = {
+        id: generateId(10),
+        creatorId,
+        ownerId,
+        imageId: imageId,
+        vendorId: userPayload.vendorId,
+        purchasedAt: new Date(userPayload.purchasedAt),
+        totalPrice: userPayload.totalPrice,
+      };
+
+      const [savedPurchase] = await tx
         .insert(purchases)
-        .values({
-          id: generateId(10),
-          imageId: imageId,
-          vendorId,
-          purchasedAt: new Date(purchasedAt),
-          totalPrice: parseInt(totalPrice),
-          createdAt: new Date(),
-        })
+        .values(newPurchaseDbPayload)
         .returning({ id: purchases.id });
 
-      const payload = items.map((item) => ({
-        ...item,
-        purchaseId: newPurchase.id,
-        id: generateId(14),
-      }));
-      const purchasedItemId = payload.map((item) => item.id);
+      const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
+        listOfPurchaseItemUserPayload.map((item) => ({
+          ...item,
+          id: generateId(14),
+          purchaseId: savedPurchase.id,
+          creatorId,
+          ownerId,
+        }));
+      await tx.insert(purchasedItems).values(listOfPurchaseItemDbPayload);
 
-      await tx.insert(purchasedItems).values(payload);
+      const listOfPurchaseItemId = listOfPurchaseItemDbPayload.map(
+        (item) => item.id
+      );
       await tx
         .update(purchases)
-        .set({ purchasedItemId })
-        .where(eq(purchases.id, newPurchase.id));
-      return newPurchase.id;
+        .set({ purchasedItemId: listOfPurchaseItemId })
+        .where(eq(purchases.id, savedPurchase.id));
+      return savedPurchase.id;
     });
 
     revalidateTag("transaction");
     revalidatePath("/transaction");
     return {
-      message: `Transaction ${id} created`,
-      data: id,
+      message: `Transaction ${savedPurchaseId} saved`,
+      data: savedPurchaseId,
     };
   } catch (error) {
     console.log(error);
 
-    return { error: "Transaksi Gagal" };
+    return { error: "Fail to save transaction" };
   }
 }
 
@@ -96,8 +140,11 @@ async function imageFormValidator(
   purchasedAt: string
 ): Promise<{ id: string; originalFileName: string } | null> {
   // Validate
-  if (typeof image === "string" || image === null) {
-    return null;
+  if (image === null) return null;
+
+  if (typeof image === "string") {
+    // User submit something but it is a string
+    throw new Error("Image payload not a file");
   }
   const allowedExtension = [".jpg", ".jpeg"];
   // Image metadata validate and processing

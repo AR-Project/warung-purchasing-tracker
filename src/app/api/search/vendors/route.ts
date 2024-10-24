@@ -2,6 +2,8 @@ import Fuse from "fuse.js";
 import db from "@/infrastructure/database/db";
 import { vendors } from "@/lib/schema/schema";
 import { unstable_cache } from "next/cache";
+import { auth } from "@/auth";
+import { eq } from "drizzle-orm";
 
 const getCachedVendorsLoaders = unstable_cache(
   async () => await db.select().from(vendors),
@@ -10,12 +12,21 @@ const getCachedVendorsLoaders = unstable_cache(
 );
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+  const { parentId } = session.user;
+
   const { keyword } = (await req.json()) as unknown as {
     keyword: string;
   };
 
   // const allVendors = await getCachedVendorsLoaders();
-  const allVendors = await db.select().from(vendors);
+  const allVendors = await db
+    .select()
+    .from(vendors)
+    .where(eq(vendors.ownerId, parentId));
 
   const fuse = new Fuse(allVendors, {
     includeScore: true,

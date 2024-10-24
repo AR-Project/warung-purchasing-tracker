@@ -7,12 +7,15 @@ import PurchaseItemDisplayer from "./_component/PurchaseItemDisplayer";
 import { BackButton } from "./edit/_presentation/BackButton";
 
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
+import { auth } from "@/auth";
 
 type Props = {
   params: { purchaseId: string };
 };
 
 export default async function Page({ params }: Props) {
+  const session = await auth();
+
   const details = await singlePurchaseLoader(params.purchaseId);
   if (!details) {
     notFound();
@@ -22,7 +25,7 @@ export default async function Page({ params }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-row gap-3 items-center mb-4">
+      <div className="flex flex-row gap-3 items-center mb-4 max-w-md mx-auto w-full">
         <BackButton />
         <div>Purchase Details</div>
       </div>
@@ -42,14 +45,16 @@ export default async function Page({ params }: Props) {
         purchaseItems={purchaseItems}
         totalPrice={totalPrice}
       />
-      <div className="flex flex-row gap-2">
-        <Link
-          className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center "
-          href={`./${purchaseId}/edit`}
-        >
-          Edit Purchase Details
-        </Link>
-      </div>
+      {session && (
+        <div className="flex flex-row gap-2">
+          <Link
+            className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center "
+            href={`./${purchaseId}/edit`}
+          >
+            Edit Purchase Details
+          </Link>
+        </div>
+      )}
 
       {details.imageId && <DisplayImage imageId={details.imageId} />}
     </div>
