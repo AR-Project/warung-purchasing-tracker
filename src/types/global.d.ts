@@ -25,6 +25,14 @@ declare global {
   type SearchParams = { [key: string]: string | string[] | undefined };
 
   /** ENTITIES */
+  type AvailableUserRole = "admin" | "manager" | "staff" | "guest";
+
+  type UserSession = {
+    userId: string;
+    parentId: string;
+    username: string;
+  };
+
   type Item = {
     id: string;
     name: string;

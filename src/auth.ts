@@ -4,32 +4,20 @@ import { type JWT } from "next-auth/jwt";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { verify } from "@node-rs/argon2";
+import { revalidatePath } from "next/cache";
 
 import db from "./infrastructure/database/db";
 import { user } from "./lib/schema/user";
-import { revalidatePath } from "next/cache";
 
 declare module "next-auth/jwt" {
-  interface JWT {
-    userId: string;
-    parentId: string;
-    username: string;
-  }
+  interface JWT extends UserSession {}
 }
 
 declare module "next-auth" {
-  interface User {
-    username: string;
-    parentId: string;
-    userId: string;
-  }
+  interface User extends UserSession {}
 
   interface Session {
-    user: {
-      userId: string;
-      parentId: string;
-      username: string;
-    };
+    user: UserSession;
   }
 }
 
@@ -109,13 +97,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     jwt({ token, user }) {
       if (user) {
-        // User is available during sign-in
+        token.parentId = user.parentId;
         token.userId = user.userId;
         token.username = user.username;
       }
       return token;
     },
     session({ session, token }) {
+      session.user.parentId = token.parentId;
       session.user.userId = token.userId;
       session.user.username = token.username;
       return session;
