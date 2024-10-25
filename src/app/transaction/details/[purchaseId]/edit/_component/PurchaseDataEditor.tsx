@@ -13,7 +13,7 @@ export type EditorType =
   | "edit-data-item";
 
 type Props = {
-  purchase: PurchaseEditor;
+  purchase: PurchaseToEdit;
 };
 
 export function PurchaseDataEditor({ purchase }: Props) {

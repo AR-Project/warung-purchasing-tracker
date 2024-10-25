@@ -3,19 +3,31 @@ import db from "@/infrastructure/database/db";
 import { items } from "@/lib/schema/schema";
 import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
+import { auth } from "@/auth";
 
 export async function POST(req: Request) {
+  const session = await auth();
+  if (!session) {
+    return Response.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { parentId } = session.user;
+
   const { keyword } = (await req.json()) as unknown as {
     keyword: string;
   };
 
   const getCachedItemsLoaders = unstable_cache(
-    async () => await db.select().from(items),
+    async () =>
+      await db.select().from(items).where(eq(items.ownerId, parentId)),
     [],
     { tags: ["items"] }
   );
   // const allItems = await getCachedItemsLoaders();
-  const allItems = await db.select().from(items);
+  const allItems = await db
+    .select()
+    .from(items)
+    .where(eq(items.ownerId, parentId));
 
   const fuse = new Fuse(allItems, {
     includeScore: true,

@@ -4,9 +4,16 @@ import ImageUploader from "../_component/ImageUploader";
 import RemoveImage from "../_component/RemoveImage";
 import Image from "next/image";
 import { imagesLoader } from "./_loader/imagesLoader";
+import { auth } from "@/auth";
+import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
 
 export default async function UploadImage() {
-  const imagesList = await imagesLoader();
+  const session = await auth();
+  if (!session) {
+    return <LoginRequiredWarning />;
+  }
+
+  const imagesList = await imagesLoader(session.user.parentId);
 
   return (
     <>

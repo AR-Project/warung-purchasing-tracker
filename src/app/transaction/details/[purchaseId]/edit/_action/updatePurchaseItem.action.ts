@@ -2,25 +2,31 @@
 
 import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases, vendors } from "@/lib/schema/schema";
-import { revalidatePath } from "next/cache";
+import {
+  NewPurchaseItemDbPayload,
+  purchasedItems,
+  purchases,
+} from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
+import { getUserInfo } from "@/lib/utils/auth";
+import { user } from "@/lib/schema/user";
 
 export async function updatePurchaseItemAction(
   prevState: any,
   formData: FormData
 ) {
   const purchaseId = formData.get("purchase-id");
-  const itemsRaw = formData.get("items-to-add");
+  const listOfPurchaseItemRaw = formData.get("items-to-add");
 
-  const payloadSchema = z.object({
+  const userPayloadSchema = z.object({
     purchaseId: z.string(),
-    itemsStrings: z.string(),
+    listOfPurchaseItemAsStr: z.string(),
   });
 
-  const itemsSchema = z.array(
+  const listOfPurchaseItemSchema = z.array(
     z.object({
       itemId: z.string(),
       quantityInHundreds: z.number(),
@@ -29,48 +35,90 @@ export async function updatePurchaseItemAction(
     })
   );
 
-  let payloadError: string | undefined;
+  let invariantError: string | undefined;
+  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
 
   try {
-    const payload = payloadSchema.parse({
+    const { userId, parentId } = await getUserInfo();
+
+    const { data: payload } = userPayloadSchema.safeParse({
       purchaseId,
-      itemsStrings: itemsRaw,
+      listOfPurchaseItemAsStr: listOfPurchaseItemRaw,
     });
+    if (!payload) {
+      invariantError = "Invalid Payload";
+      throw new Error(invariantError);
+    }
 
-    const itemsToAddPayload: PurchasedItemPayload[] = itemsSchema.parse(
-      JSON.parse(payload.itemsStrings)
-    );
+    const {
+      data: listOfPurchaseItemPayload,
+    }: { data?: CreatePurchaseItemPayload[] } =
+      listOfPurchaseItemSchema.safeParse(
+        JSON.parse(payload.listOfPurchaseItemAsStr)
+      );
 
-    const itemsToAdd = itemsToAddPayload.map((item) => ({
-      ...item,
-      purchaseId: payload.purchaseId,
-      id: generateId(14),
-    }));
+    if (!listOfPurchaseItemPayload) {
+      invariantError = "Invalid list of purchase item structure";
+      throw new Error(invariantError);
+    }
 
-    const id = await db.transaction(async (tx) => {
+    const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
+      listOfPurchaseItemPayload.map((item) => ({
+        ...item,
+        creatorId: userId,
+        ownerId: parentId,
+        purchaseId: payload.purchaseId,
+        id: generateId(14),
+      }));
+
+    await db.transaction(async (tx) => {
+      // Validate role
+      const [currentUser] = await tx
+        .select({ role: user.role })
+        .from(user)
+        .where(eq(user.id, userId));
+      if (!allowedRole.includes(currentUser.role)) {
+        invariantError = "Not Allowed";
+        tx.rollback();
+      }
+
+      // Validate Purchase
       const currentPurchase = await tx
         .select()
         .from(purchases)
         .where(eq(purchases.id, payload.purchaseId));
-
       if (currentPurchase.length == 0) {
-        payloadError = "Purchase not exist";
+        invariantError = "Purchase not exist";
         tx.rollback();
       }
 
-      const totalPriceOfitemToAdd = itemsToAdd.reduce(
+      // Validate authorization on current purchase
+      const { creatorId, ownerId } = currentPurchase[0];
+      if (![creatorId, ownerId].includes(userId)) {
+        invariantError = "Not an owner / creator";
+        tx.rollback();
+      }
+
+      const listOfPurchaseItemTotalPrice = listOfPurchaseItemDbPayload.reduce(
         (total, item) => total + item.totalPrice,
         0
       );
-      await tx.insert(purchasedItems).values(itemsToAdd);
 
+      const newPurchaseTotalPrice =
+        currentPurchase[0].totalPrice + listOfPurchaseItemTotalPrice;
+
+      const newListOfPurchaseItemId = listOfPurchaseItemDbPayload.map(
+        (item) => item.id
+      );
+
+      await tx.insert(purchasedItems).values(listOfPurchaseItemDbPayload);
       await tx
         .update(purchases)
         .set({
-          totalPrice: currentPurchase[0].totalPrice + totalPriceOfitemToAdd,
+          totalPrice: newPurchaseTotalPrice,
           purchasedItemId: [
             ...currentPurchase[0].purchasedItemId,
-            ...itemsToAdd.map((item) => item.id),
+            ...newListOfPurchaseItemId,
           ],
           modifiedAt: new Date(),
         })
@@ -80,17 +128,21 @@ export async function updatePurchaseItemAction(
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return {
       message: `Purchased Item Updated`,
-      data: id,
       timestamp: Date.now(),
     };
   } catch (error) {
-    if (error instanceof DrizzleError) {
-      return {
-        error: payloadError ? payloadError : "database Error",
-        timestamp: Date.now(),
-      };
+    if (invariantError) {
+      return { error: invariantError };
     }
 
-    return { error: "internal error", timestamp: Date.now() };
+    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
+      return { error: "Login first" };
+    }
+
+    if (error instanceof DrizzleError) {
+      return { error: error.message };
+    }
+
+    return { error: "internal error" };
   }
 }

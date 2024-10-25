@@ -7,8 +7,14 @@ type ServerAction<T> = (
 type OnSuccessCb<T> = (msg: string, data?: T) => void;
 type OnErrorCb = (error: string) => void;
 
-/** ServerAction wrapper, exposing callbacks. Can be used with regular server action */
-
+/**
+ * ServerAction wrapper, exposing callbacks. Can be used with regular server action
+ *
+ * @param serverAction A server Action that return FormState
+ * @param onSuccess Callback when action is success. Passing message and data (optional)
+ * @param onError Callback when action is fail. Passing error message as string
+ * @returns An array contains form action ready to passed to form action.
+ */
 export function useServerAction<T = any>(
   serverAction: ServerAction<T>,
   onSuccess: OnSuccessCb<T>,

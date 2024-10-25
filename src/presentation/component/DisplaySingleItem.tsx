@@ -3,7 +3,7 @@ import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 import Link from "next/link";
 
 type Props = {
-  item: DisplaySingleItem;
+  item: PurchaseItemDisplay;
   disableLink?: boolean;
 };
 

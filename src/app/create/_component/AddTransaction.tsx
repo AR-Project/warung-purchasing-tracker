@@ -15,8 +15,11 @@ const ComboVendorForm = dynamic(() => import("./ComboVendorForm"));
 
 const INITIAL: Vendor = { id: "", name: "" };
 
+// Component name should be "PurchaseCreator"
 export default function AddTransaction() {
-  const [itemsOnCart, setItemOnCart] = useState<PurchasedItem[]>([]);
+  const [itemsOnCart, setItemsOnCart] = useState<CreatePurchaseItemWithName[]>(
+    []
+  );
   const [selectedItemOnCart, setSelectedItemOnCart] = useState<string>("");
 
   const [selectedVendor, setSelectedVendor] = useState<Vendor>(INITIAL);
@@ -24,17 +27,20 @@ export default function AddTransaction() {
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
 
   // Manipulate Item List
-  const appendItemOnCart = (item: PurchasedItem) => {
+  const appendItemOnCart = (item: CreatePurchaseItemWithName) => {
     const isAlreadyAdded =
       itemsOnCart.filter((addedItem) => addedItem.itemId == item.itemId)
         .length > 0;
 
-    if (isAlreadyAdded) return { error: "Tambahkan item lain" };
-    setItemOnCart((prevItems) => [...prevItems, item]);
+    if (isAlreadyAdded) return "Tambahkan item lain";
+    setItemsOnCart((prevItems) => [...prevItems, item]);
   };
 
-  const updateItemOnCart = (updatedItem: PurchasedItem, index: number) => {
-    setItemOnCart((prevItemsList) => {
+  const updateItemOnCart = (
+    updatedItem: CreatePurchaseItemWithName,
+    index: number
+  ) => {
+    setItemsOnCart((prevItemsList) => {
       const newList = [...prevItemsList];
       newList[index] = updatedItem;
       return newList;
@@ -42,7 +48,7 @@ export default function AddTransaction() {
   };
 
   const deleteItemOnCart = (itemIndex: number) => {
-    setItemOnCart((prevItems) =>
+    setItemsOnCart((prevItems) =>
       [...prevItems].filter((_, index) => index != itemIndex)
     );
   };
@@ -62,7 +68,7 @@ export default function AddTransaction() {
     const length = itemsOnCart.length;
     if (index < 0 || index >= length) return;
 
-    setItemOnCart((prevItemList) => {
+    setItemsOnCart((prevItemList) => {
       const newList = [...prevItemList];
       if (direction === "up" && index > 0) {
         [newList[index], newList[index - 1]] = [
@@ -85,7 +91,7 @@ export default function AddTransaction() {
     setTxDate("");
     setSelectedVendor(INITIAL);
     setResizedImage(null);
-    setItemOnCart([]);
+    setItemsOnCart([]);
   }
 
   return (
@@ -137,7 +143,7 @@ export default function AddTransaction() {
       <MakePurchaseHiddenForm
         purchasedAt={txDate}
         vendorId={selectedVendor.id}
-        itemsList={itemsOnCart}
+        listOfPurchaseItem={itemsOnCart}
         totalPurchase={totalPurchase}
         image={resizedImage}
         clearFrom={resetAddTxForm}

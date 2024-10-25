@@ -16,7 +16,7 @@ import { formatNumberToIDR } from "@/lib/utils/formatter";
 
 type Props = {
   purchaseId: string;
-  purchasedItem: PurchasedItemsEditor;
+  purchasedItem: PurchaseItemToEdit;
 };
 
 export default function PurchaseItemDataEditor(props: Props) {

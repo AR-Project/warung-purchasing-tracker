@@ -1,8 +1,8 @@
 import { toast } from "react-toastify";
 import { MdSave } from "react-icons/md";
 
-import { updatePurchaseVendor } from "../_action/updatePurchaseVendor";
 import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
+import { updatePurchaseVendor } from "../_action/updatePurchaseVendor.action";
 
 type Props<T> = {
   purchaseId: string;

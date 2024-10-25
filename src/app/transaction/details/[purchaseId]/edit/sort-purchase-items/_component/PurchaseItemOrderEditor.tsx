@@ -24,7 +24,7 @@ import { useRouter } from "next/navigation";
 import { updateListOrderOfPurchaseItem } from "../_action/UpdatePurchaseItemsOrder.action";
 
 type Props = {
-  listOfPurchaseItem: DisplaySingleItem[];
+  listOfPurchaseItem: PurchaseItemDisplay[];
   purchaseId: string;
 };
 

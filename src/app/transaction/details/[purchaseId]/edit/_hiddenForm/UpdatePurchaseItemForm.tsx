@@ -8,13 +8,13 @@ import { updatePurchaseItemAction } from "../_action/updatePurchaseItem.action";
 
 type Props<T> = {
   purchaseId: string;
-  purchaseItems: PurchasedItemPayload[];
+  payload: CreatePurchaseItemPayload[];
   onSuccess: () => void;
 };
 
 export default function UpdatePurchaseItemForm({
   purchaseId,
-  purchaseItems,
+  payload,
   onSuccess,
 }: Props<Vendor>) {
   const [formAction] = useForm(
@@ -38,7 +38,7 @@ export default function UpdatePurchaseItemForm({
         type="hidden"
         name="items-to-add"
         id="items-to-add"
-        value={JSON.stringify(purchaseItems)}
+        value={JSON.stringify(payload)}
       />
       <button
         type="submit"

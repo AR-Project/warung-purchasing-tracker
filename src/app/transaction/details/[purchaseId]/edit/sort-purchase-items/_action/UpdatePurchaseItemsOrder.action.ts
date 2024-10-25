@@ -1,10 +1,12 @@
 "use server";
 import { z } from "zod";
-import { eq } from "drizzle-orm";
+import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
 import { purchases } from "@/lib/schema/schema";
+import { user } from "@/lib/schema/user";
+import { getUserInfo } from "@/lib/utils/auth";
 
 export async function updateListOrderOfPurchaseItem(formData: FormData) {
   const purchaseIdRaw = formData.get("purchase-id");
@@ -18,53 +20,81 @@ export async function updateListOrderOfPurchaseItem(formData: FormData) {
   const updatedListSchema = z.string().array();
 
   let invariantError: string | undefined;
+  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
+
   try {
+    const { userId } = await getUserInfo();
+
     const payload = schema.parse({
       purchaseId: purchaseIdRaw,
       updatedListString: updatedListStringRaw,
     });
 
-    const updatedListOfPurchaseItemIds = updatedListSchema.parse(
+    const newListOfPurchaseItemId = updatedListSchema.parse(
       JSON.parse(payload.updatedListString)
     );
 
     await db.transaction(async (tx) => {
-      const purchase = await tx
+      // Validate role
+      const [currentUser] = await tx
+        .select({ role: user.role })
+        .from(user)
+        .where(eq(user.id, userId));
+      if (!allowedRole.includes(currentUser.role)) {
+        invariantError = "Not Allowed";
+        tx.rollback();
+      }
+
+      // Validate Purchase
+      const currentPurchase = await tx
         .select()
         .from(purchases)
         .where(eq(purchases.id, payload.purchaseId));
-
-      if (purchase.length == 0) {
+      if (currentPurchase.length == 0) {
         invariantError = "purchase Not Exist";
         tx.rollback();
       }
 
+      // Validate Authorization
+      const { creatorId, ownerId } = currentPurchase[0];
+      if (![creatorId, ownerId].includes(userId)) {
+        invariantError = "Not Allowed";
+        tx.rollback();
+      }
+
+      // Validate length of purchase
       if (
         !arraysHaveEqualElements(
-          purchase[0].purchasedItemId,
-          updatedListOfPurchaseItemIds
+          currentPurchase[0].purchasedItemId,
+          newListOfPurchaseItemId
         )
       ) {
-        invariantError = "List of purchaseItem contain different item";
+        invariantError = "List of purchaseItem contain different item id";
         tx.rollback();
       }
 
       await tx
         .update(purchases)
         .set({
-          purchasedItemId: updatedListOfPurchaseItemIds,
+          purchasedItemId: newListOfPurchaseItemId,
           modifiedAt: new Date(),
         })
         .where(eq(purchases.id, payload.purchaseId))
         .returning({ id: purchases.id });
     });
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
-    return { message: `Order Changed` };
+    return { message: `Purchase Item Order Changed` };
   } catch (error) {
-    if (error instanceof Error) {
-      return {
-        error: invariantError ? invariantError : error.message,
-      };
+    if (invariantError) {
+      return { error: invariantError };
+    }
+
+    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
+      return { error: "Login first" };
+    }
+
+    if (error instanceof DrizzleError) {
+      return { error: error.message };
     }
 
     return { error: "internal error" };

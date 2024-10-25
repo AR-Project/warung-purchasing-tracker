@@ -11,12 +11,15 @@ type DeleteItemFn = (index: number) => void;
 type OnClickFn = (itemId: string) => void;
 
 type ItemCardProps = {
-  item: PurchasedItem;
+  item: CreatePurchaseItemWithName;
   index: number;
   isActive: boolean;
   onClick: OnClickFn;
   deleteItem: DeleteItemFn;
-  editPurchasedItem: (updatedItem: PurchasedItem, index: number) => void;
+  editPurchasedItem: (
+    updatedItem: CreatePurchaseItemWithName,
+    index: number
+  ) => void;
 };
 
 type MoveButtonProps = {
@@ -68,7 +71,7 @@ export function ItemOnCartCard({
       >
         <EditItemDataOnCart
           updateItem={editPurchasedItem}
-          purchasedItem={item}
+          prevPurchaseItem={item}
           itemIndex={index}
         />
         <DeleteButton deleteItem={deleteItem} index={index} />

@@ -8,9 +8,8 @@ type Props = {
 };
 
 export default async function Page({ params }: Props) {
-  const listOfPurchaseItem: DisplaySingleItem[] = await sortPurchaseItemsLoader(
-    params.purchaseId
-  );
+  const listOfPurchaseItem: PurchaseItemDisplay[] =
+    await sortPurchaseItemsLoader(params.purchaseId);
   return (
     <div className="max-w-md mx-auto flex flex-col gap-4">
       <div className="w-full flex flex-row gap-2 justify-start items-center">

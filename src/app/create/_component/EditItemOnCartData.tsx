@@ -15,19 +15,19 @@ import { NumericFormat } from "react-number-format";
 import { toast } from "react-toastify";
 
 type Props = {
-  updateItem: (updatedItem: PurchasedItem, index: number) => void;
-  purchasedItem: PurchasedItem;
+  updateItem: (updatedItem: CreatePurchaseItemWithName, index: number) => void;
+  prevPurchaseItem: CreatePurchaseItemWithName;
   itemIndex: number;
 };
 
 export default function EditItemDataOnCart({
   itemIndex,
-  purchasedItem,
+  prevPurchaseItem,
   updateItem,
 }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const [currentPurchasedItem, setCurrentPurchasedItem] =
-    useState<PurchasedItem>(purchasedItem);
+    useState<CreatePurchaseItemWithName>(prevPurchaseItem);
   const [quantity, setQuantity] = useState<number | "">(
     currentPurchasedItem.quantityInHundreds / 100
   );
@@ -95,7 +95,7 @@ export default function EditItemDataOnCart({
                   as="h3"
                   className="text-xl font-bold text-white mb-5"
                 >
-                  Ubah Jumlah - {purchasedItem.name}
+                  Ubah Jumlah - {prevPurchaseItem.name}
                 </DialogTitle>
                 <div className="flex flex-col gap-1">
                   <div className="flex flex-row gap-5">

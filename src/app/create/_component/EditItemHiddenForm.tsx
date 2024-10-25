@@ -7,7 +7,7 @@ import { ImCancelCircle, ImCheckmark } from "react-icons/im";
 
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
-import { editItem } from "../editItem.action";
+import { editItem } from "../_action/editItem.action";
 
 type Props = {
   selectedItem: Item;

@@ -1,10 +1,10 @@
 "use client";
-import { type SetStateAction, useCallback, useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import { type SetStateAction } from "react";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
 import { newVendor } from "@/app/_globalAction/newVendor.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props<T> = {
   name: string | undefined;
@@ -17,29 +17,16 @@ export default function AddVendorHiddenForm<T>({
   setSelected,
   setNewName,
 }: Props<Vendor>) {
-  const [state, formAction] = useFormState<FormState<string>, FormData>(
+  const [formAction] = useServerAction(
     newVendor,
-    {}
-  );
-  const [isFormStateChanged, setIsFormStateChanged] = useState<boolean>(false);
-
-  useEffect(() => {
-    setIsFormStateChanged(true);
-  }, [state]);
-
-  if (isFormStateChanged) {
-    if (state.message) {
-      toast.success(state.message);
-      if (state.data && name) setSelected({ id: state.data, name });
+    (msg, data) => {
+      if (!data || !name) return;
+      toast.success(msg);
+      setSelected({ id: data, name });
       setNewName(undefined);
-    }
-
-    if (state.error) {
-      toast.error(state.error);
-    }
-    setIsFormStateChanged(false);
-  }
-
+    },
+    (err) => toast.error(err)
+  );
   return (
     <>
       <form action={formAction} className="flex flex-row ">

@@ -5,16 +5,18 @@ import { shortDateWithDay, formatNumberToIDR } from "@/lib/utils/formatter";
 import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
 
 type Props = {
-  singlePurchase: DisplaySinglePurchase;
+  singlePurchase: PurchaseDisplay;
 };
 
 export function SinglePurchaseCard({ singlePurchase }: Props) {
   return (
-    <div className="flex flex-col">
+    <div className="group flex flex-col">
       <Link
         href={`/transaction/details/${singlePurchase.id}`}
-        className="card bg-gray-900 border border-gray-700"
+        className="group relative card bg-gray-900 border border-gray-700"
       >
+        <div className="CARD-OVERLAY transition-colors ease-in-out duration-150 group-hover:bg-white/10 bg-white/0 absolute w-full h-full top-0 left-0  z-50"></div>
+
         <hgroup className="bg-blue-900 p-2 flex flex-row justify-between">
           <div className="flex flex-col items-baseline uppercase ">
             <time className="font-bold">

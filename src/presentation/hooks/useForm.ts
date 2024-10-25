@@ -20,6 +20,8 @@ type OnErrorCallback = (error: string) => void;
  *
  *
  * @example {..., timestamp: Date.Now().toString()}
+ * @deprecated unstable state monitoring when hooks called
+ * from component that remounted when state changed
  *
  */
 export function useForm<ReturnedData = any>(
