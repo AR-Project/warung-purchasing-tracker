@@ -9,7 +9,7 @@ import { NewVendorDbPayload, vendors } from "@/lib/schema/schema";
 import { getUserInfo } from "@/lib/utils/auth";
 import { generateId } from "@/lib/utils/generator";
 
-export async function newVendor(prevState: any, formData: FormData) {
+export async function newVendor(formData: FormData) {
   const nameRaw = formData.get("name");
   let invariantError: string | undefined;
 

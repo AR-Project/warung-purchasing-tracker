@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
 import { newItemAction } from "../_action/newItem.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
   name: string | undefined;
@@ -17,32 +18,18 @@ export default function AddItemHiddenForm({
   setSelectedItem,
   setNewItemName,
 }: Props) {
-  const [state, formAction] = useFormState<FormState<string>, FormData>(
+  const [formAction] = useServerAction(
     newItemAction,
-    {}
+    (msg, data) => {
+      toast.success(msg);
+      if (!data || !name) return;
+      setSelectedItem({ id: data, name });
+      setNewItemName(undefined);
+    },
+    (err) => {
+      toast.error(err);
+    }
   );
-
-  const [isStateUpdated, setIsStateUpdated] = useState<boolean>(false);
-
-  if (isStateUpdated) {
-    if (state.message) {
-      toast.success(state.message);
-      if (state.data && name) {
-        setSelectedItem({ id: state.data, name });
-        setNewItemName(undefined);
-      }
-    }
-
-    if (state.error) {
-      toast.error(state.error);
-    }
-    setIsStateUpdated(false);
-  }
-
-  useEffect(() => {
-    setIsStateUpdated(true);
-  }, [state]);
-
   return (
     <>
       <form action={formAction} className="flex flex-row gap-0.5">

@@ -7,10 +7,11 @@ import { z } from "zod";
 import db from "@/infrastructure/database/db";
 import { items, NewItemDbPayload } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
-import { isString } from "@/lib/utils/validator";
 import { getUserInfo } from "@/lib/utils/auth";
 
-export async function newItemAction(prevState: any, formData: FormData) {
+export async function newItemAction(
+  formData: FormData
+): Promise<FormState<string>> {
   const nameRaw = formData.get("name");
   let invariantError: string | undefined;
 
