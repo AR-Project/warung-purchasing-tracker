@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
-import AddTransaction from "./_component/AddTransaction";
 import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
+import PurchaseCreator from "./_component/PurchaseCreator";
 
 export default async function Create() {
   const session = await auth();
@@ -8,7 +8,7 @@ export default async function Create() {
 
   return (
     <>
-      <AddTransaction />
+      <PurchaseCreator />
     </>
   );
 }

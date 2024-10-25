@@ -15,8 +15,7 @@ const ComboVendorForm = dynamic(() => import("./ComboVendorForm"));
 
 const INITIAL: Vendor = { id: "", name: "" };
 
-// Component name should be "PurchaseCreator"
-export default function AddTransaction() {
+export default function PurchaseCreator() {
   const [itemsOnCart, setItemsOnCart] = useState<CreatePurchaseItemWithName[]>(
     []
   );
