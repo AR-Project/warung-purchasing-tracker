@@ -13,6 +13,7 @@ type Props = {
   setNewItemName: (value: SetStateAction<string | undefined>) => void;
 };
 
+/** @deprecated */
 export default function AddItemHiddenForm({
   name,
   setSelectedItem,
@@ -23,7 +24,7 @@ export default function AddItemHiddenForm({
     (msg, data) => {
       toast.success(msg);
       if (!data || !name) return;
-      setSelectedItem({ id: data, name });
+      setSelectedItem(data);
       setNewItemName(undefined);
     },
     (err) => {
