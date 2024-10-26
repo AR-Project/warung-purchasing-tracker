@@ -8,39 +8,36 @@ import {
 import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import { toast } from "react-toastify";
-import { LuLoader2 } from "react-icons/lu";
 import { NumericFormat } from "react-number-format";
 import { MdAdd } from "react-icons/md";
 
-import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
-import { searchItems } from "@/lib/api";
+import useList from "@/presentation/hooks/useList";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
-
 import { ResetItemInputButton } from "../_presentation/ResetItemInputButton";
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
+import { newItemAction } from "../_action/newItem.action";
 
 const EditItemHiddenForm = dynamic(() => import("./EditItemHiddenForm"));
-const AddItemHiddenForm = dynamic(() => import("./AddItemHiddenForm"));
 
 type Props = {
+  initialItems: { id: string; name: string }[];
   appendItemOnCart: (item: CreatePurchaseItemWithName) => string | undefined;
 };
 
-const INITIAL: Vendor = { id: "", name: "" };
-
 type NumberFormState = number | "";
 
-export default function ComboItemForm({ appendItemOnCart }: Props) {
-  const [loading, setLoading] = useState<boolean>(false);
+export default function ComboItemForm({
+  initialItems,
+  appendItemOnCart,
+}: Props) {
   const [error, setError] = useState<boolean>(false);
-  const [itemsSelection, setItemsSelection] = useState<Item[]>([]);
 
+  const { filteredList, refreshList, search } = useList(
+    "/api/list/item",
+    initialItems
+  );
   const [query, setQuery] = useState("");
-  const [delayedQuery] = useDelayQuery(query, 500);
-
-  const [newItemName, setNewItemName] = useState<string | undefined>();
-
-  const [selectedItem, setSelectedItem] = useState<Item>({ id: "", name: "" });
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const [quantity, setQuantity] = useState<NumberFormState>("");
   const [unitPrice, setUnitPrice] = useState<NumberFormState>("");
@@ -48,69 +45,36 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
 
   const itemFieldRef = useRef<HTMLInputElement>(null);
 
-  const comboBoxOnChangeHandler = (value: NoInfer<Item> | null) => {
-    value && setSelectedItem(value);
-  };
+  const isCreateModeActive =
+    selectedItem !== null && selectedItem.id === "pending";
 
-  const onCloseComboBox = () => {
-    newItemName ? setQuery(newItemName) : setQuery("");
-  };
+  const isEditItemModeEnabled =
+    selectedItem !== null && selectedItem.id !== "pending";
 
-  const comboBoxDisplayValue = (item: Item) => {
-    return newItemName ? newItemName : item.name;
-  };
+  function updateItem(data: Item) {
+    setSelectedItem(data);
+  }
 
-  const resetComboForm = () => {
-    setSelectedItem(INITIAL);
-    setNewItemName(undefined);
+  function resetComboForm() {
+    setSelectedItem(null);
     setQuery("");
     setUnitPrice("");
     setTotalPrice("");
     setQuantity("");
     setError(false);
-  };
+  }
 
-  const searchItemsAction = async (delayedQuery: string) => {
-    if (delayedQuery.length < 3) return;
-    setLoading(true);
-    try {
-      const response = await searchItems(delayedQuery);
-      if (response.status === 200) {
-        const data = (await response.json()) as unknown as Item[];
-        setItemsSelection(data);
-        setNewItemName(undefined);
-      } else {
-        setNewItemName(query);
-        setItemsSelection([]);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  function isPayloadValid() {
+    const isItemValid = selectedItem !== null && selectedItem.id !== "pending";
+    const isQuantityValid = typeof quantity === "number" && quantity > 0;
+    const isUnitPriceValid = typeof unitPrice === "number" && unitPrice > 0;
 
-  const enableSubmitButton = () => {
-    const isItemSelected = selectedItem.id !== "";
-    const isQuantityProvided = typeof quantity === "number" && quantity > 0;
-    const isUnitPriceProvided = typeof unitPrice === "number" && unitPrice > 0;
-
-    if (isItemSelected && isQuantityProvided && isUnitPriceProvided)
-      return true;
+    if (isItemValid && isQuantityValid && isUnitPriceValid) return true;
     return false;
-  };
+  }
 
-  const displayEditButton = () => {
-    const isItemSelected = selectedItem.id !== "";
-    const isQueryEmpty = query === "";
-
-    if (isItemSelected && isQueryEmpty) return true;
-    return false;
-  };
-
-  const finalizeItem = () => {
+  function finalizeItem() {
+    if (!selectedItem) return;
     const result = appendItemOnCart({
       itemId: selectedItem.id,
       name: selectedItem.name,
@@ -124,59 +88,77 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
       itemFieldRef.current?.focus();
       return;
     }
-
     setError(true);
-  };
+  }
 
-  useStateChanged(() => {
-    setItemsSelection([]);
-    setError(false);
-  }, query);
+  const [newItemFormAction] = useServerAction(
+    newItemAction,
+    (msg, data) => {
+      if (!data) return;
+      refreshList();
+      updateItem(data);
+      toast.success(msg);
+    },
+    (err) => toast.error(err)
+  );
 
-  useStateChanged(() => {
-    searchItemsAction(delayedQuery);
-  }, delayedQuery);
+  function newItemHandler() {
+    const formData = new FormData();
+    if (selectedItem) formData.append("name", selectedItem.name);
+    newItemFormAction(formData);
+  }
 
   return (
     <div className="flex flex-col gap-2">
       <Combobox
         value={selectedItem}
-        onChange={comboBoxOnChangeHandler}
-        onClose={onCloseComboBox}
+        onChange={(value) => value && setSelectedItem(value)}
+        onClose={() => setQuery("")}
       >
         <div className="flex flex-row items-center">
           <ComboboxInput
             aria-label="Assignee"
             ref={itemFieldRef}
-            displayValue={comboBoxDisplayValue}
-            onChange={(event) => setQuery(event.target.value)}
-            className={`bg-gray-800 px-2 h-10 w-full border ${
+            displayValue={(item: Item | null) => (item ? item.name : "")}
+            onChange={(event) => {
+              search(event.target.value);
+              setQuery(event.target.value);
+              setError(false);
+            }}
+            className={`${
+              isCreateModeActive
+                ? "bg-yellow-800/50 border-yellow-600"
+                : "bg-gray-800"
+            } ${
               error ? "border-red-500" : "border-gray-600"
-            }`}
+            } px-2 h-10 w-full border `}
             placeholder="Ketik nama item..."
           />
-          {displayEditButton() && (
+          {isEditItemModeEnabled && (
             <EditItemHiddenForm
               selectedItem={selectedItem}
-              setSelectedItem={setSelectedItem}
+              updateItem={updateItem}
             />
           )}
 
-          {selectedItem.id !== "" && (
+          {isCreateModeActive && (
+            <button
+              onClick={() => newItemHandler()}
+              className=" flex flex-row gap-1 h-10 px-1.5 items-center bg-green-900 border border-gray-500 rounded-sm  w-fit hover:bg-green-800"
+            >
+              <MdAdd className="text-xl" />
+              <span className="text-xs">Simpan</span>
+            </button>
+          )}
+          {selectedItem && (
             <ResetItemInputButton resetComboForm={resetComboForm} />
           )}
 
-          <AddItemHiddenForm
-            name={newItemName}
-            setSelectedItem={setSelectedItem}
-            setNewItemName={setNewItemName}
-          />
-          {loading && <LuLoader2 className="ml-3 animate-spin text-3xl" />}
           <ComboboxOptions
             anchor="bottom start"
             className="border bg-gray-800 empty:invisible z-50 flex flex-col w-[400px]"
           >
-            {itemsSelection.map((item) => (
+            {filteredList.map((item) => (
               <ComboboxOption
                 key={item.id}
                 value={item}
@@ -185,9 +167,18 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
                 {item.name}
               </ComboboxOption>
             ))}
+            {query.length > 3 && (
+              <ComboboxOption
+                value={{ id: "pending", name: query }}
+                className="data-[focus]:bg-green-500/60 p-3 italic bg-green-900 flex flex-row gap-2"
+              >
+                <MdAdd className="text-xl" /> {query}
+              </ComboboxOption>
+            )}
           </ComboboxOptions>
         </div>
       </Combobox>
+
       <div className="grid grid-cols-3 gap-1 items-center">
         <NumericFormat
           className="bg-gray-800 border border-gray-500 p-1 rounded-sm"
@@ -234,10 +225,10 @@ export default function ComboItemForm({ appendItemOnCart }: Props) {
         <button
           onClick={finalizeItem}
           className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-fit ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed"
-          disabled={!enableSubmitButton()}
+          disabled={!isPayloadValid()}
         >
           <div className="flex flex-row gap-2 items-baseline">
-            <MdAdd /> Tambah item
+            <MdAdd /> Masukkan Keranjang
           </div>
         </button>
         {error && (

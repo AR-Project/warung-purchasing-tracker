@@ -42,7 +42,7 @@ export default function PurchaseCreator({
     setSelectedVendor(data);
   }
 
-  function resetAddTxForm() {
+  function resetAll() {
     setTxDate("");
     setSelectedVendor(null);
     setResizedImage(null);
@@ -93,7 +93,10 @@ export default function PurchaseCreator({
         {formatNumberToIDR(cartTotalPrice)}
       </h4>
       <Suspense fallback={<span>loading...</span>}>
-        <ComboItemForm appendItemOnCart={appendItemToCart} />
+        <ComboItemForm
+          initialItems={initialItems}
+          appendItemOnCart={appendItemToCart}
+        />
       </Suspense>
 
       <MakePurchaseHiddenForm
@@ -102,9 +105,11 @@ export default function PurchaseCreator({
         listOfPurchaseItem={itemsCart}
         totalPurchase={cartTotalPrice}
         image={resizedImage}
-        clearFrom={resetAddTxForm}
+        clearFrom={resetAll}
       />
-      <button onClick={() => resetAddTxForm()}>Reset</button>
+      <button tabIndex={-1} onClick={() => resetAll()}>
+        Reset
+      </button>
     </div>
   );
 }
