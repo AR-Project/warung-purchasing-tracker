@@ -36,7 +36,7 @@ export async function newVendor(formData: FormData) {
     revalidatePath("/create");
     return {
       message: `Vendor ${name} created`,
-      data: addedVendor.id,
+      data: { id: addedVendor.id, name },
     };
   } catch (error) {
     if (invariantError) {
