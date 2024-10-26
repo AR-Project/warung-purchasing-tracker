@@ -18,7 +18,7 @@ import {
 import { generateId } from "@/lib/utils/generator";
 import { getUserInfo } from "@/lib/utils/auth";
 
-export async function savePurchaseAction(prevState: any, formData: FormData) {
+export async function savePurchaseAction(formData: FormData) {
   const vendorIdRaw = formData.get("vendor-id");
   const purchasedAtRaw = formData.get("purchased-at");
   const listOfPurchaseItemAsStrRaw = formData.get("items");

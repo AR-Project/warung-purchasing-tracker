@@ -3,9 +3,7 @@ import { Suspense, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
-
 import { ItemOnCartCard } from "../_presentation/ItemOnCartCard";
-
 import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
 import DatePicker from "./DatePicker";
 
@@ -13,17 +11,23 @@ const ImageSelector = dynamic(() => import("./ImageSelector"));
 const ComboItemForm = dynamic(() => import("./ComboItemForm"));
 const ComboVendorForm = dynamic(() => import("./ComboVendorForm"));
 
-const INITIAL: Vendor = { id: "", name: "" };
+type Props = {
+  initialVendors: { id: string; name: string }[];
+};
 
-export default function PurchaseCreator() {
+export default function PurchaseCreator({ initialVendors }: Props) {
   const [itemsOnCart, setItemsOnCart] = useState<CreatePurchaseItemWithName[]>(
     []
   );
   const [selectedItemOnCart, setSelectedItemOnCart] = useState<string>("");
 
-  const [selectedVendor, setSelectedVendor] = useState<Vendor>(INITIAL);
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [txDate, setTxDate] = useState<string>("");
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
+
+  function selectVendor(data: Vendor | null) {
+    setSelectedVendor(data);
+  }
 
   // Manipulate Item List
   const appendItemOnCart = (item: CreatePurchaseItemWithName) => {
@@ -63,32 +67,9 @@ export default function PurchaseCreator() {
     0
   );
 
-  const moveItem = (index: number, direction: "up" | "down") => {
-    const length = itemsOnCart.length;
-    if (index < 0 || index >= length) return;
-
-    setItemsOnCart((prevItemList) => {
-      const newList = [...prevItemList];
-      if (direction === "up" && index > 0) {
-        [newList[index], newList[index - 1]] = [
-          newList[index - 1],
-          newList[index],
-        ];
-        // Swap with the previous item
-      } else if (direction === "down" && index < newList.length - 1) {
-        // Swap with the next item
-        [newList[index], newList[index + 1]] = [
-          newList[index + 1],
-          newList[index],
-        ];
-      }
-      return newList;
-    });
-  };
-
   function resetAddTxForm() {
     setTxDate("");
-    setSelectedVendor(INITIAL);
+    setSelectedVendor(null);
     setResizedImage(null);
     setItemsOnCart([]);
   }
@@ -99,8 +80,9 @@ export default function PurchaseCreator() {
 
       <Suspense fallback={<span>loading...</span>}>
         <ComboVendorForm
+          initialVendors={initialVendors}
           selectedVendor={selectedVendor}
-          setSelectedVendor={setSelectedVendor}
+          selectVendor={selectVendor}
         />
       </Suspense>
 
@@ -141,7 +123,7 @@ export default function PurchaseCreator() {
 
       <MakePurchaseHiddenForm
         purchasedAt={txDate}
-        vendorId={selectedVendor.id}
+        vendorId={selectedVendor ? selectedVendor.id : null}
         listOfPurchaseItem={itemsOnCart}
         totalPurchase={totalPurchase}
         image={resizedImage}

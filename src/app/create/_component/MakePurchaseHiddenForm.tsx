@@ -1,13 +1,12 @@
 "use client";
 
-import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 import { savePurchaseAction } from "../_action/savePurchase.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
   purchasedAt: string;
-  vendorId: string;
+  vendorId: string | null;
   listOfPurchaseItem: CreatePurchaseItemWithName[];
   totalPurchase: number;
   image: Blob | null;
@@ -22,18 +21,14 @@ function MakePurchaseHiddenForm({
   image,
   clearFrom,
 }: Props) {
-  const [state, formAction] = useFormState<FormState<string>, FormData>(
+  const [formAction] = useServerAction(
     savePurchaseAction,
-    {}
-  );
-
-  useStateChanged<FormState<string>>(() => {
-    if (state.error) toast.error(state.error);
-    if (state.message) {
-      toast.success(state.message);
+    (msg) => {
+      toast.success(msg);
       clearFrom();
-    }
-  }, state);
+    },
+    (err) => toast.error(err)
+  );
 
   /** Remove this data processing logic.
    * Move to parent component.
@@ -65,7 +60,7 @@ function MakePurchaseHiddenForm({
 
   return (
     <form action={interceptAction}>
-      <input type="hidden" name="vendor-id" value={vendorId} />
+      {vendorId && <input type="hidden" name="vendor-id" value={vendorId} />}
       <input type="hidden" name="purchased-at" value={purchasedAt} />
       <input type="hidden" name="total-price" value={totalPurchase} />
       <input
