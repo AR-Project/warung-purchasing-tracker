@@ -7,7 +7,7 @@ import { isString } from "@/lib/utils/validator";
 import { eq } from "drizzle-orm";
 import { revalidateTag, revalidatePath } from "next/cache";
 
-export async function editItem(prevState: any, formData: FormData) {
+export async function editItem(formData: FormData) {
   const id = formData.get("id");
   const newName = formData.get("name");
 
@@ -20,35 +20,38 @@ export async function editItem(prevState: any, formData: FormData) {
   try {
     const { userId } = await getUserInfo();
 
-    const itemId = await db.transaction(async (tx) => {
-      const existingListOfPurchaseItem = await tx
+    const changedItem = await db.transaction(async (tx) => {
+      // Validate Item Existence
+      const existingItems = await tx
         .select()
         .from(items)
         .where(eq(items.id, id));
-      if (existingListOfPurchaseItem.length === 0) {
-        invariantError = "No such Purchase Item";
+      if (existingItems.length === 0) {
+        invariantError = "No such Item";
         tx.rollback();
       }
 
-      const { creatorId, ownerId } = existingListOfPurchaseItem[0];
-
+      // Validate authorization
+      const { creatorId, ownerId } = existingItems[0];
       if (![creatorId, ownerId].includes(userId)) {
-        invariantError = "Unauthorized to delete image";
+        invariantError = "Unauthorized to edit Item";
         throw new Error(invariantError);
       }
-      const [changedPurchaseItem] = await db
+
+      // Append Item Name Change
+      const [changedItem] = await db
         .update(items)
         .set({ name: newName })
         .where(eq(items.id, id))
-        .returning({ id: items.id });
-      return changedPurchaseItem.id;
+        .returning({ id: items.id, name: items.name });
+      return changedItem;
     });
 
     revalidateTag("items");
     revalidatePath("/create");
     return {
       message: `Item name changed to ${newName}`,
-      data: itemId,
+      data: changedItem,
     };
   } catch (error) {
     console.log(error);
