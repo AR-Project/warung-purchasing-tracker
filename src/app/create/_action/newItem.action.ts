@@ -11,7 +11,7 @@ import { getUserInfo } from "@/lib/utils/auth";
 
 export async function newItemAction(
   formData: FormData
-): Promise<FormState<string>> {
+): Promise<FormState<Item>> {
   const nameRaw = formData.get("name");
   let invariantError: string | undefined;
 
@@ -32,13 +32,13 @@ export async function newItemAction(
     const [savedItem] = await db
       .insert(items)
       .values(newItemDbPayload)
-      .returning({ id: items.id });
+      .returning({ id: items.id, name: items.name });
 
     revalidateTag("items");
     revalidatePath("/create");
     return {
       message: `Item ${nameRaw} created`,
-      data: savedItem.id,
+      data: savedItem,
     };
   } catch (error) {
     if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
