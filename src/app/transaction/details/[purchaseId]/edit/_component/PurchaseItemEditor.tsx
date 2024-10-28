@@ -3,16 +3,8 @@ import { formatNumberToIDR } from "@/lib/utils/formatter";
 import DeletePurchaseSingleItemForm from "../_hiddenForm/DeletePurchaseSingleItemForm";
 import PurchaseItemDataEditor from "./PurchaseItemDataEditor";
 
-type PurchaseItem = {
-  id: string;
-  itemId: string;
-  name: string;
-  quantityInHundreds: number;
-  pricePerUnit: number;
-};
-
 type Props = {
-  purchaseItems: PurchaseItem[];
+  purchaseItems: PurchaseItemDisplay[];
   purchaseId: string;
   totalPrice: number;
 };
@@ -30,13 +22,13 @@ export default function PurchaseItemEditor({
           key={purchaseItem.id}
         >
           <DisplaySingleItem item={purchaseItem} />
-          <DeletePurchaseSingleItemForm
-            purchaseId={purchaseId}
-            purchaseItemId={purchaseItem.id}
-          />
           <PurchaseItemDataEditor
             purchaseId={purchaseId}
             purchasedItem={purchaseItem}
+          />
+          <DeletePurchaseSingleItemForm
+            purchaseId={purchaseId}
+            purchaseItemId={purchaseItem.id}
           />
         </div>
       ))}
