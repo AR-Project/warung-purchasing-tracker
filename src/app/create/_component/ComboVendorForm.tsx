@@ -1,5 +1,5 @@
 "use client";
-import { type Dispatch, type SetStateAction, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Combobox,
   ComboboxInput,
@@ -18,12 +18,14 @@ type Props = {
   initialVendors: { id: string; name: string }[];
   selectVendor: (data: Vendor | null) => void;
   selectedVendor: Vendor | null;
+  placeholder?: string;
 };
 
 export default function ComboVendorForm({
   initialVendors,
   selectedVendor,
   selectVendor: setSelectedVendor,
+  placeholder = "Tempat Belanja",
 }: Props) {
   const [query, setQuery] = useState("");
   const {
@@ -63,6 +65,7 @@ export default function ComboVendorForm({
       >
         <button
           onClick={() => comboInputRef.current?.focus()}
+          tabIndex={-1}
           className="flex flex-row justify-center items-center h-10 aspect-square border-t border-l border-b border-gray-600 bg-gray-800"
         >
           <MdLocationOn />
@@ -80,7 +83,7 @@ export default function ComboVendorForm({
               ? "bg-yellow-800/50 border-yellow-600"
               : "bg-gray-800 border-gray-600"
           }`}
-          placeholder="Tempat Belanja"
+          placeholder={placeholder}
         />
 
         {isCreateModeActive && (
