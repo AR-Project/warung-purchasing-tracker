@@ -1,19 +1,27 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { CgReorder } from "react-icons/cg";
 
-import PurchaseItemUpdater from "../_component/PurchaseItemUpdater";
+import { auth } from "@/auth";
+import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import getUserItems from "@/app/_loader/getUserItems.loader";
 import { singlePurchaseLoader } from "../_loader/singlePurchase.loader";
 import { BackButton } from "./_presentation/BackButton";
 import { PurchaseDataEditor } from "./_component/PurchaseDataEditor";
 import PurchaseItemEditor from "./_component/PurchaseItemEditor";
-import { CgReorder } from "react-icons/cg";
 import PurchaseDeleteDialog from "./_component/PurchaseDeleteDialog";
+import PurchaseItemUpdater from "./_component/PurchaseItemUpdater";
 
 type Props = {
   params: { purchaseId: string };
 };
 
 export default async function Page({ params }: Props) {
+  const session = await auth();
+  if (!session) {
+    return <LoginRequiredWarning />;
+  }
+
   const details = await singlePurchaseLoader(params.purchaseId);
   if (!details) {
     notFound();
@@ -21,6 +29,7 @@ export default async function Page({ params }: Props) {
 
   const { items: purchaseItems, totalPrice, id: purchaseId } = details;
 
+  const initialItems = await getUserItems(session.user.parentId);
   return (
     <div className="flex flex-col w-full max-w-md m-auto gap-2">
       <div className="flex flex-row  items-center justify-between mb-4">
@@ -51,7 +60,11 @@ export default async function Page({ params }: Props) {
         />
       </div>
 
-      <PurchaseItemUpdater purchaseId={purchaseId} />
+      <PurchaseItemUpdater
+        initialItems={initialItems}
+        purchaseId={purchaseId}
+        purchaseItems={purchaseItems}
+      />
       <div className="_SEPARATOR w-full border-b border-white/20"></div>
     </div>
   );
