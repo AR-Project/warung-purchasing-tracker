@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-export default function useCartManager() {
+export default function useCartManager(listOfItemId?: string[]) {
+  const listOfItemIdOnExternal = listOfItemId ? listOfItemId : [];
   const [itemsCart, setItemsCart] = useState<CreatePurchaseItemWithName[]>([]);
   const [activeItemOnCart, setActiveItemOnCart] = useState<string>("");
 
@@ -11,9 +12,11 @@ export default function useCartManager() {
   );
 
   function appendItemToCart(item: CreatePurchaseItemWithName) {
-    const isAlreadyAdded =
-      itemsCart.filter((addedItem) => addedItem.itemId == item.itemId).length >
-      0;
+    const listOfItemIdOnCart = itemsCart.map((item) => item.itemId);
+    const isAlreadyAdded = [
+      ...listOfItemIdOnCart,
+      ...listOfItemIdOnExternal,
+    ].includes(item.itemId);
 
     if (isAlreadyAdded) return "Tambahkan item lain";
     setItemsCart((prevItems) => [...prevItems, item]);
