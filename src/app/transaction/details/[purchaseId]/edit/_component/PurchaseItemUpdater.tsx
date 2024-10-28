@@ -3,60 +3,40 @@
 import { Suspense, useState } from "react";
 import { ImCancelCircle } from "react-icons/im";
 import { FaPlus } from "react-icons/fa";
-import { toast } from "react-toastify";
 
 import ComboItemForm from "@/app/create/_component/ComboItemForm";
 import { ItemOnCartCard } from "@/app/create/_presentation/ItemOnCartCard";
-import { useForm } from "@/presentation/hooks/useForm";
-import { updatePurchaseItemAction } from "../edit/_action/updatePurchaseItem.action";
-import UpdatePurchaseItemForm from "../edit/_hiddenForm/UpdatePurchaseItemForm";
+import UpdatePurchaseItemForm from "../_hiddenForm/UpdatePurchaseItemForm";
+import useCartManager from "@/app/create/_component/_hooks/useCartManager";
 
 type Props = {
   purchaseId: string;
+  initialItems: { id: string; name: string }[];
+  purchaseItems: PurchaseItemDisplay[];
 };
 
-export default function PurchaseItemUpdater({ purchaseId }: Props) {
-  // State for Item Editor
-  const [itemsOnCart, setItemOnCart] = useState<CreatePurchaseItemWithName[]>(
-    []
+export default function PurchaseItemUpdater({
+  purchaseId,
+  initialItems,
+  purchaseItems,
+}: Props) {
+  const itemIdAlreadyExist = purchaseItems.map(
+    (purchaseItem) => purchaseItem.itemId
   );
-  const [selectedItemOnCart, setSelectedItemOnCart] = useState<string>("");
 
-  const isCartEmpty = itemsOnCart.length === 0;
+  const {
+    itemsCart,
+    activeItemOnCart,
+    cartTotalPrice,
+    appendItemToCart,
+    updateItemOnCart,
+    deleteItemOnCart,
+    itemOnCartClickHandler,
+    resetCart,
+  } = useCartManager(itemIdAlreadyExist);
 
-  function appendItemOnCart(item: CreatePurchaseItemWithName) {
-    const isAlreadyAdded =
-      itemsOnCart.filter((addedItem) => addedItem.itemId == item.itemId)
-        .length > 0;
+  const isCartEmpty = itemsCart.length === 0;
 
-    if (isAlreadyAdded) return "Tambahkan item lain";
-    setItemOnCart((prevItems) => [...prevItems, item]);
-  }
-
-  function deleteItemOnCart(itemIndex: number) {
-    setItemOnCart((prevItems) =>
-      [...prevItems].filter((_, index) => index != itemIndex)
-    );
-  }
-
-  function itemOnCartClickHandler(itemId: string) {
-    setSelectedItemOnCart((prev) => {
-      return prev == itemId ? "" : itemId;
-    });
-  }
-
-  function updateItemOnCart(
-    updatedItem: CreatePurchaseItemWithName,
-    index: number
-  ) {
-    setItemOnCart((prevItemsList) => {
-      const newList = [...prevItemsList];
-      newList[index] = updatedItem;
-      return newList;
-    });
-  }
-
-  // State for Dialog
   const [isDialogueOpen, setIsDialogueOpen] = useState(false);
 
   function openDialogBox() {
@@ -64,23 +44,9 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
   }
 
   function closeDialogBox() {
-    setItemOnCart([]);
+    resetCart();
     setIsDialogueOpen(false);
   }
-
-  // Offscreen form
-
-  const [formAction] = useForm(
-    updatePurchaseItemAction,
-    (msg, data) => {
-      setItemOnCart([]);
-      closeDialogBox();
-      toast.success(msg);
-    },
-    (err) => {
-      toast.error(err, { autoClose: 0 });
-    }
-  );
 
   return (
     <>
@@ -110,11 +76,11 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
 
             {!isCartEmpty && (
               <div className="max-h-64 overflow-y-scroll flex flex-col font-mono">
-                {itemsOnCart.map((item, index) => (
+                {itemsCart.map((item, index) => (
                   <ItemOnCartCard
                     key={item.itemId}
                     onClick={itemOnCartClickHandler}
-                    isActive={selectedItemOnCart == item.itemId}
+                    isActive={activeItemOnCart == item.itemId}
                     item={item}
                     index={index}
                     deleteItem={deleteItemOnCart}
@@ -125,17 +91,20 @@ export default function PurchaseItemUpdater({ purchaseId }: Props) {
             )}
 
             <Suspense fallback={<h1>Loading editor...</h1>}>
-              <ComboItemForm appendItemOnCart={appendItemOnCart} />
+              <ComboItemForm
+                initialItems={initialItems}
+                appendItemOnCart={appendItemToCart}
+              />
             </Suspense>
 
             <div className="mt-4 flex flex-row w-full items-end gap-2">
               <UpdatePurchaseItemForm
                 onSuccess={() => {
-                  setItemOnCart([]);
+                  resetCart();
                   closeDialogBox();
                 }}
                 purchaseId={purchaseId}
-                payload={itemsOnCart}
+                payload={itemsCart}
               />
               <button
                 className="BTN-CANCEL flex flex-row gap-2 h-10 px-2 items-center bg-gray-500 border border-gray-500 rounded-md  w-fit hover:bg-gray-400"
