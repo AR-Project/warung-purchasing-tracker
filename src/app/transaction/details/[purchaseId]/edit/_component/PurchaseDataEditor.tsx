@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import VendorEditor from "./VendorEditor";
 import PurchaseDateEditor from "./PurchaseDateEditor";
 
 export type EditorType =
@@ -24,18 +23,12 @@ export function PurchaseDataEditor({ purchase }: Props) {
   }
 
   return (
-    <div className="flex flex-col w-full gap-3 mb-5">
+    <div className="flex flex-col w-full gap-3">
       <PurchaseDateEditor
         currentDate={purchase.purchasesAt}
         activeEditor={activeEditor}
         purchaseId={purchase.id}
         selectEditor={selectEditor}
-      />
-      <VendorEditor
-        currentName={purchase.vendorName}
-        activeEditor={activeEditor}
-        selectEditor={selectEditor}
-        purchaseId={purchase.id}
       />
     </div>
   );
