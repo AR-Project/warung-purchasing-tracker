@@ -5,10 +5,12 @@ import { CgReorder } from "react-icons/cg";
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import getUserItems from "@/app/_loader/getUserItems.loader";
+import getUserVendors from "@/app/_loader/getUserVendors.loader";
 import { singlePurchaseLoader } from "../_loader/singlePurchase.loader";
 import { BackButton } from "./_presentation/BackButton";
 import { PurchaseDataEditor } from "./_component/PurchaseDataEditor";
 import PurchaseItemEditor from "./_component/PurchaseItemEditor";
+import VendorEditor from "./_component/VendorEditor";
 import PurchaseDeleteDialog from "./_component/PurchaseDeleteDialog";
 import PurchaseItemUpdater from "./_component/PurchaseItemUpdater";
 
@@ -27,9 +29,16 @@ export default async function Page({ params }: Props) {
     notFound();
   }
 
-  const { items: purchaseItems, totalPrice, id: purchaseId } = details;
-
+  const {
+    items: purchaseItems,
+    totalPrice,
+    id: purchaseId,
+    vendorId,
+    vendorName,
+  } = details;
   const initialItems = await getUserItems(session.user.parentId);
+  const initialVendors = await getUserVendors(session.user.parentId);
+
   return (
     <div className="flex flex-col w-full max-w-md m-auto gap-2">
       <div className="flex flex-row  items-center justify-between mb-4">
@@ -39,8 +48,12 @@ export default async function Page({ params }: Props) {
         </div>
         <PurchaseDeleteDialog purchaseId={purchaseId} />
       </div>
-
       <PurchaseDataEditor purchase={details} />
+      <VendorEditor
+        currentVendor={{ id: vendorId, name: vendorName }}
+        initialVendor={initialVendors}
+        purchaseId={purchaseId}
+      />
       <div className="_SEPARATOR w-full border-b border-white/20"></div>
 
       <div className="flex flex-row gap-2 m-auto justify-end w-full">
