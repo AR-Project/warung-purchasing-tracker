@@ -8,7 +8,7 @@ import { revalidatePath } from "next/cache";
 import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
 
-export async function updatePurchaseVendor(prevState: any, formData: FormData) {
+export async function updatePurchaseVendor(formData: FormData) {
   const purchaseId = formData.get("purchase-id");
   const newVendorId = formData.get("new-purchase-vendor-id");
 

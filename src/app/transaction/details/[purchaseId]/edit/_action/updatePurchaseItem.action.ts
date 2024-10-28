@@ -14,10 +14,7 @@ import { generateId } from "@/lib/utils/generator";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
 
-export async function updatePurchaseItemAction(
-  prevState: any,
-  formData: FormData
-) {
+export async function updatePurchaseItemAction(formData: FormData) {
   const purchaseId = formData.get("purchase-id");
   const listOfPurchaseItemRaw = formData.get("items-to-add");
 

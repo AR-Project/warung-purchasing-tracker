@@ -10,7 +10,6 @@ import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
 
 export async function editDataSingleItem(
-  prevState: any,
   formData: FormData
 ): Promise<FormState<void>> {
   let invariantError: string | undefined;
