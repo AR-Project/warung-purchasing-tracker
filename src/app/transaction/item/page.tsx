@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { listOfItemsLoader } from "./_loader/listOfItem.loader";
+
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { listOfItemsLoader } from "./_loader/listOfItem.loader";
 
 export default async function Page() {
   const session = await auth();
@@ -9,7 +10,7 @@ export default async function Page() {
     return <LoginRequiredWarning />;
   }
 
-  const listOfItems = await listOfItemsLoader(session.user.userId);
+  const listOfItems = await listOfItemsLoader(session.user.parentId);
 
   return (
     <div className="flex flex-col gap-1 max-w-md mx-auto">
