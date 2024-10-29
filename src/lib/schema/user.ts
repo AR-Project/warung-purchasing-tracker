@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import {
   AnyPgColumn,
+  boolean,
   index,
   pgEnum,
   pgTable,
@@ -31,12 +32,14 @@ export const user = pgTable(
       })
       .notNull(),
     email: text("email"),
+    isDeleted: boolean("is_deleted").default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
     modifiedAt: timestamp("modified_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
   (table) => {
     return {
