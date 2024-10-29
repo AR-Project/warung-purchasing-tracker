@@ -1,16 +1,21 @@
 "use client";
 
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { MdPerson } from "react-icons/md";
+import { MdOutlineSettings, MdPerson } from "react-icons/md";
 
 import { SignOutButton } from "./SignOutButton";
+import Link from "next/link";
 
 type Props = {
   username: string;
   userId: string;
+  role: string;
 };
 
-export default function UserInfo({ username, userId }: Props) {
+export default function UserInfo({ username, userId, role }: Props) {
+  const allowedRole = ["admin", "manager"];
+  const enableStaffManager = allowedRole.includes(role);
+
   return (
     <Menu>
       <MenuButton className=" bg-blue-900 flex flex-row items-center justify-center  rounded-full py-2 px-3 hover:bg-blue-600/50 cursor-pointer gap-2">
@@ -26,14 +31,30 @@ export default function UserInfo({ username, userId }: Props) {
       >
         <MenuItem as="div" className=" w-full flex flex-col items-end h-16">
           <div className="text-lg font-bold">Welcome, {username}!</div>
-          <div className="text-xs text-white/50 ">{userId}</div>
-        </MenuItem>
-        <MenuItem as="div" className="w-full flex flex-col items-end h-15">
-          <div className=" hover:underline text-md  h-8 cursor-pointer">
-            Account Setting
+          <div className="text-xs text-white/50 ">
+            {userId} | {role}
           </div>
         </MenuItem>
-        <MenuItem as="div" className=" w-full flex flex-row justify-end">
+        {enableStaffManager && (
+          <MenuItem as="div" className="w-full flex flex-col items-end h-15">
+            <Link
+              href="/manage/staff"
+              className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+            >
+              <MdPerson className="text-white" /> Manage Staff
+            </Link>
+          </MenuItem>
+        )}
+
+        <MenuItem as="div" className="w-full flex flex-col items-end h-15">
+          <Link
+            href="/manage"
+            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+          >
+            <MdOutlineSettings className="text-white" /> Account Settings
+          </Link>
+        </MenuItem>
+        <MenuItem as="div" className=" w-full flex flex-row justify-end mt-4">
           <SignOutButton />
         </MenuItem>
       </MenuItems>
