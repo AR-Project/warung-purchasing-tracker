@@ -8,6 +8,7 @@ import { BackButton } from "./edit/_presentation/BackButton";
 
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
 import { auth } from "@/auth";
+import getUserRole from "@/app/_loader/getUserRole.loader";
 
 type Props = {
   params: { purchaseId: string };
@@ -15,6 +16,11 @@ type Props = {
 
 export default async function Page({ params }: Props) {
   const session = await auth();
+
+  const allowedRole = ["admin", "manager", "staff"];
+  const role = session ? await getUserRole(session.user.userId) : "loggedOut";
+
+  const isUserCanEdit = allowedRole.includes(role);
 
   const details = await singlePurchaseLoader(params.purchaseId);
   if (!details) {
@@ -45,7 +51,7 @@ export default async function Page({ params }: Props) {
         purchaseItems={purchaseItems}
         totalPrice={totalPrice}
       />
-      {session && (
+      {isUserCanEdit && (
         <div className="flex flex-row gap-2">
           <Link
             className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center "
