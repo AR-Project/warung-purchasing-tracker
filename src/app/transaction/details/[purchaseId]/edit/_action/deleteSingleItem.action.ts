@@ -5,9 +5,14 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { items, purchasedItems, purchases } from "@/lib/schema/schema";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
+import {
+  NewPurchaseArchiveDbPayload,
+  purchaseArchive,
+} from "@/lib/schema/archive";
+import { generateId } from "@/lib/utils/generator";
 
 export async function deleteSingleItemAction(
   formData: FormData
@@ -23,7 +28,7 @@ export async function deleteSingleItemAction(
   let invariantError: string | undefined;
   const allowedRole: AvailableUserRole[] = ["admin", "manager"];
   try {
-    const { userId: loggedInUserId } = await getUserInfo();
+    const { userId: loggedInUserId, parentId } = await getUserInfo();
     const { data: payload } = userPayloadSchema.safeParse({
       purchaseId: purchaseIdRaw,
       purchasedItemIdToDelete: purchasedItemIdToDeleteRaw,
@@ -98,7 +103,25 @@ export async function deleteSingleItemAction(
       const newPurchaseTotalPrice =
         currentPurchase[0].totalPrice - deletedPurchaseItemTotalPrice;
 
+      // Prepare Archival payload
+      const [item] = await tx
+        .select({ name: items.name })
+        .from(items)
+        .where(eq(items.id, deletedPurchaseItem.itemId));
+      const data = {
+        ...deletedPurchaseItem,
+        ...item,
+      };
+      const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
+        id: generateId(20),
+        ownerId: parentId,
+        creatorId: loggedInUserId,
+        description: "purchase item deletion",
+        data,
+      };
+
       // Append change to database
+      await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
       await tx
         .update(purchases)
         .set({

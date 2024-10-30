@@ -9,6 +9,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { items, purchasedItems, purchases, vendors } from "./schema";
+import { purchaseArchive } from "./archive";
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin", // view, create, edit, delete tx, create/del user, change role,
@@ -60,6 +61,8 @@ export const userRelations = relations(user, ({ many }) => ({
   purchaseItemOwner: many(purchasedItems, { relationName: "owner" }),
   purchaseItemCreator: many(purchasedItems, { relationName: "creator" }),
   userActionsHistory: many(userActionHistory),
+  purchasesArchiveOwner: many(purchaseArchive, { relationName: "owner" }),
+  purchasesArchiveCreator: many(purchaseArchive, { relationName: "creator" }),
 }));
 
 export const userActionHistory = pgTable("user_action_history", {

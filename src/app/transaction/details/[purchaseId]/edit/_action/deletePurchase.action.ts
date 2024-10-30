@@ -5,10 +5,14 @@ import { DrizzleError, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
-import { auth } from "@/auth";
+import { items, purchasedItems, purchases } from "@/lib/schema/schema";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
+import {
+  NewPurchaseArchiveDbPayload,
+  purchaseArchive,
+} from "@/lib/schema/archive";
+import { generateId } from "@/lib/utils/generator";
 
 export async function deletePurchase(
   formData: FormData
@@ -22,7 +26,7 @@ export async function deletePurchase(
   const allowedRole: AvailableUserRole[] = ["admin", "manager"];
 
   try {
-    const { userId } = await getUserInfo();
+    const { userId, parentId } = await getUserInfo();
     const { data: purchaseIdToDelete } = schema.safeParse(purchaseIdRaw);
     if (!purchaseIdToDelete) {
       invariantError = "Invalid Payload";
@@ -59,7 +63,34 @@ export async function deletePurchase(
         tx.rollback();
       }
 
+      const purchaseItems = await tx
+        .select({
+          data: purchasedItems,
+          name: items.name,
+        })
+        .from(purchasedItems)
+        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete))
+        .innerJoin(items, eq(purchasedItems.itemId, items.id));
+
+      const listOfPurchaseItem = purchaseItems.map((row) => ({
+        ...row.data,
+        itemName: row.name,
+      }));
+
+      // Archival step
+      const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
+        id: generateId(20),
+        description: "Purchase Deletion",
+        ownerId: parentId,
+        creatorId: userId,
+        data: {
+          purchase: purchaseToDelete[0],
+          listOfPurchaseItem,
+        },
+      };
+
       // Commit action to database
+      await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
       await tx.delete(purchases).where(eq(purchases.id, purchaseIdToDelete));
       await tx
         .delete(purchasedItems)
