@@ -1,11 +1,11 @@
 "use server";
 
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { DrizzleError, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchases } from "@/lib/schema/schema";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { auth } from "@/auth";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
@@ -23,8 +23,8 @@ export async function deletePurchase(
 
   try {
     const { userId } = await getUserInfo();
-    const { data: purchaseId } = schema.safeParse(purchaseIdRaw);
-    if (!purchaseId) {
+    const { data: purchaseIdToDelete } = schema.safeParse(purchaseIdRaw);
+    if (!purchaseIdToDelete) {
       invariantError = "Invalid Payload";
       throw new Error(invariantError);
     }
@@ -43,24 +43,27 @@ export async function deletePurchase(
       }
 
       // Validate current purchase
-      const currentPurchase = await tx
+      const purchaseToDelete = await tx
         .select()
         .from(purchases)
-        .where(eq(purchases.id, purchaseId));
-      if (currentPurchase.length == 0) {
+        .where(eq(purchases.id, purchaseIdToDelete));
+      if (purchaseToDelete.length == 0) {
         invariantError = "invalid purchase id";
         tx.rollback();
       }
 
       // Validate authorization on current purchase
-      const { creatorId, ownerId } = currentPurchase[0];
+      const { creatorId, ownerId } = purchaseToDelete[0];
       if (![creatorId, ownerId].includes(userId)) {
         invariantError = "Not Allowed";
         tx.rollback();
       }
 
       // Commit action to database
-      await tx.delete(purchases).where(eq(purchases.id, purchaseId));
+      await tx.delete(purchases).where(eq(purchases.id, purchaseIdToDelete));
+      await tx
+        .delete(purchasedItems)
+        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete));
     });
 
     revalidatePath(`/transaction/purchase`);
