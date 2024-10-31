@@ -111,4 +111,12 @@ declare global {
   type PurchaseItemToEdit = PurchaseItemDisplay & {
     itemId: string;
   };
+
+  /** Manage Feature */
+
+  type UserObject = {
+    id: string;
+    username: string;
+    role: string;
+  };
 }

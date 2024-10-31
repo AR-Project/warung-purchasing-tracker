@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { MdPerson } from "react-icons/md";
 
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { auth } from "@/auth";
+import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import getUserChildren from "./_loader/getUserChild.loader";
 import DeleteUserHiddenForm from "./_component/DeleteUserHiddenForm";
+import ChildUserRoleEditorModal from "./_component/ChildUserRoleEditorModal";
 
 export default async function Page() {
   const session = await auth();
@@ -25,7 +26,7 @@ export default async function Page() {
         user.map((user) => (
           <div
             key={user.id}
-            className="flex flex-row justify-between items-center bg-gray-800/60 hover:bg-gray-800 p-2"
+            className="flex flex-col gap-2  bg-gray-800/60 hover:bg-gray-800 p-2"
           >
             <div className="flex flex-row gap-2 items-center  ">
               <MdPerson className="text-white text-4xl" />
@@ -36,7 +37,10 @@ export default async function Page() {
                 </div>
               </div>
             </div>
-            <DeleteUserHiddenForm userIdToDelete={user.id} />
+            <div className="flex flex-row w-full justify-end gap-2">
+              <ChildUserRoleEditorModal user={user} />
+              <DeleteUserHiddenForm userIdToDelete={user.id} />
+            </div>
           </div>
         ))}
       <Link
