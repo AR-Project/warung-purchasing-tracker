@@ -8,8 +8,9 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { items, purchasedItems, purchases, vendors } from "./schema";
+import { purchasedItems, purchases, vendors } from "./schema";
 import { purchaseArchive } from "./archive";
+import { items } from "./item";
 
 export const userRoleEnum = pgEnum("user_role", [
   "admin", // view, create, edit, delete tx, create/del user, change role,

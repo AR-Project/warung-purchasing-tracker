@@ -5,9 +5,9 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import db from "@/infrastructure/database/db";
-import { items, NewItemDbPayload } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
 import { getUserInfo } from "@/lib/utils/auth";
+import { items, NewItemDbPayload } from "@/lib/schema/item";
 
 export async function newItemAction(
   formData: FormData

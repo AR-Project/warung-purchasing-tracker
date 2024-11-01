@@ -1,7 +1,7 @@
 "use server";
 
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
 import { getUserInfo } from "@/lib/utils/auth";
 import { isString } from "@/lib/utils/validator";
 import { eq } from "drizzle-orm";

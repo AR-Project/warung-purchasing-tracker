@@ -1,5 +1,5 @@
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
 import { asc, eq } from "drizzle-orm";
 
 export async function listOfItemsLoader(userId: string) {

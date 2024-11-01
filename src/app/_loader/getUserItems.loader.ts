@@ -1,5 +1,5 @@
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
 import { eq } from "drizzle-orm";
 
 export default async function getUserItems(userId: string) {

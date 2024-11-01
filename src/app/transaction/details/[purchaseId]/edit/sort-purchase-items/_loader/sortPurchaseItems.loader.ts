@@ -1,7 +1,8 @@
 import { eq, inArray } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { items, purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
 
 export async function sortPurchaseItemsLoader(
   purchaseId: string

@@ -5,7 +5,7 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { items, purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
 import {
@@ -13,6 +13,7 @@ import {
   purchaseArchive,
 } from "@/lib/schema/archive";
 import { generateId } from "@/lib/utils/generator";
+import { items } from "@/lib/schema/item";
 
 export async function deleteSingleItemAction(
   formData: FormData

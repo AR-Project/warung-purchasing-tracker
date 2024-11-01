@@ -1,5 +1,6 @@
 import db from "@/infrastructure/database/db";
-import { items, purchasedItems, purchases } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { asc, desc, eq } from "drizzle-orm";
 
 type LoaderResponse = {
