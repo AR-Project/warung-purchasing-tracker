@@ -227,4 +227,8 @@ export const purchaseItemRelations = relations(purchasedItems, ({ one }) => ({
     fields: [purchasedItems.purchaseId],
     references: [purchases.id],
   }),
+  item: one(items, {
+    fields: [purchasedItems.itemId],
+    references: [items.id],
+  }),
 }));

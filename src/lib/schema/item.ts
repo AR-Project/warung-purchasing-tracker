@@ -7,8 +7,9 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+
 import { user } from "./user";
-import { images } from "./schema";
+import { images, purchasedItems } from "./schema";
 
 export type NewItemDbPayload = typeof items.$inferInsert;
 
@@ -46,7 +47,7 @@ export const items = pgTable(
   }
 );
 
-export const itemRelations = relations(items, ({ one }) => ({
+export const itemRelations = relations(items, ({ one, many }) => ({
   owner: one(user, {
     fields: [items.ownerId],
     references: [user.id],
@@ -61,4 +62,5 @@ export const itemRelations = relations(items, ({ one }) => ({
     fields: [items.imageId],
     references: [images.id],
   }),
+  purchaseItem: many(purchasedItems),
 }));
