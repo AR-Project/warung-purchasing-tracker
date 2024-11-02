@@ -11,11 +11,15 @@ import {
   purchases,
 } from "@/lib/schema/schema";
 import { generateId } from "@/lib/utils/generator";
-import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
+import { adminManagerRole } from "@/lib/const";
+import { auth } from "@/auth";
 
 export async function updatePurchaseItemAction(formData: FormData) {
-  const purchaseId = formData.get("purchase-id");
+  const session = await auth();
+  if (!session) return { error: "Forbidden" };
+
+  const purchaseIdRaw = formData.get("purchase-id");
   const listOfPurchaseItemRaw = formData.get("items-to-add");
 
   const userPayloadSchema = z.object({
@@ -32,49 +36,54 @@ export async function updatePurchaseItemAction(formData: FormData) {
     })
   );
 
+  const { data: payload } = userPayloadSchema.safeParse({
+    purchaseId: purchaseIdRaw,
+    listOfPurchaseItemAsStr: listOfPurchaseItemRaw,
+  });
+  if (!payload) return { error: "Invalid Payload" };
+
+  const { data: listOfPurchaseItemPayload } =
+    listOfPurchaseItemSchema.safeParse(
+      JSON.parse(payload.listOfPurchaseItemAsStr)
+    );
+
+  if (!listOfPurchaseItemPayload) return { error: "Invalid Payload" };
+
+  const databaseError = await updatePurchaseItem({
+    requester: session.user,
+    purchaseId: payload.purchaseId,
+    purchaseItemList: listOfPurchaseItemPayload,
+  });
+
+  if (databaseError) return { error: databaseError };
+
+  revalidatePath(`/transaction/details/${payload.purchaseId}`);
+  return { message: `Purchased Item Updated` };
+}
+
+type UpdatePurchaseItemPayload = {
+  requester: UserSession;
+  purchaseId: string;
+  purchaseItemList: CreatePurchaseItemPayload[];
+};
+
+async function updatePurchaseItem({
+  requester,
+  purchaseId,
+  purchaseItemList,
+}: UpdatePurchaseItemPayload): Promise<string | null> {
+  const { userId, parentId } = requester;
+
   let invariantError: string | undefined;
-  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
 
   try {
-    const { userId, parentId } = await getUserInfo();
-
-    const { data: payload } = userPayloadSchema.safeParse({
-      purchaseId,
-      listOfPurchaseItemAsStr: listOfPurchaseItemRaw,
-    });
-    if (!payload) {
-      invariantError = "Invalid Payload";
-      throw new Error(invariantError);
-    }
-
-    const {
-      data: listOfPurchaseItemPayload,
-    }: { data?: CreatePurchaseItemPayload[] } =
-      listOfPurchaseItemSchema.safeParse(
-        JSON.parse(payload.listOfPurchaseItemAsStr)
-      );
-
-    if (!listOfPurchaseItemPayload) {
-      invariantError = "Invalid list of purchase item structure";
-      throw new Error(invariantError);
-    }
-
-    const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
-      listOfPurchaseItemPayload.map((item) => ({
-        ...item,
-        creatorId: userId,
-        ownerId: parentId,
-        purchaseId: payload.purchaseId,
-        id: generateId(14),
-      }));
-
     await db.transaction(async (tx) => {
       // Validate role
       const [currentUser] = await tx
         .select({ role: user.role })
         .from(user)
         .where(eq(user.id, userId));
-      if (!allowedRole.includes(currentUser.role)) {
+      if (!adminManagerRole.includes(currentUser.role)) {
         invariantError = "Not Allowed";
         tx.rollback();
       }
@@ -83,7 +92,7 @@ export async function updatePurchaseItemAction(formData: FormData) {
       const currentPurchase = await tx
         .select()
         .from(purchases)
-        .where(eq(purchases.id, payload.purchaseId));
+        .where(eq(purchases.id, purchaseId));
       if (currentPurchase.length == 0) {
         invariantError = "Purchase not exist";
         tx.rollback();
@@ -95,6 +104,20 @@ export async function updatePurchaseItemAction(formData: FormData) {
         invariantError = "Not an owner / creator";
         tx.rollback();
       }
+
+      const currentPurchaseItemLength =
+        currentPurchase[0].purchasedItemId.length;
+
+      const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
+        purchaseItemList.map((item, index) => ({
+          ...item,
+          creatorId: userId,
+          ownerId: parentId,
+          purchaseId: purchaseId,
+          purchasedAt: currentPurchase[0].purchasedAt,
+          sortOrder: index + currentPurchaseItemLength,
+          id: generateId(14),
+        }));
 
       const listOfPurchaseItemTotalPrice = listOfPurchaseItemDbPayload.reduce(
         (total, item) => total + item.totalPrice,
@@ -119,27 +142,11 @@ export async function updatePurchaseItemAction(formData: FormData) {
           ],
           modifiedAt: new Date(),
         })
-        .where(eq(purchases.id, payload.purchaseId))
+        .where(eq(purchases.id, purchaseId))
         .returning({ id: purchases.id });
     });
-    revalidatePath(`/transaction/details/${payload.purchaseId}`);
-    return {
-      message: `Purchased Item Updated`,
-      timestamp: Date.now(),
-    };
+    return null;
   } catch (error) {
-    if (invariantError) {
-      return { error: invariantError };
-    }
-
-    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
-      return { error: "Login first" };
-    }
-
-    if (error instanceof DrizzleError) {
-      return { error: error.message };
-    }
-
-    return { error: "internal error" };
+    return invariantError ? invariantError : "internal error";
   }
 }

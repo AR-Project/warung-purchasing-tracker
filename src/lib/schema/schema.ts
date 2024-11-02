@@ -189,7 +189,9 @@ export const purchasedItems = pgTable(
     quantityInHundreds: integer("quantity_in_hundreds").notNull(),
     pricePerUnit: integer("price_per_unit").notNull(),
     totalPrice: integer("total_price").notNull(),
+    sortOrder: integer("sort_order").notNull(),
     isDeleted: boolean("is_deleted").default(false).notNull(),
+    purchasedAt: timestamp("purchased_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
