@@ -26,6 +26,7 @@ export const images = pgTable(
       .references(() => user.id, {
         onDelete: "cascade",
       }),
+    path: text("path").notNull(),
     fileExtension: text("file_extension").notNull().default(".jpg"),
     originalFileName: text("original_filename").notNull(),
     uploadedAt: timestamp("created_at", { withTimezone: true })

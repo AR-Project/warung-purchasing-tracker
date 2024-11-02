@@ -4,12 +4,12 @@ import { revalidatePath } from "next/cache";
 import { eq } from "drizzle-orm";
 import path from "path";
 import { promises as fs } from "fs";
+import { z } from "zod";
 
-import db from "@/infrastructure/database/db";
-
-import { generateId } from "@/lib/utils/generator";
-import { images, NewImageDbPayload } from "@/lib/schema/schema";
 import { auth } from "@/auth";
+import db from "@/infrastructure/database/db";
+import { writeImageFile } from "@/infrastructure/storage/localStorage";
+import { images, NewImageDbPayload } from "@/lib/schema/schema";
 
 export async function uploadImage(
   prevState: any,
@@ -17,33 +17,33 @@ export async function uploadImage(
 ): Promise<FormState<string>> {
   const session = await auth();
   if (!session) return { error: "Must login first" };
-  const { user } = session;
 
   const payload = formData.get("image");
-  if (payload === null || typeof payload === "string")
-    return { error: "No payload" };
+  const imageSchema = z.custom<Blob>(
+    (data) => data instanceof Blob && data.type === "image/jpeg"
+  );
 
-  const fileExtension = payload.name.match(/\.[0-9a-z]+$/i);
-  const allowedExtension = [".jpg", ".jpeg"];
-  if (fileExtension === null || !allowedExtension.includes(fileExtension[0]))
-    return { error: "Must Be image files" };
+  const { data: img } = imageSchema.safeParse(payload);
+  if (!img) return { error: "Expect a image" };
+
+  const [metadata] = await writeImageFile(img);
+  if (!metadata) return { error: "Fail to save the image" };
+
+  const newImageDbPayload: NewImageDbPayload = {
+    id: metadata.id,
+    path: metadata.path,
+    ownerId: session.user.parentId,
+    creatorId: session.user.userId,
+    originalFileName: "blob",
+  };
 
   try {
-    const id = `lib-${generateId(10)}`;
-    const filename = id + fileExtension;
-    const buffer = Buffer.from(await payload.arrayBuffer());
-    const uploadPath = path.join(process.cwd(), "images", filename);
-
-    const dbPayload: NewImageDbPayload = {
-      id,
-      ownerId: user.parentId,
-      creatorId: user.userId,
-      originalFileName: payload.name,
-    };
-    await db.insert(images).values(dbPayload);
-    await fs.writeFile(uploadPath, buffer);
+    const [savedImage] = await db
+      .insert(images)
+      .values(newImageDbPayload)
+      .returning({ id: images.id });
     revalidatePath("/library");
-    return { message: "Image uploaded successfully", data: id };
+    return { message: "Image uploaded successfully", data: savedImage.id };
   } catch (error) {
     console.error("Upload error:", error);
     return { error: "Failed to upload image" };
@@ -71,14 +71,10 @@ export async function removeImage(
     if (![image.creatorId, image.ownerId].includes(user.userId))
       throw new Error("Unauthorized");
 
-    const imagePath = path.join(
-      process.cwd(),
-      "images",
-      `${image.id}${image.fileExtension}`
-    );
+    const imageFilePath = path.join(process.cwd(), image.path);
 
-    await fs.stat(imagePath);
-    await fs.unlink(imagePath);
+    await fs.stat(imageFilePath);
+    await fs.unlink(imageFilePath);
     await db.delete(images).where(eq(images.id, payload));
     revalidatePath("/library");
     return { message: "Image deleted successfully" };
