@@ -18,6 +18,22 @@ const config: Config = {
         height: "height",
         width: "width",
       },
+      keyframes: {
+        appear: {
+          "0%": {
+            backgroundColor: "rgba(107, 114, 128, 0)",
+          },
+          "10%": {
+            backgroundColor: "rgba(107, 114, 128, 1)",
+          },
+          "100%": {
+            backgroundColor: "rgba(107, 114, 128, 0)",
+          },
+        },
+      },
+      animation: {
+        appear: "appear 2s ease-in-out",
+      },
     },
   },
   plugins: [],
