@@ -64,12 +64,12 @@ export function ItemOnCartCard({
           isActive ? "w-[110px]" : "w-[0px]"
         }`}
       >
-        <DeleteButton deleteItem={deleteItem} index={index} />
         <EditItemDataOnCart
           updateItem={editPurchasedItem}
           prevPurchaseItem={item}
           itemIndex={index}
         />
+        <DeleteButton deleteItem={deleteItem} index={index} />
       </div>
     </div>
   );
