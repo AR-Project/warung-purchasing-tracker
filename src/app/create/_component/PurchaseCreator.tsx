@@ -68,7 +68,7 @@ export default function PurchaseCreator({
   }
 
   return (
-    <div className="flex flex-col p-4 gap-3 w-full max-w-[700px] mx-auto">
+    <div className="flex flex-col p-0.5 pt-2 gap-3 w-full max-w-[700px] mx-auto">
       <DatePicker txDate={txDate} setTxDate={setTxDate} />
 
       <Suspense fallback={<span>loading...</span>}>
