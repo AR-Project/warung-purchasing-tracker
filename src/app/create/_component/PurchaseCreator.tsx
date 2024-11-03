@@ -1,5 +1,5 @@
 "use client";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
@@ -38,6 +38,8 @@ export default function PurchaseCreator({
   const [txDate, setTxDate] = useState<string>("");
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
 
+  const itemsContainerRef = useRef<HTMLDivElement>(null);
+
   function selectVendor(data: Vendor | null) {
     setSelectedVendor(data);
   }
@@ -47,6 +49,22 @@ export default function PurchaseCreator({
     setSelectedVendor(null);
     setResizedImage(null);
     resetCart();
+  }
+
+  function scrollToView() {
+    itemsContainerRef.current?.lastElementChild?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+    return;
+  }
+
+  function appendItemOnCartWrapper(
+    item: CreatePurchaseItemWithName
+  ): string | undefined {
+    const result = appendItemToCart(item);
+    setTimeout(scrollToView, 200);
+    return result;
   }
 
   return (
@@ -74,18 +92,29 @@ export default function PurchaseCreator({
         </span>
       )}
       {itemsCart.length > 0 && (
-        <div className="max-h-64 overflow-y-scroll flex flex-col font-mono">
-          {itemsCart.map((item, index) => (
-            <ItemOnCartCard
-              key={item.itemId}
-              onClick={itemOnCartClickHandler}
-              isActive={activeItemOnCart == item.itemId}
-              item={item}
-              index={index}
-              deleteItem={deleteItemOnCart}
-              editPurchasedItem={updateItemOnCart}
-            />
-          ))}
+        <div
+          className="relative"
+          onMouseLeave={() => itemOnCartClickHandler("")}
+        >
+          <div
+            ref={itemsContainerRef}
+            className="max-h-64 overflow-y-scroll flex flex-col font-mono bg-gray-800/50 mb-2"
+          >
+            {itemsCart.map((item, index) => (
+              <ItemOnCartCard
+                key={item.itemId}
+                onClick={itemOnCartClickHandler}
+                isActive={activeItemOnCart == item.itemId}
+                item={item}
+                index={index}
+                deleteItem={deleteItemOnCart}
+                editPurchasedItem={updateItemOnCart}
+              />
+            ))}
+          </div>
+          {itemsCart.length > 5 && (
+            <div className="absolute bg-gradient-to-t from-black to-transparent w-full h-5 bottom-0 pointer-events-none border-b border-gray-500"></div>
+          )}
         </div>
       )}
 
@@ -95,7 +124,7 @@ export default function PurchaseCreator({
       <Suspense fallback={<span>loading...</span>}>
         <ComboItemForm
           initialItems={initialItems}
-          appendItemOnCart={appendItemToCart}
+          appendItemOnCart={appendItemOnCartWrapper}
         />
       </Suspense>
 

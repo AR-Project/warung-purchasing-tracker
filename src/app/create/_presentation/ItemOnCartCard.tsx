@@ -36,9 +36,12 @@ export function ItemOnCartCard({
   editPurchasedItem,
 }: ItemCardProps) {
   return (
-    <div className="flex flex-row gap-2 items-center justify-center">
+    <div className="animate-appear flex flex-row gap-2 items-center justify-center">
       <button
         onClick={() => {
+          onClick(item.itemId);
+        }}
+        onMouseEnter={() => {
           onClick(item.itemId);
         }}
         className={`p-1 w-full max-w-[500px] mx-auto rounded-md ${
