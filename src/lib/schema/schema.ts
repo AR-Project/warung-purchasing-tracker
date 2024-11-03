@@ -87,7 +87,7 @@ export const vendors = pgTable(
 
 export type NewVendorDbPayload = typeof vendors.$inferInsert;
 
-export const vendorRelations = relations(vendors, ({ one }) => ({
+export const vendorRelations = relations(vendors, ({ one, many }) => ({
   owner: one(user, {
     fields: [vendors.ownerId],
     references: [user.id],
@@ -98,6 +98,7 @@ export const vendorRelations = relations(vendors, ({ one }) => ({
     references: [user.id],
     relationName: "creator",
   }),
+  purchase: many(purchases),
 }));
 
 export type NewPurchaseDbPayload = typeof purchases.$inferInsert;
@@ -160,6 +161,10 @@ export const purchaseRelations = relations(purchases, ({ one, many }) => ({
   image: one(images, {
     fields: [purchases.imageId],
     references: [images.id],
+  }),
+  vendor: one(vendors, {
+    fields: [purchases.vendorId],
+    references: [vendors.id],
   }),
   purchaseItems: many(purchasedItems),
 }));
