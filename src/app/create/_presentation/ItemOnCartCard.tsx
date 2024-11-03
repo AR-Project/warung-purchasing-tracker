@@ -44,6 +44,9 @@ export function ItemOnCartCard({
         onMouseEnter={() => {
           onClick(item.itemId);
         }}
+        onTouchStart={() => {
+          onClick(item.itemId);
+        }}
         className={`p-1 w-full max-w-[500px] mx-auto rounded-md ${
           isActive && "bg-gray-800 pr-2"
         }`}
