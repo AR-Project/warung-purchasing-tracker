@@ -179,7 +179,7 @@ export default function ComboItemForm({
         </div>
       </Combobox>
 
-      <div className="grid grid-cols-3 gap-1 items-center">
+      <form className="grid grid-cols-3 gap-1 items-center">
         <NumericFormat
           className="bg-gray-800 border border-gray-500 p-1 rounded-sm"
           value={quantity}
@@ -220,7 +220,7 @@ export default function ComboItemForm({
             setUnitPrice(totalPrice / anyNumberToNumber(quantity));
           }}
         />
-      </div>
+      </form>
       <div className="flex flex-row-reverse">
         <button
           onClick={finalizeItem}
