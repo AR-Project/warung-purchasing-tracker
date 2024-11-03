@@ -51,14 +51,14 @@ export function ItemOnCartCard({
           isActive && "bg-gray-800 pr-2"
         }`}
       >
-        <div className="flex flex-row gap-3">
-          <PrettyQuantity number={item.quantityInHundreds} />
-          <div className="flex flex-col items-start text-base uppercase w-full leading-tight">
-            <div className="font-bold ">{item.name}</div>
-            <div className="flex flex-row gap-3 justify-between w-full">
+        <div className="flex flex-col items-start text-base uppercase w-full leading-tight">
+          <div className="font-bold">{item.name}</div>
+          <div className="flex flex-row gap-3 justify-between w-full text-gray-300">
+            <div className="flex flex-row gap-2">
+              <PrettyQuantity number={item.quantityInHundreds} />
               <p>@ {formatNumberToIDR(item.pricePerUnit, "short")}</p>
-              <p>{formatNumberToIDR(item.totalPrice, "short")}</p>
             </div>
+            <p>{formatNumberToIDR(item.totalPrice, "short")}</p>
           </div>
         </div>
       </button>
