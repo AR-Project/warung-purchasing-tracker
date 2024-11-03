@@ -25,7 +25,7 @@ export function SinglePurchaseCard({ singlePurchase }: Props) {
             <h2 className="text-xs">{singlePurchase.vendorName}</h2>
           </div>
         </hgroup>
-        <div className="px-2 py-1 flex flex-col gap-2 text-gray-300">
+        <div className="px-2 py-1 flex flex-col gap-2 text-gray-300 text-xs">
           {singlePurchase.items.map((item) => (
             <DisplaySingleItem key={item.id} item={item} disableLink={true} />
           ))}
