@@ -12,6 +12,7 @@ import { user } from "./user";
 import { images, purchasedItems } from "./schema";
 
 export type NewItemDbPayload = typeof items.$inferInsert;
+export type ItemRowData = typeof items.$inferSelect;
 
 export const items = pgTable(
   "items",
