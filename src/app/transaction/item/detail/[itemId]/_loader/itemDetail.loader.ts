@@ -1,7 +1,9 @@
 import db from "@/infrastructure/database/db";
+import { desc, eq } from "drizzle-orm";
+import { DateTime } from "luxon";
+
 import { items } from "@/lib/schema/item";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
-import { asc, desc, eq } from "drizzle-orm";
+import { purchasedItems } from "@/lib/schema/schema";
 
 type LoaderResponse = {
   purchaseItemHistory: {
@@ -18,21 +20,44 @@ type LoaderResponse = {
   modifiedAt: Date;
 };
 
-export async function itemDetailLoader(
-  itemId: string
-): Promise<LoaderResponse> {
-  const [item] = await db.select().from(items).where(eq(items.id, itemId));
-  const purchaseItemHistory = await db
-    .select({
-      purchaseId: purchasedItems.purchaseId,
-      purchaseDate: purchases.purchasedAt,
-      quantityInHundreds: purchasedItems.quantityInHundreds,
-      pricePerUnit: purchasedItems.pricePerUnit,
-      totalPrice: purchasedItems.totalPrice,
-    })
-    .from(purchasedItems)
-    .where(eq(purchasedItems.itemId, itemId))
-    .innerJoin(purchases, eq(purchasedItems.purchaseId, purchases.id))
-    .orderBy(desc(purchases.purchasedAt));
-  return { ...item, purchaseItemHistory: purchaseItemHistory };
+export async function itemDetailLoader(requestedItemId: string) {
+  const result = await db.query.items.findFirst({
+    where: eq(items.id, requestedItemId),
+    with: {
+      purchaseItem: {
+        columns: {
+          purchaseId: true,
+          quantityInHundreds: true,
+          pricePerUnit: true,
+          totalPrice: true,
+          purchasedAt: true,
+        },
+        orderBy: [desc(purchasedItems.purchasedAt)],
+      },
+      owner: {
+        columns: {
+          username: true,
+        },
+      },
+      creator: {
+        columns: {
+          username: true,
+        },
+      },
+    },
+  });
+  if (!result) return null;
+
+  const { purchaseItem, ...rest } = result;
+
+  return {
+    itemDetail: rest,
+    purchaseHistory: purchaseItem.map((ph) => ({
+      ...ph,
+      purchasedAt: DateTime.fromJSDate(ph.purchasedAt)
+        .setLocale("id")
+        .toLocaleString(),
+      quantity: ph.quantityInHundreds / 100,
+    })),
+  };
 }
