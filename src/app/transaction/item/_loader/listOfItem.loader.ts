@@ -1,7 +1,7 @@
 import db from "@/infrastructure/database/db";
 import { items } from "@/lib/schema/item";
 import { purchasedItems } from "@/lib/schema/schema";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 
 type Data = {
   id: string;
@@ -9,22 +9,24 @@ type Data = {
 };
 
 export async function listOfItemsLoader(requesterId: string): Promise<Data[]> {
-  const result = await db.query.purchasedItems.findMany({
-    where: eq(purchasedItems.ownerId, requesterId),
+  const result = await db.query.items.findMany({
+    where: and(
+      eq(items.ownerId, requesterId),
+      inArray(
+        items.id,
+        db
+          .select({
+            itemId: purchasedItems.itemId,
+          })
+          .from(purchasedItems)
+          .where(eq(purchasedItems.ownerId, requesterId))
+      )
+    ),
+
     columns: {
-      itemId: true,
-    },
-    with: {
-      item: {
-        columns: {
-          name: true,
-        },
-      },
+      id: true,
+      name: true,
     },
   });
-
-  return result.map((row) => ({
-    id: row.itemId,
-    name: row.item.name,
-  }));
+  return result;
 }
