@@ -8,7 +8,7 @@ import {
 } from "@headlessui/react";
 import { toast } from "react-toastify";
 import { RxCross2 } from "react-icons/rx";
-import { MdAdd, MdLocationOn, MdWarning } from "react-icons/md";
+import { MdAdd } from "react-icons/md";
 
 import useList from "@/presentation/hooks/useList";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
@@ -25,7 +25,7 @@ export default function ComboVendorForm({
   initialVendors,
   selectedVendor,
   selectVendor: setSelectedVendor,
-  placeholder = "Tempat Belanja",
+  placeholder = "Tempat Belanja...",
 }: Props) {
   const [query, setQuery] = useState("");
   const {
@@ -50,26 +50,26 @@ export default function ComboVendorForm({
     (err) => toast.error(err)
   );
 
-  function newVendorHandler() {
+  function newVendorHandler(name: string) {
     const formdata = new FormData();
-    if (selectedVendor) formdata.append("name", selectedVendor.name);
+    formdata.append("name", name);
     newVendorAction(formdata);
   }
 
   return (
-    <div className="flex flex-row items-center ">
+    <div className="flex flex-row items-center basis-3/4 ">
       <Combobox
         value={selectedVendor}
-        onChange={(value) => value && setSelectedVendor(value)}
+        onChange={(value) => {
+          if (!value) return;
+          if (value.id === "pending") {
+            newVendorHandler(value.name);
+          } else {
+            setSelectedVendor(value);
+          }
+        }}
         onClose={() => setQuery("")}
       >
-        <button
-          onClick={() => comboInputRef.current?.focus()}
-          tabIndex={-1}
-          className="flex flex-row justify-center items-center h-10 aspect-square border-t border-l border-b border-gray-600 bg-gray-800"
-        >
-          <MdLocationOn />
-        </button>
         <ComboboxInput
           ref={comboInputRef}
           aria-label="Assignee"
@@ -78,31 +78,13 @@ export default function ComboVendorForm({
             search(event.target.value);
             setQuery(event.target.value);
           }}
-          className={` px-2 h-10 w-full border ${
+          className={`px-2 h-12 w-full border ${
             isCreateModeActive
               ? "bg-yellow-800/50 border-yellow-600"
               : "bg-gray-800 border-gray-600"
           }`}
           placeholder={placeholder}
         />
-
-        {isCreateModeActive && (
-          <>
-            <div className="group relative h-10 flex flex-row items-center px-1 bg-yellow-900/50 border-t border-r border-b border-yellow-600">
-              <MdWarning className="text-yellow-300 text-2xl" />
-              <p className="transition-opacity ease-in-out duration-150 opacity-0 group-hover:opacity-100 translate-y-full -translate-x-1/2 absolute z-40 bottom-0 text-xs  bg-yellow-300 text-yellow-800 p-0.5 whitespace-nowrap">
-                Vendor baru belum disimpan
-              </p>
-            </div>
-            <button
-              className="flex flex-row gap-2 px-2 h-10 items-center bg-green-900 border-t border-b border-gray-500  w-fit hover:bg-green-800 disabled:text-white/50"
-              onClick={() => newVendorHandler()}
-            >
-              <MdAdd className="text-xl" />
-              <div className="text-xs ">Simpan</div>
-            </button>
-          </>
-        )}
         {selectedVendor && (
           <button
             className="border border-gray-600 bg-gray-800 aspect-square h-10 flex items-center justify-center w-fit ml-auto"
@@ -117,7 +99,7 @@ export default function ComboVendorForm({
           </button>
         )}
         <ComboboxOptions
-          anchor="bottom"
+          anchor="bottom start"
           className="border bg-gray-800 empty:invisible"
         >
           {filteredList.map((item) => (
