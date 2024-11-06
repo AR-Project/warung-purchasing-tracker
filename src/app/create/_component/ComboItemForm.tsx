@@ -5,19 +5,17 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import dynamic from "next/dynamic";
 import { useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { NumericFormat } from "react-number-format";
 import { MdAdd } from "react-icons/md";
+import { SlBasket } from "react-icons/sl";
 
 import useList from "@/presentation/hooks/useList";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
 import { ResetItemInputButton } from "../_presentation/ResetItemInputButton";
 import { newItemAction } from "../_action/newItem.action";
-
-const EditItemHiddenForm = dynamic(() => import("./EditItemHiddenForm"));
 
 type Props = {
   initialItems: { id: string; name: string }[];
@@ -47,9 +45,6 @@ export default function ComboItemForm({
 
   const isCreateModeActive =
     selectedItem !== null && selectedItem.id === "pending";
-
-  const isEditItemModeEnabled =
-    selectedItem !== null && selectedItem.id !== "pending";
 
   function updateItem(data: Item) {
     setSelectedItem(data);
@@ -102,20 +97,27 @@ export default function ComboItemForm({
     (err) => toast.error(err)
   );
 
-  function newItemHandler() {
+  function newItemHandler(name: string) {
     const formData = new FormData();
-    if (selectedItem) formData.append("name", selectedItem.name);
+    formData.append("name", name);
     newItemFormAction(formData);
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <form className="flex flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
       <Combobox
         value={selectedItem}
-        onChange={(value) => value && setSelectedItem(value)}
+        onChange={(value) => {
+          if (!value) return;
+          if (value.id === "pending") {
+            newItemHandler(value.name);
+          } else {
+            setSelectedItem(value);
+          }
+        }}
         onClose={() => setQuery("")}
       >
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center basis-5/6">
           <ComboboxInput
             aria-label="Assignee"
             ref={itemFieldRef}
@@ -131,29 +133,12 @@ export default function ComboItemForm({
                 : "bg-gray-800"
             } ${
               error ? "border-red-500" : "border-gray-600"
-            } px-2 h-10 w-full border `}
+            } px-1 h-12 w-full border  `}
             placeholder="Ketik nama item..."
           />
-          {isEditItemModeEnabled && (
-            <EditItemHiddenForm
-              selectedItem={selectedItem}
-              updateItem={updateItem}
-            />
-          )}
-
-          {isCreateModeActive && (
-            <button
-              onClick={() => newItemHandler()}
-              className=" flex flex-row gap-1 h-10 px-1.5 items-center bg-green-900 border border-gray-500 rounded-sm  w-fit hover:bg-green-800"
-            >
-              <MdAdd className="text-xl" />
-              <span className="text-xs">Simpan</span>
-            </button>
-          )}
           {selectedItem && (
             <ResetItemInputButton resetComboForm={resetComboForm} />
           )}
-
           <ComboboxOptions
             anchor="bottom start"
             className="border bg-gray-800 empty:invisible z-50 flex flex-col w-[400px]"
@@ -178,10 +163,9 @@ export default function ComboItemForm({
           </ComboboxOptions>
         </div>
       </Combobox>
-
-      <form className="grid grid-cols-3 gap-1 items-center">
+      <div className="flex flex-row gap-2 items-center justify-stretch">
         <NumericFormat
-          className="bg-gray-800 border border-gray-500 p-1 rounded-sm"
+          className="bg-gray-800 border border-gray-500 p-1 rounded-sm h-16 w-full basis-3/12 "
           value={quantity}
           thousandSeparator=" "
           decimalSeparator=","
@@ -189,54 +173,53 @@ export default function ComboItemForm({
           placeholder="Jumlah"
           onValueChange={(values) => {
             const updatedQuantity = anyNumberToNumber(values.floatValue);
+            if (updatedQuantity === 0) return;
             setQuantity(updatedQuantity);
             setUnitPrice("");
             setTotalPrice("");
           }}
         />
-        <NumericFormat
-          className="bg-gray-800 border border-gray-500 p-1 rounded-sm"
-          value={unitPrice}
-          prefix="Rp"
-          thousandSeparator="."
-          decimalSeparator=","
-          placeholder="Harga satuan"
-          onValueChange={(values) => {
-            const unitPrice = anyNumberToNumber(values.floatValue);
-            setUnitPrice(unitPrice);
-            setTotalPrice(unitPrice * anyNumberToNumber(quantity));
-          }}
-        />
-        <NumericFormat
-          className="bg-gray-800 border border-gray-500 p-1 rounded-sm font-bold"
-          value={totalPrice}
-          prefix="Rp"
-          thousandSeparator="."
-          decimalSeparator=","
-          placeholder="Total"
-          onValueChange={(values) => {
-            const totalPrice = anyNumberToNumber(values.floatValue);
-            setTotalPrice(totalPrice);
-            setUnitPrice(totalPrice / anyNumberToNumber(quantity));
-          }}
-        />
-      </form>
-      <div className="flex flex-row-reverse">
+        <div className="flex flex-col basis-7/12 w-full">
+          <NumericFormat
+            className="bg-gray-800 border border-gray-500 p-1 rounded-sm w-full h-8"
+            value={unitPrice}
+            prefix="Rp"
+            thousandSeparator="."
+            decimalSeparator=","
+            placeholder="Harga satuan"
+            onValueChange={(values) => {
+              const unitPrice = anyNumberToNumber(values.floatValue);
+              if (unitPrice === 0) return;
+
+              setUnitPrice(unitPrice);
+              setTotalPrice(unitPrice * anyNumberToNumber(quantity));
+            }}
+          />
+          <NumericFormat
+            className="bg-gray-800 border-b border-x border-gray-500 p-1 rounded-sm font-bold w-full h-8"
+            value={totalPrice}
+            prefix="Rp"
+            thousandSeparator="."
+            decimalSeparator=","
+            placeholder="Total Harga"
+            onValueChange={(values) => {
+              const totalPrice = anyNumberToNumber(values.floatValue);
+              if (totalPrice === 0) return;
+              setTotalPrice(totalPrice);
+              setUnitPrice(totalPrice / anyNumberToNumber(quantity));
+            }}
+          />
+        </div>
         <button
           onClick={finalizeItem}
-          className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-fit ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed"
+          className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed h-16 basis-1/12 px-3"
           disabled={!isPayloadValid()}
         >
-          <div className="flex flex-row gap-2 items-baseline">
-            <MdAdd /> Masukkan Keranjang
+          <div className="flex flex-row text-xl items-center justify-center ">
+            <MdAdd /> <SlBasket />
           </div>
         </button>
-        {error && (
-          <p className="text-red-500 text-xs uppercase italic">
-            Barang sudah terdaftar. Ganti atau ubah barang
-          </p>
-        )}
       </div>
-    </div>
+    </form>
   );
 }
