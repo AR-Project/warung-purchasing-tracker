@@ -9,6 +9,7 @@ import DatePicker from "../_component/DatePicker";
 import { transactionLoader } from "./listOfPurchase.loader";
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import TransactionNavigation from "../_component/TransactionNav";
 
 type Props = {
   searchParams: SearchParams;
@@ -16,9 +17,7 @@ type Props = {
 
 export default async function Page({ searchParams }: Props) {
   const session = await auth();
-  if (!session) {
-    return <LoginRequiredWarning />;
-  }
+  if (!session) return <LoginRequiredWarning />;
 
   const filter = parseSearchParams(searchParams);
 
@@ -26,6 +25,7 @@ export default async function Page({ searchParams }: Props) {
 
   return (
     <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">
+      <TransactionNavigation />
       <Suspense>
         <SearchBox
           activeName={filter.keyword}
