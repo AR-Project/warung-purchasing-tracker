@@ -1,5 +1,7 @@
 "use client";
 import { Suspense, useRef, useState } from "react";
+import { DateTime } from "luxon";
+import { toast } from "react-toastify";
 import dynamic from "next/dynamic";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
@@ -35,7 +37,7 @@ export default function PurchaseCreator({
   } = useCartManager();
 
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
-  const [txDate, setTxDate] = useState<string>("");
+  const [txDate, setTxDate] = useState<string>(DateTime.now().toISODate());
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
 
   const itemsContainerRef = useRef<HTMLDivElement>(null);
@@ -63,21 +65,33 @@ export default function PurchaseCreator({
     item: CreatePurchaseItemWithName
   ): string | undefined {
     const result = appendItemToCart(item);
+    if (!result)
+      toast.info(
+        <>
+          `<span className="font-bold">{item.name}</span> masuk keranjang`
+        </>,
+        {
+          position: "top-center",
+          autoClose: 2000,
+        }
+      );
     setTimeout(scrollToView, 200);
     return result;
   }
 
   return (
     <div className="flex flex-col p-0.5 pt-2 gap-3 w-full max-w-[700px] mx-auto">
-      <DatePicker txDate={txDate} setTxDate={setTxDate} />
-
-      <Suspense fallback={<span>loading...</span>}>
-        <ComboVendorForm
-          initialVendors={initialVendors}
-          selectedVendor={selectedVendor}
-          selectVendor={selectVendor}
-        />
-      </Suspense>
+      <div className="flex flex-row gap-1 items-center">
+        <Suspense fallback={<span>loading...</span>}>
+          <ComboVendorForm
+            initialVendors={initialVendors}
+            selectedVendor={selectedVendor}
+            selectVendor={selectVendor}
+          />
+        </Suspense>
+        <div>@</div>
+        <DatePicker txDate={txDate} setTxDate={setTxDate} />
+      </div>
 
       <Suspense fallback={<span>loading...</span>}>
         <ImageSelector
@@ -98,7 +112,7 @@ export default function PurchaseCreator({
         >
           <div
             ref={itemsContainerRef}
-            className="max-h-64 overflow-y-scroll flex flex-col font-mono bg-gray-800/50 mb-2"
+            className="flex flex-col font-mono bg-gray-800/50 mb-2"
           >
             {itemsCart.map((item, index) => (
               <ItemOnCartCard
@@ -112,20 +126,18 @@ export default function PurchaseCreator({
               />
             ))}
           </div>
-          {itemsCart.length > 5 && (
-            <div className="absolute bg-gradient-to-t from-black to-transparent w-full h-5 bottom-0 pointer-events-none border-b border-gray-500"></div>
-          )}
         </div>
       )}
-
       <h4 className="text-xl font-black text-center border border-gray-700 p-2">
         {formatNumberToIDR(cartTotalPrice)}
       </h4>
       <Suspense fallback={<span>loading...</span>}>
-        <ComboItemForm
-          initialItems={initialItems}
-          appendItemOnCart={appendItemOnCartWrapper}
-        />
+        <div className="sticky bottom-0 bg-black/90 py-3">
+          <ComboItemForm
+            initialItems={initialItems}
+            appendItemOnCart={appendItemOnCartWrapper}
+          />
+        </div>
       </Suspense>
 
       <MakePurchaseHiddenForm
