@@ -36,7 +36,7 @@ export function ItemOnCartCard({
   editPurchasedItem,
 }: ItemCardProps) {
   return (
-    <div className="animate-appear flex flex-row gap-2 items-center justify-center">
+    <div className=" even:bg-white/5 animate-appear flex flex-row gap-2 items-center justify-center">
       <button
         onClick={() => {
           onClick(item.itemId);
