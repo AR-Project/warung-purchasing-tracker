@@ -10,10 +10,7 @@ type Props = {
 
 export default function ItemDetailCard({ itemData }: Props) {
   return (
-    <article className="flex flex-row gap-2">
-      <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
-        {itemData.imageId ? "Image" : "n / a"}
-      </div>
+    <article className="flex flex-row gap-2 justify-between">
       <div className="flex flex-col">
         <h3 className="text-xs italic text-gray-500">
           @{itemData.creator.username}
@@ -33,6 +30,9 @@ export default function ItemDetailCard({ itemData }: Props) {
               minute: "2-digit",
             })}
         </div>
+      </div>
+      <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
+        {itemData.imageId ? "Image" : "n / a"}
       </div>
     </article>
   );
