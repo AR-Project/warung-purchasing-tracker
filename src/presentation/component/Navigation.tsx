@@ -13,10 +13,6 @@ export async function Navigation() {
       href: "/transaction",
       label: "Transaction",
     },
-    {
-      href: "/library",
-      label: "Library",
-    },
   ];
 
   return (

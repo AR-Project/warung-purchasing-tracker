@@ -45,6 +45,14 @@ export default function UserInfo({ username, userId, role }: Props) {
             </Link>
           </MenuItem>
         )}
+        <MenuItem as="div" className="w-full flex flex-col items-end h-15">
+          <Link
+            href="/manage/media"
+            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+          >
+            <MdPerson className="text-white" /> Manage Media
+          </Link>
+        </MenuItem>
 
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
           <Link
