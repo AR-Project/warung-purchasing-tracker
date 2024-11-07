@@ -1,7 +1,7 @@
 "use client";
 
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { MdOutlineSettings, MdPerson } from "react-icons/md";
+import { MdImage, MdOutlineSettings, MdPerson } from "react-icons/md";
 
 import { SignOutButton } from "./SignOutButton";
 import Link from "next/link";
@@ -27,7 +27,7 @@ export default function UserInfo({ username, userId, role }: Props) {
       <MenuItems
         anchor="bottom end"
         transition
-        className="origin-top transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 flex flex-col bg-gray-500/70 border border-white/20 gap-1 backdrop-blur-sm p-3 pb-8 z-40 text-md  rounded-lg shadow-2xl "
+        className="origin-top transition duration-200 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 flex flex-col bg-gray-500/70 border border-white/20 gap-1 backdrop-blur-sm p-2 z-40 text-md  rounded-lg shadow-2xl "
       >
         <MenuItem as="div" className=" w-full flex flex-col items-end h-16">
           <div className="text-lg font-bold">Welcome, {username}!</div>
@@ -50,14 +50,14 @@ export default function UserInfo({ username, userId, role }: Props) {
             href="/manage/media"
             className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
           >
-            <MdPerson className="text-white" /> Manage Media
+            <MdImage className="text-white" /> Manage Media
           </Link>
         </MenuItem>
 
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
           <Link
             href="/manage"
-            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+            className=" hover:underline text-md h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
           >
             <MdOutlineSettings className="text-white" /> Account Settings
           </Link>
@@ -65,6 +65,14 @@ export default function UserInfo({ username, userId, role }: Props) {
         <MenuItem as="div" className=" w-full flex flex-row justify-end mt-4">
           <SignOutButton />
         </MenuItem>
+        <div className="mt-4 border-t py-3">
+          <div className="text-xs/3 italic text-white/70 text-center">
+            Warung Purchasing Tracker
+          </div>
+          <div className="text-xs/3 italic text-white/50 text-center">
+            AR PRocjet © 2024
+          </div>
+        </div>
       </MenuItems>
     </Menu>
   );
