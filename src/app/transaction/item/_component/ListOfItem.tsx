@@ -31,8 +31,12 @@ export default function ListOfItem({ items }: Props) {
         }}
       />
       <div className="grid grid-cols-2 gap-1">
-        {query.length == 0 && list.map((item) => <ItemLinkCard item={item} />)}
-        {query && filteredList.map((item) => <ItemLinkCard item={item} />)}
+        {query.length == 0 &&
+          list.map((item) => <ItemLinkCard key={item.id} item={item} />)}
+        {query &&
+          filteredList.map((item) => (
+            <ItemLinkCard key={item.id} item={item} />
+          ))}
       </div>
     </div>
   );
