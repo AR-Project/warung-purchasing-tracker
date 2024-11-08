@@ -50,7 +50,9 @@ export function isValidDate(value: unknown): string {
   }
 }
 
-function dateRangeValidator(params: SearchParams): RangeFilter | undefined {
+export function dateRangeValidator(
+  params: SearchParams
+): RangeFilter | undefined {
   const dateSchema = z.string().date();
   try {
     const from = dateSchema.parse(params.from);
