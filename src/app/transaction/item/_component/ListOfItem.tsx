@@ -8,35 +8,57 @@ import useList from "@/presentation/hooks/useList";
 type Item = {
   id: string;
   name: string;
+  quantity: number;
 };
 
 type Props = {
   items: Item[];
 };
 
+type SplittedItems = {
+  zeroPurchase: Item[];
+  nonZeroPurchase: Item[];
+};
+
 export default function ListOfItem({ items }: Props) {
-  const { list, filteredList, search } = useList("", items);
+  const { filteredList, search } = useList("", items);
   const [query, setQuery] = useState<string>("");
+
+  const splittedItems = filteredList.reduce<SplittedItems>(
+    (bag, currentItem) => {
+      if (currentItem.quantity === 0) {
+        bag.zeroPurchase.push(currentItem);
+      } else {
+        bag.nonZeroPurchase.push(currentItem);
+      }
+      return bag;
+    },
+    { zeroPurchase: [], nonZeroPurchase: [] }
+  );
 
   return (
     <div className="flex flex-col">
       <input
         type="text"
         className="text-white bg-gray-800 h-10 px-2 mt-2 mb-6 "
-        placeholder="🔍 Cari Barang..."
+        placeholder="🔍 Cari Nama Barang..."
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           search(e.target.value);
         }}
       />
+      <h1>Purchased Item</h1>
       <div className="grid grid-cols-2 gap-1">
-        {query.length == 0 &&
-          list.map((item) => <ItemLinkCard key={item.id} item={item} />)}
-        {query &&
-          filteredList.map((item) => (
-            <ItemLinkCard key={item.id} item={item} />
-          ))}
+        {splittedItems.nonZeroPurchase.map((item) => (
+          <ItemLinkCard key={item.id} item={item} />
+        ))}
+      </div>
+      <h1>Item with no purchase</h1>
+      <div className="grid grid-cols-2 gap-1">
+        {splittedItems.zeroPurchase.map((item) => (
+          <ItemLinkCard key={item.id} item={item} />
+        ))}
       </div>
     </div>
   );
@@ -55,6 +77,7 @@ function ItemLinkCard({ item }: ItemLinkCardProps) {
     >
       <div className="h-10 aspect-square bg-gray-600"></div>
       <div>{item.name}</div>
+      <div className="font-black">{item.quantity}</div>
     </Link>
   );
 }
