@@ -4,9 +4,10 @@ import { useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { DateTime } from "luxon";
 import { RxCross2, RxReset } from "react-icons/rx";
-
-import { shortDateWithDay, superShortDate } from "@/lib/utils/formatter";
 import { FaAngleDown, FaAngleUp } from "react-icons/fa";
+import { MdCheck } from "react-icons/md";
+
+import { shortDate, superShortDate } from "@/lib/utils/formatter";
 import Tooltip from "@/presentation/component/Tooltip";
 
 type Props = {
@@ -29,12 +30,16 @@ export default function DatePicker({ activeDateRange }: Props) {
   const dateFromRef = useRef<HTMLInputElement>(null);
   const dateToRef = useRef<HTMLInputElement>(null);
 
-  const createDateFilterQueryString = (from: string, to: string) => {
+  const today = DateTime.now().toISODate();
+  const oneMonthBefore = DateTime.now().minus({ month: 1 }).toISODate();
+  const twoWeeksBefore = DateTime.now().minus({ week: 2 }).toISODate();
+
+  function createDateFilterQueryString(from: string, to: string) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("from", from);
     params.set("to", to);
     return params.toString();
-  };
+  }
 
   const removeDateFilterQueryString = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -43,20 +48,36 @@ export default function DatePicker({ activeDateRange }: Props) {
     return params.toString();
   };
 
-  const onApplyDateFilterHandler = () => {
+  function onApplyDateFilterHandler() {
     if (!(dateFrom && dateTo)) return;
     setIsOpen(false);
     router.push(pathname + "?" + createDateFilterQueryString(dateFrom, dateTo));
-  };
+    router.refresh();
+  }
 
-  const onClearDateFilter = () => {
+  function onClearDateFilter() {
     router.push(pathname + "?" + removeDateFilterQueryString());
-  };
+  }
 
-  const onResetDateSelection = () => {
+  function onResetDateSelection() {
     setDateFrom("");
     setDateTo("");
-  };
+  }
+
+  function oneMonthFilterHandler() {
+    setIsOpen(false);
+    router.push(
+      pathname + "?" + createDateFilterQueryString(oneMonthBefore, today)
+    );
+    router.refresh();
+  }
+  function twoWeeksFilterHandler() {
+    setIsOpen(false);
+    router.push(
+      pathname + "?" + createDateFilterQueryString(twoWeeksBefore, today)
+    );
+    router.refresh();
+  }
 
   return (
     <>
@@ -85,10 +106,25 @@ export default function DatePicker({ activeDateRange }: Props) {
       </div>
 
       <div
-        className={`overflow-hidden transition-height ease-in-out delay-100 flex flex-row items-center w-full justify-between  ${
+        className={`overflow-hidden transition-height ease-in-out delay-100 flex flex-row items-center w-full justify-between gap-2 text-xs ${
           isOpen ? "h-[80px]" : "h-[0px]"
         }`}
       >
+        <button
+          className="px-2 border bg-green-600/30 h-10 border-gray-400 "
+          onClick={twoWeeksFilterHandler}
+        >
+          <div>14 Hari</div>
+          <div>Terakhir</div>
+        </button>
+        <button
+          className="px-2 border bg-green-600/30 h-10 border-gray-400"
+          onClick={oneMonthFilterHandler}
+        >
+          <div>30 Hari</div>
+          <div>Terakhir</div>
+        </button>
+        <div className="mx-1"></div>
         <div className="group flex flex-row grow relative">
           <input
             className="w-[0px] h-10"
@@ -107,11 +143,9 @@ export default function DatePicker({ activeDateRange }: Props) {
             onClick={() => dateFromRef.current?.showPicker()}
           >
             {dateFrom ? (
-              shortDateWithDay(new Date(dateFrom))
+              shortDate(dateFrom)
             ) : (
-              <span className="italic text-sm text-gray-300">
-                Dari Tanggal...
-              </span>
+              <span className="italic text-gray-300">Dari..</span>
             )}
           </button>
           <Tooltip>Dari Tanggal: </Tooltip>
@@ -131,11 +165,9 @@ export default function DatePicker({ activeDateRange }: Props) {
             disabled={!dateFrom}
           >
             {dateTo ? (
-              shortDateWithDay(new Date(dateTo))
+              shortDate(dateTo)
             ) : (
-              <span className="italic text-sm text-gray-400">
-                Sampai Tanggal...
-              </span>
+              <span className="italic text-gray-400">Sampai...</span>
             )}
           </button>
           <Tooltip>Sampai Tanggal</Tooltip>
@@ -150,11 +182,11 @@ export default function DatePicker({ activeDateRange }: Props) {
           <Tooltip>Atur ulang tanggal</Tooltip>
         </div>
         <button
-          className="disabled:cursor-not-allowed disabled:text-gray-400 disabled:bg-gray-800 h-8 px-2 border bg-green-800 border-gray-400 disabled:border-gray-600"
+          className="disabled:cursor-not-allowed disabled:text-gray-400 disabled:bg-gray-800 h-10 aspect-square px-2 border bg-green-800 border-gray-400 disabled:border-gray-600 flex items-center justify-center"
           onClick={onApplyDateFilterHandler}
           disabled={!(dateFrom && dateTo)}
         >
-          Terapkan
+          <MdCheck className="text-xl" />
         </button>
       </div>
     </>
