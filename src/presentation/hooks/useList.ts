@@ -11,7 +11,7 @@ type Default = { id: string; name: string };
  */
 export default function useList<T = Default>(url: string, initalValue: T[]) {
   const [list, setList] = useState<T[]>(initalValue);
-  const [filteredList, setFilteredList] = useState<T[]>([]);
+  const [filteredList, setFilteredList] = useState<T[]>(initalValue);
 
   let fuse = _initFuse();
 
@@ -23,8 +23,12 @@ export default function useList<T = Default>(url: string, initalValue: T[]) {
   }
 
   function search(keyword: string) {
-    const result = fuse.search(keyword);
-    setFilteredList(result.map(({ item }) => item));
+    if (keyword.length === 0) {
+      setFilteredList(list);
+    } else {
+      const result = fuse.search(keyword);
+      setFilteredList(result.map(({ item }) => item));
+    }
   }
 
   function refreshList() {
