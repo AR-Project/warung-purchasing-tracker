@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { stringToDate } from "@/lib/utils/formatter";
 
-import PurchaseItemDisplayer from "./_component/PurchaseItemDisplayer";
+import PurchaseItemDisplayer from "@/app/_component/PurchaseItemDisplayer";
 import { BackButton } from "./edit/_presentation/BackButton";
 
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
