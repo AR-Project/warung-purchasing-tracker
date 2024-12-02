@@ -2,11 +2,18 @@ import db from "@/infrastructure/database/db";
 import { NewUserDbPayload, user } from "@/lib/schema/user";
 import { eq } from "drizzle-orm";
 
+export const defaultHelperUser: NewUserDbPayload = {
+  id: "u-123",
+  username: "test",
+  hashedPassword: "$hashed$password",
+  parentId: "u-123",
+};
+
 export function addUserHelper({
-  username = "test",
-  id = "u-123",
-  hashedPassword = "$hashed$password",
-  parentId = "u-123",
+  username = defaultHelperUser.username,
+  id = defaultHelperUser.id,
+  hashedPassword = defaultHelperUser.hashedPassword,
+  parentId = defaultHelperUser.parentId,
 }: Partial<NewUserDbPayload>) {
   return db
     .insert(user)
