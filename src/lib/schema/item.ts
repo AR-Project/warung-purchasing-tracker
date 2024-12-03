@@ -32,6 +32,9 @@ export const items = pgTable(
     imageId: text("image_id").references(() => images.id, {
       onDelete: "set null",
     }),
+    categoryId: text("category_id").references(() => category.id, {
+      onDelete: "set null",
+    }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -63,5 +66,56 @@ export const itemRelations = relations(items, ({ one, many }) => ({
     fields: [items.imageId],
     references: [images.id],
   }),
+  category: one(category, {
+    fields: [items.categoryId],
+    references: [category.id],
+  }),
   purchaseItem: many(purchasedItems),
+}));
+
+export type CreateCategoryDbPayload = typeof category.$inferInsert;
+
+export const category = pgTable(
+  "category",
+  {
+    id: text("id").primaryKey().unique().notNull(),
+    ownerId: text("user_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+    creatorId: text("creator_id")
+      .notNull()
+      .references(() => user.id, {
+        onDelete: "cascade",
+      }),
+    name: text("name").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    modifiedAt: timestamp("last_modified_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => {
+    return {
+      categoryNameIdx: index("category_name_idx").on(table.name),
+      categoryOwnerIdx: index("category_owner_idx").on(table.ownerId),
+      categoryCreatorIdx: index("category_creator_idx").on(table.creatorId),
+    };
+  }
+);
+
+export const categoryRelations = relations(category, ({ one, many }) => ({
+  owner: one(user, {
+    fields: [category.ownerId],
+    references: [user.id],
+    relationName: "owner",
+  }),
+  creator: one(user, {
+    fields: [category.creatorId],
+    references: [user.id],
+    relationName: "creator",
+  }),
+  items: many(items),
 }));

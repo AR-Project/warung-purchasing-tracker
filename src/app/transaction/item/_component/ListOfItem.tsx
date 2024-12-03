@@ -9,6 +9,7 @@ type Item = {
   id: string;
   name: string;
   quantity: number;
+  category: string | null;
 };
 
 type Props = {
@@ -71,13 +72,21 @@ type ItemLinkCardProps = {
 function ItemLinkCard({ item }: ItemLinkCardProps) {
   return (
     <Link
-      className="h-14 px-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 flex flex-row gap-2 justify-start items-center"
+      className="h-12 bg-gray-800 hover:bg-gray-700 border border-gray-700 flex flex-row gap-1 justify-start items-start text-sm"
       key={item.id}
       href={`./item/detail/${item.id}`}
     >
-      <div className="h-10 aspect-square bg-gray-600"></div>
-      <div>{item.name}</div>
-      <div className="font-black">{item.quantity}</div>
+      <div className="relative h-10 aspect-square bg-gray-600">
+        <div className="absolute bottom-0 right-0 font-black  px-0.1">
+          {item.quantity}
+        </div>
+      </div>
+      <div>
+        <div className="text-xs/3 italic opacity-35 font-light">
+          {item.category || "uncategorized"}
+        </div>
+        <div>{item.name}</div>
+      </div>
     </Link>
   );
 }

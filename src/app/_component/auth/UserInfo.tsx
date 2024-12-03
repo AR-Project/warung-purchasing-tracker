@@ -1,7 +1,12 @@
 "use client";
 
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/react";
-import { MdImage, MdOutlineSettings, MdPerson } from "react-icons/md";
+import {
+  MdCategory,
+  MdImage,
+  MdOutlineSettings,
+  MdPerson,
+} from "react-icons/md";
 
 import { SignOutButton } from "./SignOutButton";
 import Link from "next/link";
@@ -45,6 +50,14 @@ export default function UserInfo({ username, userId, role }: Props) {
             </Link>
           </MenuItem>
         )}
+        <MenuItem as="div" className="w-full flex flex-col items-end h-15">
+          <Link
+            href="/manage/category"
+            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+          >
+            <MdCategory className="text-white" /> Item Category
+          </Link>
+        </MenuItem>
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
           <Link
             href="/manage/media"
