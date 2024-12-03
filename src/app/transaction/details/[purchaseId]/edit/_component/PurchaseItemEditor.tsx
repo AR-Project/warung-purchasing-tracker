@@ -1,4 +1,4 @@
-import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
+import { DisplaySingleItem } from "@/app/_component/DisplaySingleItem";
 import { formatNumberToIDR } from "@/lib/utils/formatter";
 import DeletePurchaseSingleItemForm from "../_hiddenForm/DeletePurchaseSingleItemForm";
 import PurchaseItemDataEditor from "./PurchaseItemDataEditor";

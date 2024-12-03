@@ -2,7 +2,7 @@ import Link from "next/link";
 import { MdReceiptLong } from "react-icons/md";
 
 import { shortDateWithDay, formatNumberToIDR } from "@/lib/utils/formatter";
-import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
+import { DisplaySingleItem } from "@/app/_component/DisplaySingleItem";
 
 type Props = {
   singlePurchase: PurchaseDisplay;
