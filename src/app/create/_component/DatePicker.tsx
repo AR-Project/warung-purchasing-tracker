@@ -1,7 +1,6 @@
 import { Dispatch, SetStateAction, useRef } from "react";
-import { PiCalendarDotsBold } from "react-icons/pi";
 
-import { stringToDate } from "@/lib/utils/formatter";
+import { shortDate } from "@/lib/utils/formatter";
 
 type Props = {
   txDate: string;
@@ -12,31 +11,27 @@ export default function DatePicker({ txDate, setTxDate }: Props) {
   const datePickerRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex flex-col">
-      <button
-        className=" bg-gray-800 w-full h-10 border border-gray-600 flex flex-row gap-3 items-center"
-        onClick={() => datePickerRef.current?.showPicker()}
-        title="Tanggal Transaksi"
-      >
-        <div className="h-10 aspect-square flex flex-row justify-center items-center border-r border-gray-600">
-          <PiCalendarDotsBold />
-        </div>
-        {txDate === "" ? (
-          <span className="text-white/50 italic text-xs">
-            Pilih Tanggal Transaksi...
-          </span>
-        ) : (
-          stringToDate(txDate)
-        )}
-      </button>
+    <button
+      className="relative bg-gray-800 w-full h-12 border border-gray-600 flex flex-row gap-3 items-center justify-center basis-1/4"
+      onClick={() => datePickerRef.current?.showPicker()}
+      title="Tanggal Transaksi"
+    >
+      {txDate === "" ? (
+        <span className="text-white/50 text-xs flex flex-row items-center gap-2">
+          <span className="text-xl">🗓️ ...</span>
+        </span>
+      ) : (
+        <span className="text-sm"> {shortDate(txDate)} </span>
+      )}
       <input
         ref={datePickerRef}
-        className="w-[0px] h-[0px]"
+        tabIndex={-1}
+        className="absolute bottom-0 left-0 w-[0px] h-[0px]"
         type="date"
         name="date"
         id="date"
         onChange={(e) => setTxDate(e.target.value)}
       />
-    </div>
+    </button>
   );
 }

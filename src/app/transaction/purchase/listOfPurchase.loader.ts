@@ -4,7 +4,8 @@ import { eq, between, desc, ilike, and, SQL } from "drizzle-orm";
 import { DateTime } from "luxon";
 
 import db from "@/infrastructure/database/db";
-import { purchases, vendors, purchasedItems, items } from "@/lib/schema/schema";
+import { purchases, vendors, purchasedItems } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
 
 export async function transactionLoader(
   { range, keyword }: SearchFilter,

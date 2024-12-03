@@ -1,27 +1,39 @@
-import Link from "next/link";
-import { listOfItemsLoader } from "./_loader/listOfItem.loader";
+import { Suspense } from "react";
+
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { listOfItemsLoader } from "./_loader/listOfItem.loader";
+import ListOfItem from "./_component/ListOfItem";
+import TransactionNavigation from "../_component/TransactionNav";
+import { dateRangeValidator, parseSearchParams } from "@/lib/utils/validator";
+import DatePicker from "../_component/DatePicker";
 
-export default async function Page() {
+type Props = {
+  searchParams: SearchParams;
+};
+
+export default async function Page({ searchParams }: Props) {
   const session = await auth();
-  if (!session) {
-    return <LoginRequiredWarning />;
-  }
+  if (!session) return <LoginRequiredWarning />;
 
-  const listOfItems = await listOfItemsLoader(session.user.userId);
+  const dateFilter = dateRangeValidator(searchParams);
+  const listOfItems = await listOfItemsLoader(
+    session.user.parentId,
+    dateFilter
+  );
 
   return (
     <div className="flex flex-col gap-1 max-w-md mx-auto">
-      {listOfItems.map((item) => (
-        <Link
-          className="h-10 px-3 bg-gray-700 hover:bg-gray-600 border border-gray-400 flex flex-row justify-start items-center"
-          key={item.id}
-          href={`./item/detail/${item.id}`}
-        >
-          {item.name}
-        </Link>
-      ))}
+      <TransactionNavigation />
+      <div>
+        <DatePicker activeDateRange={dateFilter} />
+      </div>
+      <Suspense>
+        <ListOfItem
+          key={`${dateFilter?.from}${dateFilter?.to}`}
+          items={listOfItems}
+        />
+      </Suspense>
     </div>
   );
 }

@@ -5,12 +5,12 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { items, purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
+import { items } from "@/lib/schema/item";
 
 export async function editDataSingleItem(
-  prevState: any,
   formData: FormData
 ): Promise<FormState<void>> {
   let invariantError: string | undefined;

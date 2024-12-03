@@ -4,9 +4,8 @@ import { Button } from "@headlessui/react";
 import { MdSave } from "react-icons/md";
 import { toast } from "react-toastify";
 
-import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
-
 import { editDataSingleItem } from "../_action/editDataSingleItem.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
   purchaseId: string;
@@ -23,7 +22,7 @@ export default function UpdatePurchaseItemDataForm({
   updatedPricePerUnit,
   onSuccess,
 }: Props) {
-  const [formAction, isPending] = useServerActionWithState(
+  const [formAction, isPending] = useServerAction(
     editDataSingleItem,
     (msg) => {
       onSuccess();

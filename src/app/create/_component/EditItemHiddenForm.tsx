@@ -1,39 +1,36 @@
 "use client";
-import { type SetStateAction, useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { FiEdit } from "react-icons/fi";
 import { ImCancelCircle, ImCheckmark } from "react-icons/im";
 
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 import { editItem } from "../_action/editItem.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
   selectedItem: Item;
-  setSelectedItem: (value: SetStateAction<Item>) => void;
+  updateItem: (item: Item) => void;
 };
 
 export default function EditItemHiddenForm({
-  setSelectedItem,
+  updateItem,
   selectedItem,
 }: Props) {
-  const [state, formAction] = useFormState<FormState<string>, FormData>(
+  const [editItemAction] = useServerAction(
     editItem,
-    {}
+    (msg, data) => {
+      if (!data) return;
+      updateItem(data);
+      toast.success(msg);
+
+      close();
+    },
+    (err) => toast.error(err)
   );
 
   const [isOpen, setIsOpen] = useState(false);
   const [newName, setNewName] = useState<string>(selectedItem.name);
-
-  useStateChanged(() => {
-    if (state.error) toast.error(state.error);
-    if (state.message && state.data && newName) {
-      toast.success(state.message);
-      setSelectedItem((prevItem) => ({ ...prevItem, name: newName }));
-      close();
-    }
-  }, state);
 
   function open() {
     setIsOpen(true);
@@ -72,7 +69,7 @@ export default function EditItemHiddenForm({
               >
                 Masukkan nama baru:
               </DialogTitle>
-              <form action={formAction} className="flex flex-col gap-2">
+              <form action={editItemAction} className="flex flex-col gap-2">
                 <input
                   className="bg-gray-800 w-full p-2"
                   type="hidden"

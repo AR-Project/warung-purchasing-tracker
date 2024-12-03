@@ -1,9 +1,9 @@
 import Fuse from "fuse.js";
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/schema";
 import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
+import { items } from "@/lib/schema/item";
 
 export async function POST(req: Request) {
   const session = await auth();

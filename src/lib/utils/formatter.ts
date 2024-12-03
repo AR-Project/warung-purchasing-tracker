@@ -25,8 +25,19 @@ export const shortDateWithDay = (date: Date) => {
     year: "2-digit",
   });
 };
-export const shortDate = (date: Date) => {
-  return DateTime.fromJSDate(date).toFormat("dd/mm/yy");
+export const shortDate = (date: Date | string) => {
+  if (date instanceof Date) {
+    return DateTime.fromJSDate(date).setLocale("id").toLocaleString({
+      month: "short",
+      day: "2-digit",
+      year: "2-digit",
+    });
+  }
+  return DateTime.fromISO(date).setLocale("id").toLocaleString({
+    month: "short",
+    day: "2-digit",
+    year: "2-digit",
+  });
 };
 
 export const stringToDate = (dateString: string | Date | undefined) => {
@@ -46,6 +57,21 @@ export const stringToDate = (dateString: string | Date | undefined) => {
     month: "long",
     day: "2-digit",
     year: "numeric",
+  });
+};
+export const stringToHourMinute = (dateString: string | Date | undefined) => {
+  if (dateString === undefined) return "";
+
+  if (dateString instanceof Date) {
+    return DateTime.fromJSDate(dateString).setLocale("id").toLocaleString({
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return DateTime.fromISO(dateString).setLocale("id").toLocaleString({
+    hour: "2-digit",
+    minute: "2-digit",
   });
 };
 

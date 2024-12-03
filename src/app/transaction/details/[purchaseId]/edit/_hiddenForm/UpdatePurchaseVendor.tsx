@@ -1,7 +1,7 @@
 import { toast } from "react-toastify";
 import { MdSave } from "react-icons/md";
 
-import { useServerActionWithState } from "@/presentation/hooks/useServerActionWithState";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { updatePurchaseVendor } from "../_action/updatePurchaseVendor.action";
 
 type Props<T> = {
@@ -15,7 +15,7 @@ export default function UpdatePurchaseVendorHiddenForm({
   newPurchaseVendorId,
   onSuccess,
 }: Props<Vendor>) {
-  const [formAction] = useServerActionWithState(
+  const [formAction] = useServerAction(
     updatePurchaseVendor,
     (msg, err) => {
       toast.success(msg);

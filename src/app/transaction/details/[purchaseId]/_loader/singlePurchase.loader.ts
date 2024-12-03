@@ -1,5 +1,6 @@
 import db from "@/infrastructure/database/db";
-import { purchases, vendors, purchasedItems, items } from "@/lib/schema/schema";
+import { items } from "@/lib/schema/item";
+import { purchases, vendors, purchasedItems } from "@/lib/schema/schema";
 import { eq, desc } from "drizzle-orm";
 import { unstable_cache as cache } from "next/cache";
 

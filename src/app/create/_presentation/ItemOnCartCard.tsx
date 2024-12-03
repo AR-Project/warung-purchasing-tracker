@@ -1,14 +1,22 @@
 "use client";
 
-import { formatNumberToIDR } from "@/lib/utils/formatter";
-import { useRef, useState } from "react";
-import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 import { MdDelete } from "react-icons/md";
+
+import { formatNumberToIDR } from "@/lib/utils/formatter";
+import { PrettyQuantity } from "@/presentation/component/PrettyQuantity";
 import EditItemDataOnCart from "../_component/EditItemOnCartData";
 
-type MoveItemFn = (index: number, direction: "up" | "down") => void;
+type EditPurchaseItemFn = (
+  updatedItem: CreatePurchaseItemWithName,
+  index: number
+) => void;
 type DeleteItemFn = (index: number) => void;
 type OnClickFn = (itemId: string) => void;
+
+type DeleteButtonProps = {
+  deleteItem: DeleteItemFn;
+  index: number;
+};
 
 type ItemCardProps = {
   item: CreatePurchaseItemWithName;
@@ -16,20 +24,7 @@ type ItemCardProps = {
   isActive: boolean;
   onClick: OnClickFn;
   deleteItem: DeleteItemFn;
-  editPurchasedItem: (
-    updatedItem: CreatePurchaseItemWithName,
-    index: number
-  ) => void;
-};
-
-type MoveButtonProps = {
-  moveItem: MoveItemFn;
-  index: number;
-};
-
-type DeleteButtonProps = {
-  deleteItem: DeleteItemFn;
-  index: number;
+  editPurchasedItem: EditPurchaseItemFn;
 };
 
 export function ItemOnCartCard({
@@ -40,27 +35,30 @@ export function ItemOnCartCard({
   deleteItem,
   editPurchasedItem,
 }: ItemCardProps) {
-  const [hover, setHover] = useState<boolean>(false);
-
   return (
-    <div className="flex flex-row gap-2 items-center justify-center">
+    <div className=" even:bg-white/5 animate-appear flex flex-row gap-2 items-center justify-center">
       <button
         onClick={() => {
+          onClick(item.itemId);
+        }}
+        onMouseEnter={() => {
+          onClick(item.itemId);
+        }}
+        onTouchStart={() => {
           onClick(item.itemId);
         }}
         className={`p-1 w-full max-w-[500px] mx-auto rounded-md ${
           isActive && "bg-gray-800 pr-2"
         }`}
       >
-        {/* <MoveButtons moveItem={moveItem} index={index} /> */}
-        <div className="flex flex-row gap-3">
-          <PrettyQuantity number={item.quantityInHundreds} />
-          <div className="flex flex-col items-start text-base uppercase w-full leading-tight">
-            <div className="font-bold ">{item.name}</div>
-            <div className="flex flex-row gap-3 justify-between w-full">
+        <div className="flex flex-col items-start text-base uppercase w-full leading-tight">
+          <div className="font-bold">{item.name}</div>
+          <div className="flex flex-row gap-3 justify-between w-full text-gray-300">
+            <div className="flex flex-row gap-2">
+              <PrettyQuantity number={item.quantityInHundreds} />
               <p>@ {formatNumberToIDR(item.pricePerUnit, "short")}</p>
-              <p>{formatNumberToIDR(item.totalPrice, "short")}</p>
             </div>
+            <p>{formatNumberToIDR(item.totalPrice, "short")}</p>
           </div>
         </div>
       </button>
@@ -88,21 +86,5 @@ function DeleteButton({ deleteItem, index }: DeleteButtonProps) {
     >
       <MdDelete className="text-gray-500 text-xl group-hover:text-red-500" />
     </button>
-  );
-}
-
-function MoveButtons({ moveItem, index }: MoveButtonProps) {
-  return (
-    <div className="flex flex-row text-xl">
-      <button className="hover:scale-125" onClick={() => moveItem(index, "up")}>
-        🔼
-      </button>
-      <button
-        className="hover:scale-125"
-        onClick={() => moveItem(index, "down")}
-      >
-        🔽
-      </button>
-    </div>
   );
 }

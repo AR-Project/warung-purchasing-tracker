@@ -111,4 +111,22 @@ declare global {
   type PurchaseItemToEdit = PurchaseItemDisplay & {
     itemId: string;
   };
+
+  /** Manage Feature */
+
+  type UserObject = {
+    id: string;
+    username: string;
+    role: string;
+  };
+
+  /** Plan Feature */
+  interface CreatePlanItemInput extends CreatePurchaseItemPayload {}
+
+  type PurchasePlan = {
+    id: string;
+    createdAt: Date;
+    totalPrice: number;
+    listOfPlanItem: PurchaseItemDisplay[];
+  };
 }

@@ -4,12 +4,11 @@ import {
   index,
   integer,
   pgTable,
-  serial,
   text,
   timestamp,
-  varchar,
 } from "drizzle-orm/pg-core";
 import { user } from "./user";
+import { items } from "./item";
 
 export type NewImageDbPayload = typeof images.$inferInsert;
 
@@ -27,6 +26,7 @@ export const images = pgTable(
       .references(() => user.id, {
         onDelete: "cascade",
       }),
+    path: text("path").notNull(),
     fileExtension: text("file_extension").notNull().default(".jpg"),
     originalFileName: text("original_filename").notNull(),
     uploadedAt: timestamp("created_at", { withTimezone: true })
@@ -51,59 +51,6 @@ export const imageRelations = relations(images, ({ one }) => ({
     fields: [images.creatorId],
     references: [user.id],
     relationName: "creator",
-  }),
-}));
-
-export type NewItemDbPayload = typeof items.$inferInsert;
-
-export const items = pgTable(
-  "items",
-  {
-    id: text("id").primaryKey().unique().notNull(),
-    ownerId: text("user_id")
-      .notNull()
-      .references(() => user.id, {
-        onDelete: "cascade",
-      }),
-    creatorId: text("creator_id")
-      .notNull()
-      .references(() => user.id, {
-        onDelete: "cascade",
-      }),
-    name: text("name").notNull(),
-    imageId: text("image_id").references(() => images.id, {
-      onDelete: "set null",
-    }),
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-    modifiedAt: timestamp("last_modified_at", { withTimezone: true })
-      .defaultNow()
-      .notNull(),
-  },
-  (table) => {
-    return {
-      itemNameIdx: index("item_name_idx").on(table.name),
-      itemOwnerIdx: index("item_owner_idx").on(table.ownerId),
-      itemCreatorIdx: index("item_creator_idx").on(table.creatorId),
-    };
-  }
-);
-
-export const itemRelations = relations(items, ({ one }) => ({
-  owner: one(user, {
-    fields: [items.ownerId],
-    references: [user.id],
-    relationName: "owner",
-  }),
-  creator: one(user, {
-    fields: [items.creatorId],
-    references: [user.id],
-    relationName: "creator",
-  }),
-  image: one(images, {
-    fields: [items.imageId],
-    references: [images.id],
   }),
 }));
 
@@ -140,7 +87,7 @@ export const vendors = pgTable(
 
 export type NewVendorDbPayload = typeof vendors.$inferInsert;
 
-export const vendorRelations = relations(vendors, ({ one }) => ({
+export const vendorRelations = relations(vendors, ({ one, many }) => ({
   owner: one(user, {
     fields: [vendors.ownerId],
     references: [user.id],
@@ -151,6 +98,7 @@ export const vendorRelations = relations(vendors, ({ one }) => ({
     references: [user.id],
     relationName: "creator",
   }),
+  purchase: many(purchases),
 }));
 
 export type NewPurchaseDbPayload = typeof purchases.$inferInsert;
@@ -214,6 +162,10 @@ export const purchaseRelations = relations(purchases, ({ one, many }) => ({
     fields: [purchases.imageId],
     references: [images.id],
   }),
+  vendor: one(vendors, {
+    fields: [purchases.vendorId],
+    references: [vendors.id],
+  }),
   purchaseItems: many(purchasedItems),
 }));
 
@@ -242,7 +194,9 @@ export const purchasedItems = pgTable(
     quantityInHundreds: integer("quantity_in_hundreds").notNull(),
     pricePerUnit: integer("price_per_unit").notNull(),
     totalPrice: integer("total_price").notNull(),
+    sortOrder: integer("sort_order").notNull(),
     isDeleted: boolean("is_deleted").default(false).notNull(),
+    purchasedAt: timestamp("purchased_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
@@ -280,5 +234,9 @@ export const purchaseItemRelations = relations(purchasedItems, ({ one }) => ({
   purchase: one(purchases, {
     fields: [purchasedItems.purchaseId],
     references: [purchases.id],
+  }),
+  item: one(items, {
+    fields: [purchasedItems.itemId],
+    references: [items.id],
   }),
 }));

@@ -1,6 +1,6 @@
 "use client";
 
-import { DisplaySingleItem } from "@/presentation/component/DisplaySingleItem";
+import { DisplaySingleItem } from "@/app/_component/DisplaySingleItem";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { MdDragHandle, MdDragIndicator } from "react-icons/md";

@@ -1,14 +1,19 @@
 "use server";
 
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { DrizzleError, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchases } from "@/lib/schema/schema";
-import { auth } from "@/auth";
+import { purchasedItems, purchases } from "@/lib/schema/schema";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
+import {
+  NewPurchaseArchiveDbPayload,
+  purchaseArchive,
+} from "@/lib/schema/archive";
+import { generateId } from "@/lib/utils/generator";
+import { items } from "@/lib/schema/item";
 
 export async function deletePurchase(
   formData: FormData
@@ -22,9 +27,9 @@ export async function deletePurchase(
   const allowedRole: AvailableUserRole[] = ["admin", "manager"];
 
   try {
-    const { userId } = await getUserInfo();
-    const { data: purchaseId } = schema.safeParse(purchaseIdRaw);
-    if (!purchaseId) {
+    const { userId, parentId } = await getUserInfo();
+    const { data: purchaseIdToDelete } = schema.safeParse(purchaseIdRaw);
+    if (!purchaseIdToDelete) {
       invariantError = "Invalid Payload";
       throw new Error(invariantError);
     }
@@ -43,24 +48,54 @@ export async function deletePurchase(
       }
 
       // Validate current purchase
-      const currentPurchase = await tx
+      const purchaseToDelete = await tx
         .select()
         .from(purchases)
-        .where(eq(purchases.id, purchaseId));
-      if (currentPurchase.length == 0) {
+        .where(eq(purchases.id, purchaseIdToDelete));
+      if (purchaseToDelete.length == 0) {
         invariantError = "invalid purchase id";
         tx.rollback();
       }
 
       // Validate authorization on current purchase
-      const { creatorId, ownerId } = currentPurchase[0];
+      const { creatorId, ownerId } = purchaseToDelete[0];
       if (![creatorId, ownerId].includes(userId)) {
         invariantError = "Not Allowed";
         tx.rollback();
       }
 
+      const purchaseItems = await tx
+        .select({
+          data: purchasedItems,
+          name: items.name,
+        })
+        .from(purchasedItems)
+        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete))
+        .innerJoin(items, eq(purchasedItems.itemId, items.id));
+
+      const listOfPurchaseItem = purchaseItems.map((row) => ({
+        ...row.data,
+        itemName: row.name,
+      }));
+
+      // Archival step
+      const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
+        id: generateId(20),
+        description: "Purchase Deletion",
+        ownerId: parentId,
+        creatorId: userId,
+        data: {
+          purchase: purchaseToDelete[0],
+          listOfPurchaseItem,
+        },
+      };
+
       // Commit action to database
-      await tx.delete(purchases).where(eq(purchases.id, purchaseId));
+      await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
+      await tx.delete(purchases).where(eq(purchases.id, purchaseIdToDelete));
+      await tx
+        .delete(purchasedItems)
+        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete));
     });
 
     revalidatePath(`/transaction/purchase`);

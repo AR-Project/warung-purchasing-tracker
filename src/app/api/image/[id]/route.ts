@@ -1,17 +1,20 @@
 import { NextResponse } from "next/server";
 import path from "path";
 import { promises as fs } from "fs";
+import db from "@/infrastructure/database/db";
+import { eq } from "drizzle-orm";
+import { images } from "@/lib/schema/schema";
 
 type Params = { params: { id: string } };
 
-const IMAGE_EXTENSION = ".jpg";
-
 export async function GET(req: Request, { params }: Params) {
-  const imagePath = path.join(
-    process.cwd(),
-    "images",
-    `${params.id}${IMAGE_EXTENSION}`
-  );
+  const image = await db.query.images.findFirst({
+    where: eq(images.id, params.id),
+  });
+  if (!image)
+    return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
+
+  const imagePath = path.join(process.cwd(), image.path);
 
   try {
     const imageBuffer = await fs.readFile(imagePath);

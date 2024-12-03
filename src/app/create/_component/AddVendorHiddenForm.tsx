@@ -11,7 +11,7 @@ type Props<T> = {
   setSelected: (value: SetStateAction<T>) => void;
   setNewName: (value: SetStateAction<string | undefined>) => void;
 };
-
+/** @deprecated */
 export default function AddVendorHiddenForm<T>({
   name,
   setSelected,
@@ -22,7 +22,7 @@ export default function AddVendorHiddenForm<T>({
     (msg, data) => {
       if (!data || !name) return;
       toast.success(msg);
-      setSelected({ id: data, name });
+      setSelected(data);
       setNewName(undefined);
     },
     (err) => toast.error(err)
