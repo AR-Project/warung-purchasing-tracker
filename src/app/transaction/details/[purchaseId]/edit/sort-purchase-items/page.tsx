@@ -1,4 +1,4 @@
-import { BackButton } from "../_presentation/BackButton";
+import { BackButton } from "@/app/_component/BackButton";
 
 import PurchaseItemOrderEditor from "./_component/PurchaseItemOrderEditor";
 import { sortPurchaseItemsLoader } from "./_loader/sortPurchaseItems.loader";

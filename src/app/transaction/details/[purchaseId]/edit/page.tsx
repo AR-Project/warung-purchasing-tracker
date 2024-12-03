@@ -4,10 +4,11 @@ import { CgReorder } from "react-icons/cg";
 
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { BackButton } from "@/app/_component/BackButton";
+
 import getUserItems from "@/app/_loader/getUserItems.loader";
 import getUserVendors from "@/app/_loader/getUserVendors.loader";
 import { singlePurchaseLoader } from "../_loader/singlePurchase.loader";
-import { BackButton } from "./_presentation/BackButton";
 import { PurchaseDataEditor } from "./_component/PurchaseDataEditor";
 import PurchaseItemEditor from "./_component/PurchaseItemEditor";
 import VendorEditor from "./_component/VendorEditor";

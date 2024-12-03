@@ -1,6 +1,6 @@
 import React from "react";
 import { itemDetailLoader } from "./_loader/itemDetail.loader";
-import { BackButton } from "@/app/transaction/details/[purchaseId]/edit/_presentation/BackButton";
+import { BackButton } from "@/app/_component/BackButton";
 import { notFound } from "next/navigation";
 import ItemDetailCard from "./_component/ItemDetailCard";
 import PurchaseHistory from "./_component/PurchaseHistory";
