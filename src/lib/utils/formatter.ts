@@ -59,6 +59,21 @@ export const stringToDate = (dateString: string | Date | undefined) => {
     year: "numeric",
   });
 };
+export const stringToHourMinute = (dateString: string | Date | undefined) => {
+  if (dateString === undefined) return "";
+
+  if (dateString instanceof Date) {
+    return DateTime.fromJSDate(dateString).setLocale("id").toLocaleString({
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }
+
+  return DateTime.fromISO(dateString).setLocale("id").toLocaleString({
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
 
 /** Convert date string to DD/MM. Return `""` when string is not valid */
 export const superShortDate = (date: string | undefined) => {
