@@ -30,6 +30,9 @@ export default function ComboItemForm({
 }: Props) {
   const [error, setError] = useState<boolean>(false);
 
+  const [isUnitPriceActive, setIsUnitPriceActive] = useState<boolean>(false);
+  const [isTotalPriceActive, setIsTotalPriceActive] = useState<boolean>(false);
+
   const { filteredList, refreshList, search } = useList(
     "/api/list/item",
     initialItems
@@ -186,8 +189,13 @@ export default function ComboItemForm({
             prefix="Rp"
             thousandSeparator="."
             decimalSeparator=","
+            decimalScale={0}
             placeholder="Harga satuan"
+            onFocus={() => setIsUnitPriceActive(true)}
+            onBlur={() => setIsUnitPriceActive(false)}
             onValueChange={(values) => {
+              if (!isUnitPriceActive) return;
+
               const unitPrice = anyNumberToNumber(values.floatValue);
               if (unitPrice === 0) return;
 
@@ -201,8 +209,13 @@ export default function ComboItemForm({
             prefix="Rp"
             thousandSeparator="."
             decimalSeparator=","
+            decimalScale={0}
+            onFocus={() => setIsTotalPriceActive(true)}
+            onBlur={() => setIsTotalPriceActive(false)}
             placeholder="Total Harga"
             onValueChange={(values) => {
+              if (!isTotalPriceActive) return;
+
               const totalPrice = anyNumberToNumber(values.floatValue);
               if (totalPrice === 0) return;
               setTotalPrice(totalPrice);
