@@ -1,10 +1,11 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 
+import * as archiveSchema from "@/lib/schema/archive";
 import * as itemSchema from "@/lib/schema/item";
+import * as planSchema from "@/lib/schema/plan";
 import * as globalSchema from "@/lib/schema/schema";
 import * as userSchema from "@/lib/schema/user";
-import * as archiveSchema from "@/lib/schema/archive";
 
 const isTest = () => process.env.NODE_ENV === "test";
 
@@ -20,6 +21,7 @@ const db = drizzle(pool, {
     ...globalSchema,
     ...userSchema,
     ...archiveSchema,
+    ...planSchema,
   },
 });
 

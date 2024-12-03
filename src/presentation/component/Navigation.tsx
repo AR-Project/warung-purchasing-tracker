@@ -2,6 +2,7 @@ import AuthContainer from "@/app/_component/auth/AuthContainer";
 import { auth } from "@/auth";
 import Link from "next/link";
 import { MdHistory, MdReceiptLong } from "react-icons/md";
+import { TbChecklist } from "react-icons/tb";
 
 export async function Navigation() {
   const session = await auth();
@@ -10,6 +11,11 @@ export async function Navigation() {
       href: "/create",
       label: "New",
       icon: <MdReceiptLong className="text-xl/3" />,
+    },
+    {
+      href: "/plan",
+      label: "Plan",
+      icon: <TbChecklist className="text-xl/3" />,
     },
     {
       href: "/transaction",
