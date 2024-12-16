@@ -107,7 +107,22 @@ export default function ComboItemForm({
   }
 
   return (
-    <form className="flex flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
+    <form
+      className="flex flex-col gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+        finalizeItem();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") {
+          finalizeItem();
+        }
+      }}
+      onSubmitCapture={(e) => {
+        e.preventDefault();
+        finalizeItem();
+      }}
+    >
       <Combobox
         value={selectedItem}
         onChange={(value) => {
@@ -220,9 +235,19 @@ export default function ComboItemForm({
           />
         </div>
         <button
-          onClick={finalizeItem}
+          type="submit"
+          onClick={() => finalizeItem()}
+          onTouchEnd={() => finalizeItem()}
           className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm ml-auto disabled:bg-blue-600/30 disabled:text-white/20 disabled:cursor-not-allowed h-16 basis-1/12 px-3"
           disabled={!isPayloadValid()}
+          onSubmit={(e) => {
+            e.preventDefault();
+            finalizeItem();
+          }}
+          onSubmitCapture={(e) => {
+            e.preventDefault();
+            finalizeItem();
+          }}
         >
           <div className="flex flex-row text-xl items-center justify-center ">
             <MdAdd /> <SlBasket />
