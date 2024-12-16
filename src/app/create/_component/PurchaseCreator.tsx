@@ -93,13 +93,6 @@ export default function PurchaseCreator({
         <DatePicker txDate={txDate} setTxDate={setTxDate} />
       </div>
 
-      <Suspense fallback={<span>loading...</span>}>
-        <ImageSelector
-          resizedFile={resizedImage}
-          setResizedFile={setResizedImage}
-        />
-      </Suspense>
-
       {itemsCart.length === 0 && (
         <span className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
           Transaksi kosong...
@@ -138,6 +131,13 @@ export default function PurchaseCreator({
             appendItemOnCart={appendItemOnCartWrapper}
           />
         </div>
+      </Suspense>
+
+      <Suspense fallback={<span>loading...</span>}>
+        <ImageSelector
+          resizedFile={resizedImage}
+          setResizedFile={setResizedImage}
+        />
       </Suspense>
 
       <MakePurchaseHiddenForm
