@@ -155,7 +155,7 @@ export default function ComboItemForm({
                 {item.name}
               </ComboboxOption>
             ))}
-            {query.length > 3 && (
+            {query && query.length > 3 && (
               <ComboboxOption
                 value={{ id: "pending", name: query }}
                 className="data-[focus]:bg-green-500/60 p-3 italic bg-green-900 flex flex-row gap-2"
