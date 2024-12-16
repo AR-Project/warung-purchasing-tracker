@@ -73,6 +73,8 @@ export default function ComboItemForm({
 
   function finalizeItem() {
     if (!selectedItem) return;
+    if (!isPayloadValid()) return;
+
     const result = appendItemOnCart({
       itemId: selectedItem.id,
       name: selectedItem.name,
