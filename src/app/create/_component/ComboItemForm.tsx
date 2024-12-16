@@ -37,7 +37,7 @@ export default function ComboItemForm({
     "/api/list/item",
     initialItems
   );
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
   const [quantity, setQuantity] = useState<NumberFormState>("");
@@ -125,7 +125,9 @@ export default function ComboItemForm({
             aria-label="Assignee"
             ref={itemFieldRef}
             displayValue={(item: Item | null) => (item ? item.name : "")}
+            value={selectedItem ? selectedItem.name : query}
             onChange={(event) => {
+              setSelectedItem(null);
               search(event.target.value);
               setQuery(event.target.value);
               setError(false);
