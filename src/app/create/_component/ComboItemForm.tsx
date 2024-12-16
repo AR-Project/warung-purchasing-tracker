@@ -130,13 +130,7 @@ export default function ComboItemForm({
               setQuery(event.target.value);
               setError(false);
             }}
-            className={`${
-              isCreateModeActive
-                ? "bg-yellow-800/50 border-yellow-600"
-                : "bg-gray-800"
-            } ${
-              error ? "border-red-500" : "border-gray-600"
-            } px-1 h-12 w-full border  `}
+            className={`bg-gray-800 border-gray-600 px-1 h-12 w-full border `}
             placeholder="Ketik nama item..."
           />
           {selectedItem && (
