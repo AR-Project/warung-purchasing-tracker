@@ -19,6 +19,9 @@ export default function useCartManager(listOfItemId?: string[]) {
     ].includes(item.itemId);
 
     if (isAlreadyAdded) return "Tambahkan item lain";
+    if (item.quantityInHundreds == 0) return "Jumlah barang tidak boleh kosong";
+    if (item.totalPrice == 0 || item.pricePerUnit == 0)
+      return "Harga tidak boleh kosong";
     setItemsCart((prevItems) => [...prevItems, item]);
   }
 
