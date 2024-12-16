@@ -90,12 +90,12 @@ export default function PlanCreator({ initialItems }: Props) {
   return (
     <div className="relative">
       {/* <pre className="text-xs">{JSON.stringify(displayer, null, 2)}</pre> */}
-      <button
+      {/* <button
         onClick={clearCart}
         className="bg-red-500 h-10 aspect-square flex justify-center items-center text-2xl"
       >
         <GrPowerReset />
-      </button>
+      </button> */}
       <div className="grid grid-cols-3 gap-1">
         {initialItems.map((item) => (
           <AddItemButton
@@ -172,13 +172,11 @@ function AddItemButton({
         onClick={clickHandler}
         className={clsx(
           quantity > 0 ? "bg-lime-700" : "bg-gray-600",
-          "text-xs grow p-2"
+          "text-xs grow p-2 font-mono uppercase"
         )}
       >
-        <div className="font-light">{item.name}</div>
-        <div className="font-mono">
-          {formatNumberToIDR(item.lastPrice, "short")}
-        </div>
+        <div className="font-light text-balance">{item.name}</div>
+        <div className="">{formatNumberToIDR(item.lastPrice, "short")}</div>
       </button>
       {quantity && (
         <button
