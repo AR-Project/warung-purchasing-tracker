@@ -8,11 +8,12 @@ import PurchaseHistory from "./_component/PurchaseHistory";
 type Params = { itemId: string };
 
 type Props = {
-  params: Params;
+  params: Promise<Params>;
 };
 
 export default async function Page({ params }: Props) {
-  const item = await itemDetailLoader(params.itemId);
+  const { itemId } = await params;
+  const item = await itemDetailLoader(itemId);
   if (!item) return notFound();
 
   return (

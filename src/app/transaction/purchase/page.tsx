@@ -12,14 +12,15 @@ import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import TransactionNavigation from "../_component/TransactionNav";
 
 type Props = {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function Page({ searchParams }: Props) {
   const session = await auth();
   if (!session) return <LoginRequiredWarning />;
 
-  const filter = parseSearchParams(searchParams);
+  const filterParam = await searchParams;
+  const filter = parseSearchParams(filterParam);
 
   const tx = await transactionLoader(filter, session.user.parentId);
 

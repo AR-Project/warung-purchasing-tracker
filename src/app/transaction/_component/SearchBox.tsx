@@ -8,7 +8,6 @@ import {
   ComboboxOptions,
 } from "@headlessui/react";
 import { toast } from "react-toastify";
-import { LuLoader2 } from "react-icons/lu";
 import { useRouter } from "next/navigation";
 import { HiSearch } from "react-icons/hi";
 
@@ -17,6 +16,7 @@ import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 import { ResetItemInputButton } from "@/app/create/_presentation/ResetItemInputButton";
 import Tooltip from "@/presentation/component/Tooltip";
 import { useStateChanged } from "@/presentation/hooks/useStateChanged";
+import { TbLoader2 } from "react-icons/tb";
 
 const INITIAL: Vendor = { id: "", name: "" };
 
@@ -139,7 +139,7 @@ export default function SearchBox({
               <Tooltip>Hapus Filter</Tooltip>
             </div>
           )}
-          {loading && <LuLoader2 className="ml-3 animate-spin text-3xl" />}
+          {loading && <TbLoader2 className="ml-3 animate-spin text-3xl" />}
           {!activeName && (
             <button
               onClick={searchItem}

@@ -16,7 +16,7 @@ import PurchaseDeleteDialog from "./_component/PurchaseDeleteDialog";
 import PurchaseItemUpdater from "./_component/PurchaseItemUpdater";
 
 type Props = {
-  params: { purchaseId: string };
+  params: Promise<{ purchaseId: string }>;
 };
 
 export default async function Page({ params }: Props) {
@@ -25,7 +25,9 @@ export default async function Page({ params }: Props) {
     return <LoginRequiredWarning />;
   }
 
-  const details = await singlePurchaseLoader(params.purchaseId);
+  const { purchaseId: purchaseIdParams } = await params;
+
+  const details = await singlePurchaseLoader(purchaseIdParams);
   if (!details) {
     notFound();
   }

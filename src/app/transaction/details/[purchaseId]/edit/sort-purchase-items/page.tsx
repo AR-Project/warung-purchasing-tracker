@@ -4,12 +4,14 @@ import PurchaseItemOrderEditor from "./_component/PurchaseItemOrderEditor";
 import { sortPurchaseItemsLoader } from "./_loader/sortPurchaseItems.loader";
 
 type Props = {
-  params: { purchaseId: string };
+  params: Promise<{ purchaseId: string }>;
 };
 
 export default async function Page({ params }: Props) {
+  const { purchaseId } = await params;
+
   const listOfPurchaseItem: PurchaseItemDisplay[] =
-    await sortPurchaseItemsLoader(params.purchaseId);
+    await sortPurchaseItemsLoader(purchaseId);
   return (
     <div className="max-w-md mx-auto flex flex-col gap-4">
       <div className="w-full flex flex-row gap-2 justify-start items-center">
@@ -18,7 +20,7 @@ export default async function Page({ params }: Props) {
       <div className="text-lg text-center font-bold">Urutkan Item</div>
       <PurchaseItemOrderEditor
         listOfPurchaseItem={listOfPurchaseItem}
-        purchaseId={params.purchaseId}
+        purchaseId={purchaseId}
       />
     </div>
   );

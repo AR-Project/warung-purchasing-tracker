@@ -9,14 +9,16 @@ import { dateRangeValidator, parseSearchParams } from "@/lib/utils/validator";
 import DatePicker from "../_component/DatePicker";
 
 type Props = {
-  searchParams: SearchParams;
+  searchParams: Promise<SearchParams>;
 };
 
 export default async function Page({ searchParams }: Props) {
   const session = await auth();
   if (!session) return <LoginRequiredWarning />;
 
-  const dateFilter = dateRangeValidator(searchParams);
+  const dateFilterParam = await searchParams;
+
+  const dateFilter = dateRangeValidator(dateFilterParam);
   const listOfItems = await listOfItemsLoader(
     session.user.parentId,
     dateFilter
