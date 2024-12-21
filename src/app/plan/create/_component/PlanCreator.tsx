@@ -44,7 +44,7 @@ export default function PlanCreator({ initialItems }: Props) {
   for (const [itemId, quantity] of Object.entries(cart)) {
     arrayOfItemPrice.push(quantity * itemsLastPrice[itemId]);
     displayer.push({
-      id: "planner",
+      id: `planner-${itemId}`,
       itemId: itemId,
       name: itemsName[itemId],
       quantityInHundreds: quantity * 100,
