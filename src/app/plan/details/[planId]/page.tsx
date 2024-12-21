@@ -10,11 +10,12 @@ import PlanDeleteDialog from "./_component/PlanDeleteDialog";
 type Params = { planId: string };
 
 type Props = {
-  params: Params;
+  params: Promise<Params>;
 };
 
 export default async function Page({ params }: Props) {
-  const singlePlan = await singlePlanLoader(params.planId);
+  const { planId } = await params;
+  const singlePlan = await singlePlanLoader(planId);
   if (!singlePlan) return notFound();
 
   return (
@@ -22,12 +23,12 @@ export default async function Page({ params }: Props) {
       <div className="flex flex-row items-center gap-2 bg-gray-900">
         <BackButton /> Kembali
       </div>
-      <h1 className="text-3xl text-center">{params.planId}</h1>
+      <h1 className="text-3xl text-center">{planId}</h1>
       <div className="max-w-xs mx-auto w-full">
         <SinglePlanCard plan={singlePlan} />
       </div>
       <div className="flex flex-row w-full max-w-xs justify-end mx-auto">
-        <PlanDeleteDialog planId={params.planId} />
+        <PlanDeleteDialog planId={planId} />
       </div>
     </div>
   );

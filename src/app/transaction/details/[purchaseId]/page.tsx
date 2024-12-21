@@ -11,7 +11,7 @@ import { auth } from "@/auth";
 import getUserRole from "@/app/_loader/getUserRole.loader";
 
 type Props = {
-  params: { purchaseId: string };
+  params: Promise<{ purchaseId: string }>;
 };
 
 export default async function Page({ params }: Props) {
@@ -22,7 +22,9 @@ export default async function Page({ params }: Props) {
 
   const isUserCanEdit = allowedRole.includes(role);
 
-  const details = await singlePurchaseLoader(params.purchaseId);
+  const { purchaseId: purchaseIdParam } = await params;
+
+  const details = await singlePurchaseLoader(purchaseIdParam);
   if (!details) {
     notFound();
   }

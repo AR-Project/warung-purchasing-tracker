@@ -5,11 +5,16 @@ import db from "@/infrastructure/database/db";
 import { eq } from "drizzle-orm";
 import { images } from "@/lib/schema/schema";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<SearchParams> };
 
 export async function GET(req: Request, { params }: Params) {
+  const { id } = await params;
+  if (typeof id !== "string") {
+    return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
+  }
+
   const image = await db.query.images.findFirst({
-    where: eq(images.id, params.id),
+    where: eq(images.id, id),
   });
   if (!image)
     return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
