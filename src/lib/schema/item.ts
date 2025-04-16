@@ -90,6 +90,7 @@ export const category = pgTable(
         onDelete: "cascade",
       }),
     name: text("name").notNull(),
+    sortOrder: integer("sort_order"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
