@@ -57,5 +57,38 @@ describe("itemRepository", () => {
       expect(persistedCategory.length).toBe(1);
       expect(persistedData.length).toBe(1);
     });
+
+    test("insert correct data with correct sortOrder", async () => {
+      const mock01: CreateCategoryDbPayload = {
+        id: "cat-001",
+        name: "cat-test-001",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      };
+      const mock02: CreateCategoryDbPayload = {
+        id: "cat-002",
+        name: "cat-test-002",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      };
+      const mock03: CreateCategoryDbPayload = {
+        id: "cat-003",
+        name: "cat-test-003",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      };
+
+      await createCategory(mock01);
+      await createCategory(mock02);
+      await createCategory(mock03);
+
+      const [persisted01] = await categoryTableHelper.findById("cat-001");
+      const [persisted02] = await categoryTableHelper.findById("cat-002");
+      const [persisted03] = await categoryTableHelper.findById("cat-003");
+
+      expect(persisted01.sortOrder).toBe(1);
+      expect(persisted02.sortOrder).toBe(2);
+      expect(persisted03.sortOrder).toBe(3);
+    });
   });
 });
