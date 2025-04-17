@@ -4,14 +4,19 @@ import { eq } from "drizzle-orm";
 
 type CategoryId = string;
 type ErrorMessage = string;
+type DefaultResult<T = string> = [T, null] | [null, ErrorMessage];
 
-type CreateCategoryReturn = [CategoryId, null] | [null, ErrorMessage];
+type CreateCategoryResult = DefaultResult<CategoryId>;
 
 export async function createCategory(
   payload: CreateCategoryDbPayload
-): Promise<CreateCategoryReturn> {
+): Promise<CreateCategoryResult> {
   let invariantError: string | undefined;
   try {
+    const categories = await db.query.category.findMany({
+      where: eq(category.ownerId, payload.ownerId),
+      columns: { id: true },
+    });
     const categoryCreated = await db.transaction(async (tx) => {
       const existedCategory = await tx
         .select()
@@ -25,7 +30,7 @@ export async function createCategory(
 
       const [categoryCreated] = await tx
         .insert(category)
-        .values(payload)
+        .values({ ...payload, sortOrder: categories.length + 1 })
         .returning({ id: category.id });
       return categoryCreated;
     });
