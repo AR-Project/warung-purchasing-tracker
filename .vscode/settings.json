@@ -3,5 +3,5 @@
     ["clsx\\(([^)]*)\\)", "(?:'|\"|`)([^']*)(?:'|\"|`)"]
   ],
   "typescript.tsdk": "node_modules\\typescript\\lib",
-  "todo-tree.tree.scanMode": "workspace only"
+  "todo-tree.tree.scanMode": "workspace"
 }
