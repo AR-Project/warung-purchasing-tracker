@@ -13,10 +13,10 @@ export default async function createCategoryAction(formData: FormData) {
   const session = await auth();
   if (session === null) return { error: "forbidden" };
 
-  const { data: categoryName, error: validationError } =
+  const { data: categoryName, success: isReqValid } =
     createCtgryReqSchema.safeParse(formData.get("category-name"));
 
-  if (validationError !== null) return { error: "invalid request" };
+  if (isReqValid === false) return { error: "invalid Request" };
 
   const payload: CreateCategoryDbPayload = {
     id: `cat-${generateId(9)}`,
