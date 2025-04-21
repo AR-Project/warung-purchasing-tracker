@@ -1,21 +1,27 @@
-import { auth } from "@/auth";
+import { verifyUserAccess } from "@/lib/utils/auth";
+
 import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
 import PurchaseCreator from "./_component/PurchaseCreator";
 import getUserVendors from "../_loader/getUserVendors.loader";
 import getUserItems from "../_loader/getUserItems.loader";
-import getUserRole from "../_loader/getUserRole.loader";
 import NotAllowedWarning from "../_component/auth/NotAllowedWarning";
 
 export default async function Create() {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [userInfo, verifyError] = await verifyUserAccess([
+    "admin",
+    "manager",
+    "staff",
+  ]);
+  if (verifyError !== null) {
+    if (verifyError === "not_authenticated") {
+      return <LoginRequiredWarning />;
+    } else if (verifyError === "not_authorized") {
+      return <NotAllowedWarning />;
+    } else return <>internal Error</>;
+  }
 
-  const allowedRole: AvailableUserRole[] = ["admin", "manager", "staff"];
-  const role = await getUserRole(session.user.userId);
-  if (!allowedRole.includes(role)) return <NotAllowedWarning />;
-
-  const vendorsInitialData = await getUserVendors(session.user.parentId);
-  const itemsInitialData = await getUserItems(session.user.parentId);
+  const vendorsInitialData = await getUserVendors(userInfo.parentId);
+  const itemsInitialData = await getUserItems(userInfo.parentId);
 
   return (
     <>
