@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-import { auth } from "@/auth";
+import { verifyUserAccess } from "@/lib/utils/auth";
 import { createCategory } from "@/infrastructure/repository/itemRepo";
 import { CreateCategoryDbPayload } from "@/lib/schema/item";
 import { generateId } from "@/lib/utils/generator";
@@ -10,8 +10,8 @@ import { generateId } from "@/lib/utils/generator";
 const createCtgryReqSchema = z.string();
 
 export default async function createCategoryAction(formData: FormData) {
-  const session = await auth();
-  if (session === null) return { error: "forbidden" };
+  const [userInfo, error] = await verifyUserAccess(["staff", "manager"]);
+  if (error !== null) return { error: "forbidden" };
 
   const { data: categoryName, success: isReqValid } =
     createCtgryReqSchema.safeParse(formData.get("category-name"));
@@ -21,8 +21,8 @@ export default async function createCategoryAction(formData: FormData) {
   const payload: CreateCategoryDbPayload = {
     id: `cat-${generateId(9)}`,
     name: categoryName,
-    ownerId: session.user.userId,
-    creatorId: session.user.parentId,
+    ownerId: userInfo.userId,
+    creatorId: userInfo.parentId,
   };
 
   const [createdCategoryId, dbError] = await createCategory(payload);
