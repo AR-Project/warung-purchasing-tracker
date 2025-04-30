@@ -35,6 +35,9 @@ export const items = pgTable(
     categoryId: text("category_id").references(() => category.id, {
       onDelete: "set null",
     }),
+    // sortOrder will be set ONLY in case of categoryID has value
+    // On other case, sortOrder will be empty (respecting sort by name)
+    sortOrder: integer("sort_order"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
       .notNull(),
