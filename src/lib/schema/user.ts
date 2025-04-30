@@ -12,11 +12,24 @@ import { purchasedItems, purchases, vendors } from "./schema";
 import { purchaseArchive } from "./archive";
 import { items } from "./item";
 
+/**
+ 
+   role      tx     plan   user   category  
+ --------- ------- ------ ------ ---------- 
+  admin     all     all    all    all       
+  manager   all     all    x      c/u/e     
+  staff     v/c/u   all    x                
+  guest     v       v      x      x         
+
+  [v]iew, [c]reate, [u]pdate, [e]dit, [d]elete
+
+ */
+
 export const userRoleEnum = pgEnum("user_role", [
-  "admin", // view, create, edit, delete tx, create/del user, change role,
-  "manager", // view, create, edit, delete tx, create/del user,
-  "staff", // view, create tx,
-  "guest", // view tx,
+  "admin",
+  "manager",
+  "staff",
+  "guest",
 ]);
 
 export type NewUserDbPayload = typeof user.$inferInsert;
