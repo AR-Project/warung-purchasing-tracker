@@ -25,7 +25,7 @@ export const categoryTableHelper = {
     const payloads: Array<CreateCategoryDbPayload> = [];
 
     for (let index = 0; index < total; index++) {
-      payloads.push(generateSinglePayload(padNumber(index + 1), index));
+      payloads.push(generateSinglePayload(padNumber(index), index));
     }
     return db.insert(category).values(payloads).returning();
 
