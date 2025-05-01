@@ -42,38 +42,50 @@ export default function UserInfo({ username, userId, role }: Props) {
         </MenuItem>
         {enableStaffManager && (
           <MenuItem as="div" className="w-full flex flex-col items-end h-15">
-            <Link
-              href="/manage/staff"
-              className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
-            >
-              <MdPerson className="text-white" /> Manage Staff
-            </Link>
+            {({ close }) => (
+              <Link
+                href="/manage/staff"
+                onClick={close}
+                className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+              >
+                <MdPerson className="text-white" /> Manage Staff
+              </Link>
+            )}
           </MenuItem>
         )}
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
-          <Link
-            href="/manage/category"
-            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
-          >
-            <MdCategory className="text-white" /> Item Category
-          </Link>
+          {({ close }) => (
+            <Link
+              href="/manage/category"
+              onClick={close}
+              className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+            >
+              <MdCategory className="text-white" /> Item Category
+            </Link>
+          )}
         </MenuItem>
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
-          <Link
-            href="/manage/media"
-            className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
-          >
-            <MdImage className="text-white" /> Manage Media
-          </Link>
+          {({ close }) => (
+            <Link
+              href="/manage/media"
+              onClick={close}
+              className=" hover:underline text-md  h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+            >
+              <MdImage className="text-white" /> Manage Media
+            </Link>
+          )}
         </MenuItem>
 
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
-          <Link
-            href="/manage"
-            className=" hover:underline text-md h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
-          >
-            <MdOutlineSettings className="text-white" /> Account Settings
-          </Link>
+          {({ close }) => (
+            <Link
+              href="/manage"
+              onClick={close}
+              className=" hover:underline text-md h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
+            >
+              <MdOutlineSettings className="text-white" /> Account Settings
+            </Link>
+          )}
         </MenuItem>
         <MenuItem as="div" className=" w-full flex flex-row justify-end mt-4">
           <SignOutButton />
