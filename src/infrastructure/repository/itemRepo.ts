@@ -22,17 +22,14 @@ export async function createCategory(
 ): Promise<CreateCategoryResult> {
   let invariantError: string | undefined;
   try {
-    const categories = await db.query.category.findMany({
-      where: eq(category.ownerId, payload.ownerId),
-      columns: { id: true },
-    });
     const categoryCreated = await db.transaction(async (tx) => {
-      const existedCategory = await tx
-        .select()
-        .from(category)
-        .where(eq(category.name, payload.name));
+      const categories = await tx.query.category.findMany({
+        where: eq(category.ownerId, payload.ownerId),
+        columns: { id: true, name: true },
+      });
 
-      if (existedCategory.length > 0) {
+      const mappedCtgrName = categories.map((ctg) => ctg.name);
+      if (mappedCtgrName.includes(payload.name)) {
         invariantError = "Category name already used";
         tx.rollback();
       }
