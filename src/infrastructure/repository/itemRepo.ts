@@ -1,7 +1,7 @@
 import { and, asc, eq, inArray, sql, SQL } from "drizzle-orm";
 
 import { arraysHaveEqualElements } from "@/lib/utils/validator";
-import { category, CreateCategoryDbPayload } from "@/lib/schema/item";
+import { category, CreateCategoryDbPayload, items } from "@/lib/schema/item";
 import db from "../database/db";
 
 type CategoryId = string;
@@ -172,7 +172,12 @@ export async function deleteCategory(
         tx.rollback();
       }
 
-      // FUTURE: items with delete category set to null
+      // Untested line --->
+      // await tx
+      //   .update(items)
+      //   .set({ sortOrder: null, categoryId: null })
+      //   .where(eq(items.categoryId, payload.categoryId));
+      // <---
       await tx.delete(category).where(eq(category.id, payload.categoryId));
     });
     return ["ok", null];
