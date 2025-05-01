@@ -20,7 +20,10 @@ export default async function updateCategoryAction(formData: FormData) {
   });
   if (success === false) return { error: "invalid request" };
 
-  const [id, error] = await updateCategoryRepo(payload);
+  const [id, error] = await updateCategoryRepo({
+    ...payload,
+    requesterParentId: session.user.parentId,
+  });
   if (error !== null) return { error: "internal error" };
 
   revalidatePath("/manage/category");
