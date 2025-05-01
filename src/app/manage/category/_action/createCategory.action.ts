@@ -10,7 +10,11 @@ import { generateId } from "@/lib/utils/generator";
 const createCtgryReqSchema = z.string();
 
 export default async function createCategoryAction(formData: FormData) {
-  const [userInfo, error] = await verifyUserAccess(["staff", "manager"]);
+  const [userInfo, error] = await verifyUserAccess([
+    "admin",
+    "staff",
+    "manager",
+  ]);
   if (error !== null) return { error: "forbidden" };
 
   const { data: categoryName, success: isReqValid } =
