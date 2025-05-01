@@ -5,6 +5,7 @@ import EditCategoryModal from "./_component/EditCategoryModal";
 import CreateCategoryModal from "./_component/CreateCategoryModal";
 import categoriesLoader from "./_loader/category.loader";
 import Link from "next/link";
+import { MdDelete } from "react-icons/md";
 
 export default async function EditCategory() {
   const session = await auth();
@@ -40,8 +41,15 @@ export default async function EditCategory() {
           ))}
         </div>
       </section>
-      <div className="flex flex-row w-full justify-end">
+      <div className="flex flex-col w-full items-end gap-3">
         <CreateCategoryModal user={session.user} />
+        <Link
+          href="/manage/category/delete"
+          className="h-8 border border-white/50 px-2 bg-red-800 rounded-sm text-white focus:outline-none hover:bg-red-700  flex flex-row gap-2 justify-center items-center"
+        >
+          <MdDelete />
+          Delete Category
+        </Link>
       </div>
     </main>
   );
