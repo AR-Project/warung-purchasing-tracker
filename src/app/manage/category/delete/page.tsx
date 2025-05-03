@@ -3,7 +3,6 @@ import React from "react";
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import categoriesLoader from "../_loader/category.loader";
-import { BackButton } from "@/app/_component/BackButton";
 import DeleteCategoryModal from "./DeleteCategoryModal";
 
 export default async function EditCategory() {
@@ -14,10 +13,9 @@ export default async function EditCategory() {
 
   return (
     <main className="flex flex-col gap-2 max-w-md mx-auto">
-      <header className="font-bold flex flex-row justify-between items-center">
-        <div>Delete Category</div>
-        <BackButton />
-      </header>
+      <div className="italic text-gray-500 text-sm w-full text-center border border-gray-500/50 my-4 py-4 text-balance">
+        Press delete icon for deleting an category
+      </div>
 
       <section className="">
         <div className="flex flex-col gap-3">

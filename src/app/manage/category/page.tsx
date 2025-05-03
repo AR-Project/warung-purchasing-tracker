@@ -1,11 +1,10 @@
 import React from "react";
+
 import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import EditCategoryModal from "./_component/EditCategoryModal";
 import CreateCategoryModal from "./_component/CreateCategoryModal";
 import categoriesLoader from "./_loader/category.loader";
-import Link from "next/link";
-import { MdDelete } from "react-icons/md";
 
 export default async function EditCategory() {
   const session = await auth();
@@ -15,16 +14,6 @@ export default async function EditCategory() {
 
   return (
     <main className="flex flex-col gap-2 max-w-md mx-auto">
-      <header className="font-bold flex flex-row justify-between items-center">
-        <div>Manage Item Category</div>
-        <Link
-          href="/manage/category/edit-order"
-          className="h-8 border border-white/50 px-2 bg-blue-950 rounded-sm text-white focus:outline-none hover:bg-blue-800  flex flex-row gap-2 justify-center items-center"
-        >
-          Change Order
-        </Link>
-      </header>
-
       <section className="">
         <div className="flex flex-col gap-3">
           {categories.map((cat) => (
@@ -43,13 +32,6 @@ export default async function EditCategory() {
       </section>
       <div className="flex flex-col w-full items-end gap-3">
         <CreateCategoryModal user={session.user} />
-        <Link
-          href="/manage/category/delete"
-          className="h-8 border border-white/50 px-2 bg-red-800 rounded-sm text-white focus:outline-none hover:bg-red-700  flex flex-row gap-2 justify-center items-center"
-        >
-          <MdDelete />
-          Delete Category
-        </Link>
       </div>
     </main>
   );
