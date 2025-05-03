@@ -1,8 +1,6 @@
 import { useState } from "react";
 
-type ServerAction<T> = (
-  formData: FormData
-) => Promise<FormStateWithTimestamp<T>>;
+type ServerAction<T> = (formData: FormData) => Promise<FormState<T>>;
 
 type OnSuccessCb<T> = (msg: string, data?: T) => void;
 type OnErrorCb = (error: string) => void;

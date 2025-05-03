@@ -39,3 +39,16 @@ export async function saveNewUser(
     return [null, invariantError ? invariantError : "internal error"];
   }
 }
+
+export async function getUserRole(
+  requestedUserId: string
+): Promise<SafeResult<AvailableUserRole>> {
+  const userInfo = await db.query.user.findFirst({
+    where: eq(user.id, requestedUserId),
+    columns: { id: true, role: true },
+  });
+
+  if (userInfo === undefined) return [null, "user_repo.user-not-exist"];
+
+  return [userInfo.role, null];
+}

@@ -24,6 +24,8 @@ declare global {
 
   type SearchParams = { [key: string]: string | string[] | undefined };
 
+  type SafeResult<T, E = string> = [T, null] | [null, E];
+
   /** ENTITIES */
   type AvailableUserRole = "admin" | "manager" | "staff" | "guest";
 

@@ -89,3 +89,13 @@ export function parseSearchParams(params: SearchParams): SearchFilter {
     keyword: queryValidator(params),
   };
 }
+
+export function arraysHaveEqualElements(array1: string[], array2: string[]) {
+  if (array1.length !== array2.length) return false;
+  const set = new Set(array2);
+
+  for (const element of array1) {
+    if (!set.has(element)) return false;
+  }
+  return true;
+}
