@@ -8,9 +8,11 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { purchasedItems, purchases, vendors } from "./schema";
+import { vendor } from "./vendor";
+import { purchasedItem, purchase } from "./purchase";
 import { purchaseArchive } from "./archive";
-import { items } from "./item";
+import { item } from "./item";
+import { category } from "./category";
 
 /**
  
@@ -47,6 +49,10 @@ export const user = pgTable(
       })
       .notNull(),
     email: text("email"),
+    defaultCategory: text("default_category").references(
+      (): AnyPgColumn => category.id,
+      { onDelete: "cascade" }
+    ),
     isDeleted: boolean("is_deleted").default(false),
     createdAt: timestamp("created_at", { withTimezone: true })
       .defaultNow()
@@ -56,27 +62,30 @@ export const user = pgTable(
       .notNull(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
   },
-  (table) => {
-    return {
-      userIdIdx: index("user_id_idx").on(table.id),
-      usernameIdx: index("username_idx").on(table.username),
-      userEmailIdx: index("user_email_idx").on(table.email),
-    };
-  }
+  (table) => [
+    index("user_id_idx").on(table.id),
+    index("username_idx").on(table.username),
+    index("user_email_idx").on(table.email),
+  ]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
-  purchasesOwner: many(purchases, { relationName: "owner" }),
-  purchasesCreator: many(purchases, { relationName: "creator" }),
-  itemsOwner: many(items, { relationName: "owner" }),
-  itemsCreator: many(items, { relationName: "creator" }),
-  vendorsOwner: many(vendors, { relationName: "owner" }),
-  vendorsCreator: many(vendors, { relationName: "creator" }),
-  purchaseItemOwner: many(purchasedItems, { relationName: "owner" }),
-  purchaseItemCreator: many(purchasedItems, { relationName: "creator" }),
+export const userRelations = relations(user, ({ many, one }) => ({
+  purchasesOwner: many(purchase, { relationName: "owner" }),
+  purchasesCreator: many(purchase, { relationName: "creator" }),
+  itemsOwner: many(item, { relationName: "owner" }),
+  itemsCreator: many(item, { relationName: "creator" }),
+  vendorsOwner: many(vendor, { relationName: "owner" }),
+  vendorsCreator: many(vendor, { relationName: "creator" }),
+  purchaseItemOwner: many(purchasedItem, { relationName: "owner" }),
+  purchaseItemCreator: many(purchasedItem, { relationName: "creator" }),
   userActionsHistory: many(userActionHistory),
   purchasesArchiveOwner: many(purchaseArchive, { relationName: "owner" }),
   purchasesArchiveCreator: many(purchaseArchive, { relationName: "creator" }),
+  userDefaultCategory: one(category, {
+    fields: [user.defaultCategory],
+    references: [category.id],
+    relationName: "user_default_category",
+  }),
 }));
 
 export const userActionHistory = pgTable("user_action_history", {
