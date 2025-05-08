@@ -1,8 +1,8 @@
 import { desc, eq } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/item";
-import { purchasedItems } from "@/lib/schema/schema";
+import { item } from "@/lib/schema/item";
+import { purchasedItem } from "@/lib/schema/purchase";
 
 export type ItemWithPrice = {
   id: string;
@@ -14,8 +14,8 @@ export type ItemWithPrice = {
 export default async function getUserItemsWithPrice(
   requesterUserId: string
 ): Promise<ItemWithPrice[]> {
-  const result = await db.query.items.findMany({
-    where: eq(items.ownerId, requesterUserId),
+  const result = await db.query.item.findMany({
+    where: eq(item.ownerId, requesterUserId),
     columns: {
       id: true,
       name: true,
@@ -38,7 +38,7 @@ export default async function getUserItemsWithPrice(
             },
           },
         },
-        orderBy: [desc(purchasedItems.purchasedAt)],
+        orderBy: [desc(purchasedItem.purchasedAt)],
         limit: 1,
       },
     },

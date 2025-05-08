@@ -5,7 +5,7 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidateTag, revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { NewVendorDbPayload, vendors } from "@/lib/schema/schema";
+import { NewVendorDbPayload, vendor } from "@/lib/schema/vendor";
 import { getUserInfo } from "@/lib/utils/auth";
 import { generateId } from "@/lib/utils/generator";
 
@@ -28,9 +28,9 @@ export async function newVendor(formData: FormData) {
       creatorId: userId,
     };
     const [addedVendor] = await db
-      .insert(vendors)
+      .insert(vendor)
       .values(newVendorDbPayload)
-      .returning({ id: vendors.id });
+      .returning({ id: vendor.id });
 
     revalidateTag("vendors");
     revalidatePath("/create");

@@ -1,31 +1,31 @@
 import { eq, inArray } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
-import { items } from "@/lib/schema/item";
+import { purchasedItem, purchase } from "@/lib/schema/purchase";
+import { item } from "@/lib/schema/item";
 
 export async function sortPurchaseItemsLoader(
   purchaseId: string
 ): Promise<PurchaseItemDisplay[]> {
   return await db.transaction(async (tx) => {
-    const [purchase] = await tx
-      .select({ itemList: purchases.purchasedItemId })
-      .from(purchases)
-      .where(eq(purchases.id, purchaseId));
+    const [purchaseResult] = await tx
+      .select({ itemList: purchase.purchasedItemId })
+      .from(purchase)
+      .where(eq(purchase.id, purchaseId));
 
     const purchaseItemList = await tx
       .select({
-        id: purchasedItems.id,
-        itemId: purchasedItems.itemId,
-        name: items.name,
-        quantityInHundreds: purchasedItems.quantityInHundreds,
-        pricePerUnit: purchasedItems.pricePerUnit,
+        id: purchasedItem.id,
+        itemId: purchasedItem.itemId,
+        name: item.name,
+        quantityInHundreds: purchasedItem.quantityInHundreds,
+        pricePerUnit: purchasedItem.pricePerUnit,
       })
-      .from(purchasedItems)
-      .where(inArray(purchasedItems.id, purchase.itemList))
-      .innerJoin(items, eq(purchasedItems.itemId, items.id));
+      .from(purchasedItem)
+      .where(inArray(purchasedItem.id, purchaseResult.itemList))
+      .innerJoin(item, eq(purchasedItem.itemId, item.id));
 
-    const list = purchase.itemList.map((purchaseItemId) => {
+    const list = purchaseResult.itemList.map((purchaseItemId) => {
       const [item] = purchaseItemList.filter(
         (itemList) => itemList.id === purchaseItemId
       );

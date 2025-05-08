@@ -4,7 +4,8 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 import { auth } from "@/auth";
-import { NewImageDbPayload, NewPurchaseDbPayload } from "@/lib/schema/schema";
+import { NewImageDbPayload } from "@/lib/schema/image";
+import { NewPurchaseDbPayload } from "@/lib/schema/purchase";
 import { generateId } from "@/lib/utils/generator";
 import {
   ImageMetadata,

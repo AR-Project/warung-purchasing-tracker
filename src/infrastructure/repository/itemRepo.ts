@@ -1,7 +1,8 @@
 import { and, asc, eq, inArray, sql, SQL } from "drizzle-orm";
 
 import { arraysHaveEqualElements } from "@/lib/utils/validator";
-import { category, CreateCategoryDbPayload, items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
+import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import db from "../database/db";
 
 type CategoryId = string;

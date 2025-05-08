@@ -1,12 +1,12 @@
 import Fuse from "fuse.js";
 import db from "@/infrastructure/database/db";
-import { vendors } from "@/lib/schema/schema";
+import { vendor } from "@/lib/schema/vendor";
 import { unstable_cache } from "next/cache";
 import { auth } from "@/auth";
 import { eq } from "drizzle-orm";
 
 const getCachedVendorsLoaders = unstable_cache(
-  async () => await db.select().from(vendors),
+  async () => await db.select().from(vendor),
   [],
   { tags: ["vendors"] }
 );
@@ -25,8 +25,8 @@ export async function POST(req: Request) {
   // const allVendors = await getCachedVendorsLoaders();
   const allVendors = await db
     .select()
-    .from(vendors)
-    .where(eq(vendors.ownerId, parentId));
+    .from(vendor)
+    .where(eq(vendor.ownerId, parentId));
 
   const fuse = new Fuse(allVendors, {
     includeScore: true,

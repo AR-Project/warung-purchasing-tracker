@@ -1,4 +1,4 @@
-import { CreateCategoryDbPayload } from "@/lib/schema/item";
+import { CreateCategoryDbPayload } from "@/lib/schema/category";
 import {
   addUserHelper,
   cleanUserTableHelper,

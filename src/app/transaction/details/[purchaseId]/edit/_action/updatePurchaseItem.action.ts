@@ -7,9 +7,9 @@ import { revalidatePath } from "next/cache";
 import db from "@/infrastructure/database/db";
 import {
   NewPurchaseItemDbPayload,
-  purchasedItems,
-  purchases,
-} from "@/lib/schema/schema";
+  purchasedItem,
+  purchase,
+} from "@/lib/schema/purchase";
 import { generateId } from "@/lib/utils/generator";
 import { user } from "@/lib/schema/user";
 import { adminManagerRole } from "@/lib/const";
@@ -91,8 +91,8 @@ async function updatePurchaseItem({
       // Validate Purchase
       const currentPurchase = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, purchaseId));
       if (currentPurchase.length == 0) {
         invariantError = "Purchase not exist";
         tx.rollback();
@@ -131,9 +131,9 @@ async function updatePurchaseItem({
         (item) => item.id
       );
 
-      await tx.insert(purchasedItems).values(listOfPurchaseItemDbPayload);
+      await tx.insert(purchasedItem).values(listOfPurchaseItemDbPayload);
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({
           totalPrice: newPurchaseTotalPrice,
           purchasedItemId: [
@@ -142,8 +142,8 @@ async function updatePurchaseItem({
           ],
           modifiedAt: new Date(),
         })
-        .where(eq(purchases.id, purchaseId))
-        .returning({ id: purchases.id });
+        .where(eq(purchase.id, purchaseId))
+        .returning({ id: purchase.id });
     });
     return null;
   } catch (error) {

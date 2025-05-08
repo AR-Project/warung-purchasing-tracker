@@ -3,7 +3,7 @@ import path from "path";
 import { promises as fs } from "fs";
 import db from "@/infrastructure/database/db";
 import { eq } from "drizzle-orm";
-import { images } from "@/lib/schema/schema";
+import { image } from "@/lib/schema/image";
 
 type Params = { params: Promise<SearchParams> };
 
@@ -13,13 +13,13 @@ export async function GET(req: Request, { params }: Params) {
     return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
   }
 
-  const image = await db.query.images.findFirst({
-    where: eq(images.id, id),
+  const imagesResult = await db.query.image.findFirst({
+    where: eq(image.id, id),
   });
-  if (!image)
+  if (!imagesResult)
     return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
 
-  const imagePath = path.join(process.cwd(), image.path);
+  const imagePath = path.join(process.cwd(), imagesResult.path);
 
   try {
     const imageBuffer = await fs.readFile(imagePath);

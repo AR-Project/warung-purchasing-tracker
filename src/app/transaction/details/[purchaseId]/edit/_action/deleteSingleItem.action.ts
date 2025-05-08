@@ -5,7 +5,7 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItem, purchase } from "@/lib/schema/purchase";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
 import {
@@ -13,7 +13,7 @@ import {
   purchaseArchive,
 } from "@/lib/schema/archive";
 import { generateId } from "@/lib/utils/generator";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 
 export async function deleteSingleItemAction(
   formData: FormData
@@ -53,8 +53,8 @@ export async function deleteSingleItemAction(
       // Validate existance of purchase
       const currentPurchase = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, payload.purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, payload.purchaseId));
       if (currentPurchase.length == 0) {
         invariantError = "Invalid Purchase";
         tx.rollback();
@@ -70,8 +70,8 @@ export async function deleteSingleItemAction(
       // Validate existance of purchaseItem
       const purchaseItemToDelete = await tx
         .select()
-        .from(purchasedItems)
-        .where(eq(purchasedItems.id, payload.purchasedItemIdToDelete));
+        .from(purchasedItem)
+        .where(eq(purchasedItem.id, payload.purchasedItemIdToDelete));
       if (purchaseItemToDelete.length == 0) {
         invariantError = "Invalid purchase item";
         tx.rollback();
@@ -105,13 +105,13 @@ export async function deleteSingleItemAction(
         currentPurchase[0].totalPrice - deletedPurchaseItemTotalPrice;
 
       // Prepare Archival payload
-      const [item] = await tx
-        .select({ name: items.name })
-        .from(items)
-        .where(eq(items.id, deletedPurchaseItem.itemId));
+      const [itemResult] = await tx
+        .select({ name: item.name })
+        .from(item)
+        .where(eq(item.id, deletedPurchaseItem.itemId));
       const data = {
         ...deletedPurchaseItem,
-        ...item,
+        ...itemResult,
       };
       const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
         id: generateId(20),
@@ -124,18 +124,18 @@ export async function deleteSingleItemAction(
       // Append change to database
       await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({
           purchasedItemId: newListOfPurchaseItemId,
           modifiedAt: new Date(),
           totalPrice: newPurchaseTotalPrice,
         })
-        .where(eq(purchases.id, payload.purchaseId))
-        .returning({ id: purchases.id });
+        .where(eq(purchase.id, payload.purchaseId))
+        .returning({ id: purchase.id });
 
       await tx
-        .delete(purchasedItems)
-        .where(eq(purchasedItems.id, payload.purchasedItemIdToDelete));
+        .delete(purchasedItem)
+        .where(eq(purchasedItem.id, payload.purchasedItemIdToDelete));
     });
 
     revalidatePath(`/transaction/details/${payload.purchaseId}`);

@@ -1,6 +1,7 @@
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/item";
-import { purchases, vendors, purchasedItems } from "@/lib/schema/schema";
+import { item } from "@/lib/schema/item";
+import { vendor } from "@/lib/schema/vendor";
+import { purchase, purchasedItem } from "@/lib/schema/purchase";
 import { eq, desc } from "drizzle-orm";
 import { unstable_cache as cache } from "next/cache";
 
@@ -9,31 +10,31 @@ export async function singlePurchaseLoader(purchaseId: string) {
     return await db.transaction(async (tx) => {
       const purchaseTransactions = await tx
         .select({
-          id: purchases.id,
-          vendorId: purchases.vendorId,
-          vendorName: vendors.name,
-          purchasedItemId: purchases.purchasedItemId,
-          purchasesAt: purchases.purchasedAt,
-          totalPrice: purchases.totalPrice,
-          createdAt: purchases.createdAt,
-          modifiedAt: purchases.modifiedAt,
-          imageId: purchases.imageId,
+          id: purchase.id,
+          vendorId: purchase.vendorId,
+          vendorName: vendor.name,
+          purchasedItemId: purchase.purchasedItemId,
+          purchasesAt: purchase.purchasedAt,
+          totalPrice: purchase.totalPrice,
+          createdAt: purchase.createdAt,
+          modifiedAt: purchase.modifiedAt,
+          imageId: purchase.imageId,
         })
-        .from(purchases)
-        .innerJoin(vendors, eq(purchases.vendorId, vendors.id))
-        .where(eq(purchases.id, purchaseId))
-        .orderBy(desc(purchases.purchasedAt));
+        .from(purchase)
+        .innerJoin(vendor, eq(purchase.vendorId, vendor.id))
+        .where(eq(purchase.id, purchaseId))
+        .orderBy(desc(purchase.purchasedAt));
 
       const allPurchasedItems = await tx
         .select({
-          id: purchasedItems.id,
-          itemId: items.id,
-          name: items.name,
-          quantityInHundreds: purchasedItems.quantityInHundreds,
-          pricePerUnit: purchasedItems.pricePerUnit,
+          id: purchasedItem.id,
+          itemId: item.id,
+          name: item.name,
+          quantityInHundreds: purchasedItem.quantityInHundreds,
+          pricePerUnit: purchasedItem.pricePerUnit,
         })
-        .from(purchasedItems)
-        .innerJoin(items, eq(purchasedItems.itemId, items.id));
+        .from(purchasedItem)
+        .innerJoin(item, eq(purchasedItem.itemId, item.id));
 
       const purchasedTransactionsWithItem = purchaseTransactions.map(
         (purchase) => ({

@@ -2,8 +2,8 @@ import db from "@/infrastructure/database/db";
 import { desc, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 
-import { items } from "@/lib/schema/item";
-import { purchasedItems } from "@/lib/schema/schema";
+import { item } from "@/lib/schema/item";
+import { purchasedItem } from "@/lib/schema/purchase";
 
 type LoaderResponse = {
   purchaseItemHistory: {
@@ -21,8 +21,8 @@ type LoaderResponse = {
 };
 
 export async function itemDetailLoader(requestedItemId: string) {
-  const result = await db.query.items.findFirst({
-    where: eq(items.id, requestedItemId),
+  const result = await db.query.item.findFirst({
+    where: eq(item.id, requestedItemId),
     with: {
       purchaseItem: {
         columns: {
@@ -32,7 +32,7 @@ export async function itemDetailLoader(requestedItemId: string) {
           totalPrice: true,
           purchasedAt: true,
         },
-        orderBy: [desc(purchasedItems.purchasedAt)],
+        orderBy: [desc(purchasedItem.purchasedAt)],
       },
       owner: {
         columns: {

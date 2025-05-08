@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { category, CreateCategoryDbPayload } from "@/lib/schema/item";
+import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import { defaultHelperUser } from "./userTableHelper";
 
 export const categoryTableHelper = {

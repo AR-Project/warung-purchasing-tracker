@@ -12,7 +12,7 @@ import {
   purchaseArchive,
 } from "@/lib/schema/archive";
 import { generateId } from "@/lib/utils/generator";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 import { auth } from "@/auth";
 import { plan } from "@/lib/schema/plan";
 

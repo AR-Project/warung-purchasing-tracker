@@ -4,7 +4,7 @@ import { z } from "zod";
 
 import { verifyUserAccess } from "@/lib/utils/auth";
 import { createCategory } from "@/infrastructure/repository/itemRepo";
-import { CreateCategoryDbPayload } from "@/lib/schema/item";
+import { CreateCategoryDbPayload } from "@/lib/schema/category";
 import { generateId } from "@/lib/utils/generator";
 
 const createCtgryReqSchema = z.string();

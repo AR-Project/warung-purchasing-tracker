@@ -4,14 +4,13 @@ import { z } from "zod";
 
 import db from "@/infrastructure/database/db";
 import { auth } from "@/auth";
+import { image, NewImageDbPayload } from "@/lib/schema/image";
 import {
-  images,
-  NewImageDbPayload,
   NewPurchaseDbPayload,
-  purchasedItems,
+  purchasedItem,
   NewPurchaseItemDbPayload,
-  purchases,
-} from "@/lib/schema/schema";
+  purchase,
+} from "@/lib/schema/purchase";
 import { generateId } from "@/lib/utils/generator";
 import {
   ImageMetadata,
@@ -29,15 +28,15 @@ export async function saveNewPurchase(
     const savedPurchaseId = await db.transaction(async (tx) => {
       if (imagePayload) {
         await tx
-          .insert(images)
+          .insert(image)
           .values(imagePayload)
-          .returning({ imageId: images.id });
+          .returning({ imageId: image.id });
       }
 
       const [savedPurchase] = await tx
-        .insert(purchases)
+        .insert(purchase)
         .values(purchasePayload)
-        .returning({ id: purchases.id });
+        .returning({ id: purchase.id });
 
       const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
         listOfPurchaseItem.map((item, index) => ({
@@ -49,15 +48,15 @@ export async function saveNewPurchase(
           creatorId: purchasePayload.creatorId,
           ownerId: purchasePayload.ownerId,
         }));
-      await tx.insert(purchasedItems).values(listOfPurchaseItemDbPayload);
+      await tx.insert(purchasedItem).values(listOfPurchaseItemDbPayload);
 
       const listOfPurchaseItemId = listOfPurchaseItemDbPayload.map(
         (item) => item.id
       );
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({ purchasedItemId: listOfPurchaseItemId })
-        .where(eq(purchases.id, savedPurchase.id));
+        .where(eq(purchase.id, savedPurchase.id));
       return savedPurchase.id;
     });
     return [savedPurchaseId, null];
@@ -93,8 +92,8 @@ export async function updateOrderOfPurchaseItem({
       // Validate Purchase
       const currentPurchase = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, purchaseId));
       if (currentPurchase.length == 0) {
         invariantError = "purchase Not Exist";
         tx.rollback();
@@ -116,29 +115,29 @@ export async function updateOrderOfPurchaseItem({
       }
 
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({
           purchasedItemId: newOrder,
           modifiedAt: new Date(),
         })
-        .where(eq(purchases.id, purchaseId))
-        .returning({ id: purchases.id });
+        .where(eq(purchase.id, purchaseId))
+        .returning({ id: purchase.id });
 
       // https://orm.drizzle.team/docs/guides/update-many-with-different-value
       const sqlChunks: SQL[] = [];
       sqlChunks.push(sql`(case`);
       newOrder.forEach((id, index) => {
         sqlChunks.push(
-          sql`when ${purchasedItems.id} = ${id} then ${index}::INTEGER`
+          sql`when ${purchasedItem.id} = ${id} then ${index}::INTEGER`
         );
       });
       sqlChunks.push(sql`end)`);
       const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
 
       await tx
-        .update(purchasedItems)
+        .update(purchasedItem)
         .set({ sortOrder: finalSql })
-        .where(inArray(purchasedItems.id, newOrder));
+        .where(inArray(purchasedItem.id, newOrder));
     });
     return null;
   } catch (error) {
