@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { eq, or } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
 import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
@@ -48,6 +48,14 @@ export const categoryTableHelper = {
   },
   async findById(idToSearch: string) {
     return db.select().from(category).where(eq(category.id, idToSearch));
+  },
+  async findByUserId(idToSearch: string) {
+    return db
+      .select()
+      .from(category)
+      .where(
+        or(eq(category.ownerId, idToSearch), eq(category.creatorId, idToSearch))
+      );
   },
   async findAll() {
     return db.select().from(category);
