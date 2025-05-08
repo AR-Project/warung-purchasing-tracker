@@ -29,6 +29,12 @@ export const userTableHelper = {
   async findById(idToSearch: string) {
     return db.select().from(user).where(eq(user.id, idToSearch));
   },
+  async setDefaultCategory(userId: string, categoryId: string) {
+    return db
+      .update(user)
+      .set({ defaultCategory: categoryId })
+      .where(eq(user.id, userId));
+  },
   async clean() {
     return db.delete(user);
   },
