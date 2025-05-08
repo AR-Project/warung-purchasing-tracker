@@ -4,36 +4,32 @@ import { hash } from "@node-rs/argon2";
 
 import { NewUserDbPayload } from "@/lib/schema/user";
 import { generateId } from "@/lib/utils/generator";
-import { saveNewUser } from "@/infrastructure/repository/userRepository";
+import { createUserRepo } from "@/infrastructure/repository/userRepository";
+
+const reqSchema = z.object({
+  username: z.string(),
+  password: z.string(),
+  email: z.string().nullish(),
+  confirmPassword: z.string(),
+});
 
 export async function registerUserAction(
   formData: FormData
 ): Promise<FormState> {
-  const usernameRaw = formData.get("username");
-  const passwordRaw = formData.get("password");
-  const emailRaw = formData.get("email");
-  const confirmPasswordRaw = formData.get("confirm-password");
-
-  const schema = z.object({
-    username: z.string(),
-    password: z.string(),
-    email: z.string().nullish(),
-    confirmPassword: z.string(),
+  const { data: payload, error: schemaError } = reqSchema.safeParse({
+    username: formData.get("username"),
+    password: formData.get("password"),
+    email: formData.get("email"),
+    confirmPassword: formData.get("confirm-password"),
   });
 
-  const { data: payload } = schema.safeParse({
-    username: usernameRaw,
-    password: passwordRaw,
-    email: emailRaw,
-    confirmPassword: confirmPasswordRaw,
-  });
-
-  if (!payload) return { error: "Invalid payload" };
+  if (schemaError) return { error: "Invalid payload" };
   if (payload.password !== payload.confirmPassword)
     return { error: "Password Not match" };
 
   const { username, password, email } = payload;
   const id = `u-${generateId(10)}`;
+
   const newUserDbPayload: NewUserDbPayload = {
     username,
     id,
@@ -42,7 +38,7 @@ export async function registerUserAction(
     parentId: id,
   };
 
-  const [data, invariantError] = await saveNewUser(newUserDbPayload);
+  const [data, invariantError] = await createUserRepo(newUserDbPayload);
   if (invariantError || !data) return { error: invariantError };
 
   return {
