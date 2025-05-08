@@ -3,7 +3,7 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { verifyUserAccess } from "@/lib/utils/auth";
-import { createCategory } from "@/infrastructure/repository/itemRepo";
+import { createCategory } from "@/infrastructure/repository/categoryRepo";
 import { CreateCategoryDbPayload } from "@/lib/schema/category";
 import { generateId } from "@/lib/utils/generator";
 
