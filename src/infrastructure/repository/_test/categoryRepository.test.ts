@@ -14,10 +14,9 @@ import {
   updateCategoryRepo,
   updateCategorySortOrderDb,
   updateCategorySortOrderRepo,
-} from "../itemRepo";
-import { aw } from "vitest/dist/chunks/reporters.C4ZHgdxQ.js";
+} from "../categoryRepo";
 
-describe("itemRepository", () => {
+describe("categoryRepository", () => {
   beforeAll(async () => {
     await addUserHelper({});
     return async () => {

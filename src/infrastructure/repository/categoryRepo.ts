@@ -1,7 +1,6 @@
 import { and, asc, eq, inArray, sql, SQL } from "drizzle-orm";
 
 import { arraysHaveEqualElements } from "@/lib/utils/validator";
-import { item } from "@/lib/schema/item";
 import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import db from "../database/db";
 
@@ -12,7 +11,7 @@ type DefaultResult<T = string> = [T, null] | [null, ErrorMessage];
 type CreateCategoryResult = DefaultResult<CategoryId>;
 
 export async function getCategoryByParentId(parentId: string) {
-  return await db.query.category.findMany({
+  return db.query.category.findMany({
     where: eq(category.ownerId, parentId),
     orderBy: [asc(category.sortOrder)],
   });
