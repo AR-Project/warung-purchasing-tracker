@@ -67,9 +67,9 @@ export default function PurchaseCreator({
     const result = appendItemToCart(item);
     if (!result)
       toast.info(
-        <>
+        <div>
           `<span className="font-bold">{item.name}</span> masuk keranjang`
-        </>,
+        </div>,
         {
           position: "top-center",
           autoClose: 2000,
