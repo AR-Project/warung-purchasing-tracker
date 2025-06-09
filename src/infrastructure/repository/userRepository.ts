@@ -85,10 +85,10 @@ export async function getUserRole(
 
 export type CreateChildUserRepoPayload = {
   username: string;
-  id: `u-${string}`;
+  id: string;
   hashedPassword: string;
   role: AvailableUserRole;
-  parentId: `u-${string}`;
+  parentId: string;
 };
 
 export async function createChildUserRepo(
