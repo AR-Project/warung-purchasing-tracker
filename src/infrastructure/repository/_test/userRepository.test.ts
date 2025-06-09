@@ -1,6 +1,10 @@
 import { NewUserDbPayload } from "@/lib/schema/user";
 import { userTableHelper } from "./helper/userTableHelper";
-import { createUserRepo } from "../userRepository";
+import {
+  createUserRepo,
+  createChildUserRepo,
+  type CreateChildUserRepoPayload,
+} from "../userRepository";
 import { categoryTableHelper } from "./helper/itemTableHelper";
 
 describe("UserRepository", () => {
@@ -73,6 +77,77 @@ describe("UserRepository", () => {
       expect(existingUser.length).toBe(1);
       expect(addedUserCategory.length).toBe(0);
       expect(existingUserCategory.length).toBe(1);
+    });
+  });
+
+  describe("createChildUserRepo method", () => {
+    beforeEach(async () => {});
+    afterEach(async () => {
+      await userTableHelper.clean();
+      await categoryTableHelper.clean();
+    });
+
+    test("should fail when parent user category is set", async () => {
+      const payload: CreateChildUserRepoPayload = {
+        username: "fail",
+        id: "u-123",
+        hashedPassword: "$hashed$password",
+        role: "staff",
+        parentId: "u-000",
+      };
+
+      const [data, error] = await createChildUserRepo(payload);
+
+      expect(error).toBe("parent user default category not set");
+      expect(data).toBeNull();
+    });
+
+    test("should fail when username is used", async () => {
+      // mock parent user
+      await userTableHelper.addWithCategory({
+        id: "u-000",
+        username: "notUniqueUsername",
+        parentId: "u-000",
+      });
+
+      const payload: CreateChildUserRepoPayload = {
+        username: "notUniqueUsername",
+        id: "u-123",
+        hashedPassword: "$hashed$password",
+        role: "staff",
+        parentId: "u-000",
+      };
+
+      const [data, error] = await createChildUserRepo(payload);
+
+      expect(error).toBe("username not available");
+      expect(data).toBeNull();
+    });
+
+    test("should success and persist data", async () => {
+      // mock parent user
+      await userTableHelper.addWithCategory({
+        id: "u-000",
+        username: "parent",
+        parentId: "u-000",
+      });
+
+      const payload: CreateChildUserRepoPayload = {
+        username: "child",
+        id: "u-123",
+        hashedPassword: "$hashed$password",
+        role: "staff",
+        parentId: "u-000",
+      };
+
+      const [data, error] = await createChildUserRepo(payload);
+
+      const userOnTable = await userTableHelper.findById("u-123");
+      expect(error).toBeNull();
+      expect(data).not.toBeNull();
+      expect(data?.id).toBe("u-123");
+      expect(data?.username).toBe("child");
+      expect(userOnTable.length).toBe(1);
     });
   });
 });

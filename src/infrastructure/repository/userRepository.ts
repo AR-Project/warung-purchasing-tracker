@@ -82,3 +82,66 @@ export async function getUserRole(
 
   return [userInfo.role, null];
 }
+
+export type CreateChildUserRepoPayload = {
+  username: string;
+  id: `u-${string}`;
+  hashedPassword: string;
+  role: AvailableUserRole;
+  parentId: `u-${string}`;
+};
+
+export async function createChildUserRepo(
+  payload: CreateChildUserRepoPayload
+): Promise<CreateUserResult> {
+  let invariantError: string | undefined;
+
+  try {
+    const createChildUser = await db.transaction(async (tx) => {
+      // Check parent default category
+      const parentUser = await tx.query.user.findFirst({
+        columns: {
+          defaultCategory: true,
+        },
+        where: eq(user.id, payload.parentId),
+      });
+
+      if (!parentUser || !parentUser.defaultCategory) {
+        invariantError = "parent user default category not set";
+        tx.rollback();
+      }
+
+      // No need to validate user role
+
+      const userWithSameUsername = await tx.query.user.findMany({
+        columns: { id: true },
+        where: (user, { eq }) => eq(user.username, payload.username),
+      });
+
+      if (userWithSameUsername.length > 0) {
+        invariantError = "username not available";
+        tx.rollback();
+      }
+
+      const newUserDbPayload: NewUserDbPayload = {
+        username: payload.username,
+        id: payload.id,
+        hashedPassword: payload.hashedPassword,
+        role: payload.role,
+        parentId: payload.parentId,
+        defaultCategory: parentUser?.defaultCategory,
+      };
+
+      // create child user
+      const [createdChildUser] = await tx
+        .insert(user)
+        .values(newUserDbPayload)
+        .returning({ username: user.username, id: user.id });
+
+      return createdChildUser;
+    });
+    return [createChildUser, null];
+  } catch (error) {
+    return [null, invariantError ? invariantError : "internal error"];
+  }
+}
