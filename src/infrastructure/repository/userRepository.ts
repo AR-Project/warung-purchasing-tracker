@@ -28,12 +28,14 @@ export async function createUserRepo(
         invariantError = "Username not available";
         tx.rollback();
       }
+
+      // CREATE user
       const [newUser] = await tx
         .insert(user)
         .values(payload)
         .returning({ username: user.username, id: user.id });
 
-      // CREATE default category
+      // CREATE user default category
       const defaultCategoryPayload: CreateCategoryDbPayload = {
         id: `cat-${generateId(9)}`,
         name: `${payload.username}'s Default Category`,
@@ -51,6 +53,7 @@ export async function createUserRepo(
         tx.rollback();
       }
 
+      // LINK user and default category
       const [newUserWithDefaultCategory] = await tx
         .update(user)
         .set({ defaultCategory: defaultCategoryResult[0].id })
