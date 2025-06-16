@@ -5,7 +5,7 @@ import {
   createChildUserRepo,
   type CreateChildUserRepoPayload,
 } from "../userRepository";
-import { categoryTableHelper } from "./helper/itemTableHelper";
+import { categoryTableHelper } from "./helper/categoryTableHelper";
 
 describe("UserRepository", () => {
   describe("createUser Method", () => {

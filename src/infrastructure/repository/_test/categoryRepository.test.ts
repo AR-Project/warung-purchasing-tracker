@@ -5,7 +5,7 @@ import {
   defaultHelperUser,
   userTableHelper,
 } from "./helper/userTableHelper";
-import { categoryTableHelper } from "./helper/itemTableHelper";
+import { categoryTableHelper } from "./helper/categoryTableHelper";
 import {
   createCategory,
   deleteCategory,
