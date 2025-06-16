@@ -158,23 +158,29 @@ export async function deleteCategory(
   let invariantError: string | undefined;
   try {
     await db.transaction(async (tx) => {
+      // check if category exist
       const categoryToDelete = await tx.query.category.findMany({
         where: and(
           eq(category.id, payload.categoryId),
           eq(category.ownerId, payload.requesterParentId)
         ),
       });
+
       if (categoryToDelete.length === 0) {
         invariantError = "invalid payload";
         tx.rollback();
       }
 
-      // Untested line --->
-      // await tx
-      //   .update(items)
-      //   .set({ sortOrder: null, categoryId: null })
-      //   .where(eq(items.categoryId, payload.categoryId));
-      // <---
+      // check if category is used as default category
+      const [users] = await tx.query.user.findMany({
+        where: (user, { eq }) => eq(user.id, payload.requesterParentId),
+      });
+
+      if (users.defaultCategory === payload.categoryId) {
+        invariantError = "not allowed to delete default category";
+        tx.rollback();
+      }
+
       await tx.delete(category).where(eq(category.id, payload.categoryId));
     });
     return ["ok", null];

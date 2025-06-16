@@ -3,6 +3,7 @@ import {
   addUserHelper,
   cleanUserTableHelper,
   defaultHelperUser,
+  userTableHelper,
 } from "./helper/userTableHelper";
 import { categoryTableHelper } from "./helper/itemTableHelper";
 import {
@@ -17,8 +18,9 @@ import {
 } from "../categoryRepo";
 
 describe("categoryRepository", () => {
-  beforeAll(async () => {
-    await addUserHelper({});
+  beforeEach(async () => {
+    // User Have No Default Category
+    await userTableHelper.add({});
     return async () => {
       await cleanUserTableHelper();
     };
@@ -261,6 +263,35 @@ describe("categoryRepository", () => {
       expect(result).toBeNull();
       expect(error).toBe("invalid payload");
     });
+
+    test("should fail when category is set as default category, on user or/and parent user", async () => {
+      // This test also prevent the action when category left is one. Because one category, it has to be the default category
+      await categoryTableHelper.add({
+        id: "cat-111",
+        name: "test category",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      });
+      await userTableHelper.setDefaultCategory(defaultHelperUser.id, "cat-111");
+
+      const payload: DeleteCategoryRepoPayload = {
+        categoryId: "cat-111",
+        requesterParentId: defaultHelperUser.id,
+      };
+
+      const categoriesPreDelete = await categoryTableHelper.findAll();
+
+      const [result, repoError] = await deleteCategory(payload);
+
+      const categoriesPostDelete = await categoryTableHelper.findAll();
+
+      expect(result).toBeNull();
+      expect(repoError).toBe("not allowed to delete default category");
+      expect(categoriesPreDelete.length).toBe(1);
+      expect(categoriesPostDelete.length).toBe(1);
+    });
+
+
     test("should success with valid payload", async () => {
       await categoryTableHelper.addMultiple(4);
 
