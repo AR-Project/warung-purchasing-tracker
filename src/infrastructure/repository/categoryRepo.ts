@@ -3,6 +3,7 @@ import { and, asc, eq, inArray, sql, SQL } from "drizzle-orm";
 import { arraysHaveEqualElements } from "@/lib/utils/validator";
 import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import db from "../database/db";
+import { item } from "@/lib/schema/item";
 
 type CategoryId = string;
 type ErrorMessage = string;
@@ -179,6 +180,13 @@ export async function deleteCategory(
       if (users.defaultCategory === payload.categoryId) {
         invariantError = "not allowed to delete default category";
         tx.rollback();
+      }
+
+      if (users.defaultCategory) {
+        await tx
+          .update(item)
+          .set({ categoryId: users.defaultCategory })
+          .where(eq(item.categoryId, payload.categoryId));
       }
 
       await tx.delete(category).where(eq(category.id, payload.categoryId));

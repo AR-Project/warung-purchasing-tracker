@@ -16,15 +16,19 @@ import {
   updateCategorySortOrderDb,
   updateCategorySortOrderRepo,
 } from "../categoryRepo";
+import { itemTableHelper } from "./helper/itemTableHelper";
 
 describe("categoryRepository", () => {
   beforeEach(async () => {
     // User Have No Default Category
+    await userTableHelper.clean();
     await userTableHelper.add({});
-    return async () => {
-      await cleanUserTableHelper();
-    };
   });
+
+  afterEach(async () => {
+    await cleanUserTableHelper();
+  });
+
   describe("createCategory method", () => {
     afterEach(async () => {
       await categoryTableHelper.clean();
@@ -234,6 +238,7 @@ describe("categoryRepository", () => {
 
   describe("deleteCategory method", () => {
     afterEach(async () => {
+      await itemTableHelper.clean();
       await categoryTableHelper.clean();
     });
 
@@ -291,6 +296,86 @@ describe("categoryRepository", () => {
       expect(categoriesPostDelete.length).toBe(1);
     });
 
+    test("should migrate all existing item's category to parent default category", async () => {
+      // generate default category
+      await categoryTableHelper.add({
+        id: "cat-111",
+        name: "default category",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-01",
+        categoryId: "cat-111",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        name: "Item on default Category #1",
+      });
+
+      // link category to user
+      await userTableHelper.setDefaultCategory(defaultHelperUser.id, "cat-111");
+
+      // generate category to delete
+      await categoryTableHelper.add({
+        id: "cat-222",
+        name: "category to delete",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      });
+
+      await itemTableHelper.add({
+        id: "item-02",
+        categoryId: "cat-222",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        name: "Item on deleted Category #1",
+      });
+      await itemTableHelper.add({
+        id: "item-03",
+        categoryId: "cat-222",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        name: "Item on deleted Category #2",
+      });
+      const payload: DeleteCategoryRepoPayload = {
+        categoryId: "cat-222",
+        requesterParentId: defaultHelperUser.id,
+      };
+
+      const categoriesPreDelete = await categoryTableHelper.findAll();
+      const itemOnToBeDeleteCtgPre = await itemTableHelper.findByCategoryId(
+        payload.categoryId
+      );
+      const itemOnDefaultCtgPre = await itemTableHelper.findByCategoryId(
+        "cat-111"
+      );
+      const itemsOnUserPre = await itemTableHelper.findByUserId(
+        defaultHelperUser.id
+      );
+
+      // Action
+      const [result, repoError] = await deleteCategory(payload);
+
+      const itemOnDefaultCtgPost = await itemTableHelper.findByCategoryId(
+        "cat-111"
+      );
+      const categoriesPostDelete = await categoryTableHelper.findAll();
+      const itemsOnUserPost = await itemTableHelper.findByUserId(
+        defaultHelperUser.id
+      );
+
+      expect(result).toBe("ok");
+      expect(repoError).toBeNull();
+      // Check total number for item under default category
+      expect(itemOnToBeDeleteCtgPre.length).toBe(2);
+      expect(itemOnDefaultCtgPre.length).toBe(1);
+      expect(itemsOnUserPre.length).toBe(3);
+      expect(categoriesPreDelete.length).toBe(2);
+
+      expect(categoriesPostDelete.length).toBe(1);
+      expect(itemOnDefaultCtgPost.length).toBe(3);
+      expect(itemsOnUserPost.length).toBe(3);
+    });
 
     test("should success with valid payload", async () => {
       await categoryTableHelper.addMultiple(4);
