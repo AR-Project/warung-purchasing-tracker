@@ -13,6 +13,30 @@ export async function validateUser(): Promise<SafeResult<UserSession>> {
   return session ? [session.user, null] : [null, "not_authenticated"];
 }
 
+export type UserSessionWithRole = UserSession & { role: string };
+
+/**
+ * Check user authentication and role in single call
+ * @returns An session object with most updated user role or null
+ */
+export async function getUserRoleAuth(): Promise<
+  SafeResult<UserSessionWithRole>
+> {
+  const session = await auth();
+  if (!session || !session.user || !session.user.userId) {
+    console.log("getUserRoleAuth session null");
+    return [null, "not authenticated"];
+  }
+
+  const [role, getRoleError] = await getUserRole(session.user.userId);
+  if (getRoleError != null) {
+    console.log("getUserRoleAuth repo error");
+    return [null, "repo error"];
+  }
+
+  return [{ ...session.user, role }, null];
+}
+
 type VerifyUserAccessError =
   | "not_authenticated"
   | "not_authorized"
