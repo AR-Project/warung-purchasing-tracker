@@ -17,6 +17,9 @@ type CreateItemRepoResult = SafeResult<{
   categoryId: string;
 }>;
 
+/**
+ * Create Item Repository. Not including `categoryId` fallback to owners/parent users default.
+ */
 export async function create(
   payload: CreateItemRepoPayload
 ): Promise<CreateItemRepoResult> {
