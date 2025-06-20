@@ -31,8 +31,10 @@ export const userTableHelper = {
       })
       .returning();
   },
+
   /**
-   * Don't forget to also clean up category table
+   * Create user with defaultHelperUser, with default category already set up ("cat-000")
+   * Clean up category table everytime using this helper
    */
   async addWithCategory({
     username = defaultHelperUser.username,
