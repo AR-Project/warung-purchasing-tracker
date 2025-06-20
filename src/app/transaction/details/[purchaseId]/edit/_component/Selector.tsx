@@ -7,7 +7,7 @@ import {
   ComboboxOptions,
 } from "@headlessui/react";
 import { toast } from "react-toastify";
-import { LuLoader2 } from "react-icons/lu";
+import { LuLoader } from "react-icons/lu";
 
 import { useDelayQuery } from "@/presentation/hooks/useDelayQuery";
 
@@ -140,7 +140,7 @@ export default function Selector({
           )}
 
           {loading && (
-            <LuLoader2 className="bg-gray-700 ml-3 animate-spin text-3xl" />
+            <LuLoader className="bg-gray-700 ml-3 animate-spin text-3xl" />
           )}
 
           <ComboboxOptions
