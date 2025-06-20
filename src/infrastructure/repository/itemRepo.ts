@@ -80,6 +80,8 @@ export async function create(
   }
 }
 
-export default {
+const itemRepo = {
   create,
 };
+
+export default itemRepo;
