@@ -17,6 +17,7 @@ type Props = {
   role: string;
 };
 
+/** A modal that displaying user management menu */
 export default function UserInfo({ username, userId, role }: Props) {
   const allowedRole = ["admin", "manager"];
   const enableStaffManager = allowedRole.includes(role);
