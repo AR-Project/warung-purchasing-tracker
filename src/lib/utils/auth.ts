@@ -41,7 +41,14 @@ type VerifyUserAccessError =
   | "not_authenticated"
   | "not_authorized"
   | "internal_error";
-
+/**
+ * Check if user had role specified in params.
+ *
+ * This is used for gatekeeping purpose.
+ *
+ * @param allowedRole Array of role type that allowed
+ * @returns return User session if role fit and error message if role not fit
+ */
 export async function verifyUserAccess(
   allowedRole: AvailableUserRole[]
 ): Promise<SafeResult<UserSession, VerifyUserAccessError>> {
