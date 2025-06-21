@@ -1,3 +1,4 @@
+import EditItemHiddenForm from "@/app/create/_component/EditItemHiddenForm";
 import { ItemRowData } from "@/lib/schema/item";
 import { DateTime } from "luxon";
 
@@ -30,6 +31,9 @@ export default function ItemDetailCard({ itemData }: Props) {
               minute: "2-digit",
             })}
         </div>
+        <EditItemHiddenForm
+          selectedItem={{ id: itemData.id, name: itemData.name }}
+        />
       </div>
       <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
         {itemData.imageId ? "Image" : "n / a"}
