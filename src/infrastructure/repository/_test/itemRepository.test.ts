@@ -1,4 +1,9 @@
-import { create, CreateItemRepoPayload } from "../itemRepo";
+import {
+  create,
+  type CreateItemRepoPayload,
+  update,
+  type UpdateItemRepoPayload,
+} from "../itemRepo";
 import { categoryTableHelper } from "./helper/categoryTableHelper";
 import { itemTableHelper } from "./helper/itemTableHelper";
 import { defaultHelperUser, userTableHelper } from "./helper/userTableHelper";
@@ -101,6 +106,109 @@ describe("item repository", () => {
       expect(error).toBeNull();
       expect(itemsOnDefaultCtg.length).toBe(3);
       expect(addedItem.sortOrder).toBe(2);
+    });
+  });
+
+  describe("update method", () => {
+    test("should fail when itemId is invalid", async () => {
+      const payload: UpdateItemRepoPayload = {
+        id: "item-invalid",
+        newName: "Invalid Item",
+        parentId: defaultHelperUser.id,
+        userId: defaultHelperUser.id,
+      };
+
+      const [result, error] = await update(payload);
+      expect(result).toBeNull();
+      expect(error).toBe("itemId invalid");
+    });
+
+    test("should fail when item is not owned by user", async () => {
+      // Add item to existing user
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      // add new user
+      await userTableHelper.add({
+        id: `u-222`,
+        username: `test_2`,
+        parentId: `u-222`,
+      });
+      await categoryTableHelper.add({
+        id: "cat-111",
+        ownerId: "u-222",
+        creatorId: "u-222",
+        name: "category user test_2",
+      });
+      await userTableHelper.setDefaultCategory("u-222", "cat-111");
+
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "Invalid Item",
+        parentId: "u-222",
+        userId: "u-222",
+      };
+
+      const [result, error] = await update(payload);
+      const item = await itemTableHelper.findById("item-001");
+
+      expect(result).toBeNull();
+      expect(error).toBe("update unauthorized");
+      expect(item[0].id).toBe("item-001");
+      expect(item[0].name).toBe("original name");
+    });
+
+    test("should success and persist change", async () => {
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "new name",
+        parentId: defaultHelperUser.id,
+        userId: defaultHelperUser.id,
+      };
+
+      const [result, error] = await update(payload);
+
+      expect(error).toBeNull();
+      expect(result).toStrictEqual({ id: "item-001", name: "new name" });
+    });
+    test("should success and persist change when performed by child user", async () => {
+      await userTableHelper.add({
+        id: "u-222",
+        parentId: defaultHelperUser.id,
+        username: "child user from u-123",
+      });
+
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: "u-222",
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "new name",
+        parentId: defaultHelperUser.id,
+        userId: "u-222",
+      };
+
+      const [result, error] = await update(payload);
+
+      expect(error).toBeNull();
+      expect(result).toStrictEqual({ id: "item-001", name: "new name" });
     });
   });
 });

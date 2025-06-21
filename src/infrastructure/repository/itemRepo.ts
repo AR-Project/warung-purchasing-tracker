@@ -83,8 +83,55 @@ export async function create(
   }
 }
 
+export type UpdateItemRepoPayload = {
+  id: string;
+  newName: string;
+  parentId: string;
+  userId: string;
+};
+
+/**
+ * UNTESTED
+ */
+export async function update(
+  payload: UpdateItemRepoPayload
+): Promise<SafeResult<{ id: string; name: string }>> {
+  let invariantError: string | undefined;
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const currentItem = await tx.query.item.findMany({
+        where: (item, { eq }) => eq(item.id, payload.id),
+      });
+
+      if (currentItem.length === 0) {
+        invariantError = "itemId invalid";
+        tx.rollback();
+      }
+
+      const { ownerId, creatorId } = currentItem[0];
+      if (![ownerId, creatorId].includes(payload.parentId)) {
+        invariantError = "update unauthorized";
+        tx.rollback();
+      }
+
+      const [updatedItem] = await db
+        .update(item)
+        .set({ name: payload.newName })
+        .where(eq(item.id, payload.id))
+        .returning({ id: item.id, name: item.name });
+
+      return updatedItem;
+    });
+    return [result, null];
+  } catch (_) {
+    return [null, invariantError ? invariantError : "internal error"];
+  }
+}
+
 const itemRepo = {
   create,
+  update,
 };
 
 export default itemRepo;
