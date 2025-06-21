@@ -13,6 +13,9 @@ export const defaultHelperUser: NewUserDbPayload = {
 };
 
 export const userTableHelper = {
+  /**
+   * Default Value: id: `u-123`, username: `test`
+   */
   async add({
     username = defaultHelperUser.username,
     id = defaultHelperUser.id,
