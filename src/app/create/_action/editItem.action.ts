@@ -7,6 +7,9 @@ import { isString } from "@/lib/utils/validator";
 import { eq } from "drizzle-orm";
 import { revalidateTag, revalidatePath } from "next/cache";
 
+/**
+ * @deprecated Do not use this, since it is old version and not safe
+ */
 export async function editItem(formData: FormData) {
   const id = formData.get("id");
   const newName = formData.get("name");
