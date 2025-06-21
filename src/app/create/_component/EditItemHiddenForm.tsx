@@ -10,7 +10,7 @@ import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
   selectedItem: Item;
-  updateItem: (item: Item) => void;
+  updateItem?: (item: Item) => void;
 };
 
 export default function EditItemHiddenForm({
@@ -21,7 +21,7 @@ export default function EditItemHiddenForm({
     editItem,
     (msg, data) => {
       if (!data) return;
-      updateItem(data);
+      updateItem && updateItem(data);
       toast.success(msg);
 
       close();
