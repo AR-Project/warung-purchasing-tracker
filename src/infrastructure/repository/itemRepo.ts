@@ -1,7 +1,8 @@
-import { eq } from "drizzle-orm";
+import { eq, inArray, sql, SQL } from "drizzle-orm";
 
 import { item, NewItemDbPayload } from "@/lib/schema/item";
 import db from "@/infrastructure/database/db";
+import { arraysHaveEqualElements } from "@/lib/utils/validator";
 
 export type CreateItemRepoPayload = {
   id: string;
@@ -126,6 +127,67 @@ export async function update(
     return [result, null];
   } catch (_) {
     return [null, invariantError ? invariantError : "internal error"];
+  }
+}
+
+export type UpdateOrderItemRepoPayload = {
+  categoryId: string;
+  newOrder: string[];
+  userId: string;
+  parentId: string;
+};
+
+export async function updateSortOrder(
+  payload: UpdateOrderItemRepoPayload
+): Promise<SafeResult<"ok">> {
+  let invariantError: string | undefined;
+  try {
+    await db.transaction(async (tx) => {
+      const data = await tx.query.category.findMany({
+        columns: {
+          id: true,
+        },
+        with: {
+          items: {
+            columns: {
+              id: true,
+              sortOrder: true,
+            },
+            orderBy: (item, { asc }) => asc(item.sortOrder),
+          },
+        },
+        where: (category, { eq }) => eq(category.id, payload.categoryId),
+      });
+
+      if (data.length === 0) {
+        invariantError = "categoryId invalid";
+        tx.rollback();
+      }
+
+      const mappedItemIds = data[0].items.map((item) => item.id);
+
+      if (arraysHaveEqualElements(mappedItemIds, payload.newOrder) === false) {
+        invariantError = "newOrder invalid";
+        tx.rollback();
+      }
+
+      const sqlChunks: SQL[] = [];
+      sqlChunks.push(sql`(case`);
+      payload.newOrder.forEach((id, index) => {
+        sqlChunks.push(sql`when ${item.id} = ${id} then ${index}::INTEGER`);
+      });
+      sqlChunks.push(sql`end)`);
+      const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
+
+      await tx
+        .update(item)
+        .set({ sortOrder: finalSql })
+        .where(inArray(item.id, payload.newOrder));
+    });
+
+    return ["ok", null];
+  } catch (error) {
+    return [null, invariantError ? invariantError : "Internal Error"];
   }
 }
 
