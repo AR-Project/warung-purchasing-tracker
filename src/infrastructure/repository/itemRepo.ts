@@ -194,6 +194,7 @@ export async function updateSortOrder(
 const itemRepo = {
   create,
   update,
+  updateSortOrder,
 };
 
 export default itemRepo;
