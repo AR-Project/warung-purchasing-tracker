@@ -130,6 +130,48 @@ export async function update(
   }
 }
 
+export type UpdateCategoryIdRepoPayload = {
+  itemId: string;
+  targetCategoryId: string;
+  userId: string;
+  parentId: string;
+};
+
+export async function updateCategoryId(
+  payload: UpdateCategoryIdRepoPayload
+): Promise<SafeResult<"ok">> {
+  let invariantError: string | undefined;
+
+  try {
+    await db.transaction(async (tx) => {
+      const targetCategory = await tx.query.category.findMany({
+        columns: { id: true },
+        with: {
+          items: true,
+        },
+        where: (category, { eq }) => eq(category.id, payload.targetCategoryId),
+      });
+
+      if (targetCategory.length === 0) {
+        invariantError = "categoryId invalid";
+        tx.rollback();
+      }
+
+      await tx
+        .update(item)
+        .set({
+          categoryId: payload.targetCategoryId,
+          sortOrder: targetCategory[0].items.length,
+        })
+        .where(eq(item.id, payload.itemId));
+    });
+
+    return ["ok", null];
+  } catch (error) {
+    return [null, invariantError ? invariantError : "internal error"];
+  }
+}
+
 export type UpdateOrderItemRepoPayload = {
   categoryId: string;
   newOrder: string[];
@@ -194,6 +236,7 @@ export async function updateSortOrder(
 const itemRepo = {
   create,
   update,
+  updateCategoryId,
   updateSortOrder,
 };
 

@@ -5,6 +5,8 @@ import {
   type UpdateItemRepoPayload,
   updateSortOrder,
   type UpdateOrderItemRepoPayload,
+  UpdateCategoryIdRepoPayload,
+  updateCategoryId,
 } from "../itemRepo";
 import { categoryTableHelper } from "./helper/categoryTableHelper";
 import { itemTableHelper } from "./helper/itemTableHelper";
@@ -211,6 +213,92 @@ describe("item repository", () => {
 
       expect(error).toBeNull();
       expect(result).toStrictEqual({ id: "item-001", name: "new name" });
+    });
+  });
+
+  describe("updateCategoryId method ", () => {
+    test("should fail if target category Id is not exist", async () => {
+      await itemTableHelper.add({
+        id: "item-0",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateCategoryIdRepoPayload = {
+        itemId: "item-0",
+        targetCategoryId: "invalid-target",
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
+      };
+
+      const [result, error] = await updateCategoryId(payload);
+
+      expect(result).toBeNull();
+      expect(error).toBe("categoryId invalid");
+    });
+
+    test("should success, persist data, and correctly assign correctsort order", async () => {
+      // Prepare
+      await itemTableHelper.add({
+        id: "item-0",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-0a",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      await categoryTableHelper.add({
+        id: "cat-222",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-1",
+        categoryId: "cat-222",
+        name: "Item #1",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        sortOrder: 0,
+      });
+      await itemTableHelper.add({
+        id: "item-2",
+        categoryId: "cat-222",
+        name: "Item #2",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        sortOrder: 1,
+      });
+
+      const payload: UpdateCategoryIdRepoPayload = {
+        itemId: "item-0",
+        targetCategoryId: "cat-222",
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
+      };
+
+      // Action
+      const [result, error] = await updateCategoryId(payload);
+
+      const item = await itemTableHelper.findById("item-0");
+      const targetCategoryItems = await itemTableHelper.findByCategoryId(
+        "cat-222"
+      );
+      const sourceCategoryItems = await itemTableHelper.findByCategoryId(
+        "cat-000"
+      );
+      // Assert
+      expect(result).toBe("ok");
+      expect(error).toBeNull();
+      expect(item.length).toBe(1);
+      expect(item[0].sortOrder).toBe(2);
+      expect(targetCategoryItems.length).toBe(3);
+      expect(sourceCategoryItems.length).toBe(1);
     });
   });
 
