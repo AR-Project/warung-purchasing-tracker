@@ -13,6 +13,7 @@ export const itemTableHelper = {
       creatorId,
       ownerId,
       name = "Test",
+      sortOrder,
     } = payload;
 
     return db
@@ -23,6 +24,7 @@ export const itemTableHelper = {
         creatorId,
         ownerId,
         name,
+        sortOrder,
       })
       .returning();
   },
