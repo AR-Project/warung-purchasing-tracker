@@ -45,6 +45,7 @@ export const itemTableHelper = {
   findByCategoryId: async (categoryId: string) => {
     return db.query.item.findMany({
       where: (item, { eq }) => eq(item.categoryId, categoryId),
+      orderBy: (item, { asc }) => asc(item.sortOrder),
     });
   },
   clean: async () => {
