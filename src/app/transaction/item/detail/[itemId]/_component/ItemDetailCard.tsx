@@ -6,6 +6,7 @@ type Props = {
   itemData: ItemRowData & {
     owner: { username: string };
     creator: { username: string };
+    category: { name: string };
   };
 };
 
@@ -13,8 +14,8 @@ export default function ItemDetailCard({ itemData }: Props) {
   return (
     <article className="flex flex-row gap-2 justify-between">
       <div className="flex flex-col">
-        <h3 className="text-xs italic text-gray-500">
-          @{itemData.creator.username}
+        <h3 className="text-sm italic text-gray-300">
+          {itemData.category.name}
         </h3>
         <h1 className="font-bold text-lg">{itemData.name}</h1>
         <span className="text-sm italic text-gray-500">
@@ -33,6 +34,7 @@ export default function ItemDetailCard({ itemData }: Props) {
         </div>
         <EditItemHiddenForm
           selectedItem={{ id: itemData.id, name: itemData.name }}
+          label="Ubah Nama"
         />
       </div>
       <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
