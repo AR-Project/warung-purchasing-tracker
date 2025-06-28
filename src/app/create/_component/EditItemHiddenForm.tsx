@@ -3,22 +3,24 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { FiEdit } from "react-icons/fi";
 import { ImCancelCircle, ImCheckmark } from "react-icons/im";
-
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
-import { editItem } from "../_action/editItem.action";
+
 import { useServerAction } from "@/presentation/hooks/useServerAction";
+import { updateItemName } from "@/app/transaction/item/detail/[itemId]/_action/updateItemName.action";
 
 type Props = {
   selectedItem: Item;
   updateItem?: (item: Item) => void;
+  label?: string;
 };
 
 export default function EditItemHiddenForm({
   updateItem,
   selectedItem,
+  label,
 }: Props) {
   const [editItemAction] = useServerAction(
-    editItem,
+    updateItemName,
     (msg, data) => {
       if (!data) return;
       updateItem && updateItem(data);
@@ -49,7 +51,7 @@ export default function EditItemHiddenForm({
         tabIndex={-1}
         title="Edit Item"
       >
-        <FiEdit />
+        {label ? label : <FiEdit />}
       </Button>
       <Dialog
         open={isOpen}
@@ -61,7 +63,7 @@ export default function EditItemHiddenForm({
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel
               transition
-              className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+              className="w-full max-w-md rounded-xl bg-white/5 p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0 outline-2 outline-blue-400 flex flex-col gap-2"
             >
               <DialogTitle
                 as="h3"
@@ -69,9 +71,9 @@ export default function EditItemHiddenForm({
               >
                 Masukkan nama baru:
               </DialogTitle>
-              <form action={editItemAction} className="flex flex-col gap-2">
+              <form action={editItemAction} className="flex flex-col gap-4">
                 <input
-                  className="bg-gray-800 w-full p-2"
+                  className="bg-gray-800 w-full p-2 mb-3"
                   type="hidden"
                   name="id"
                   id="item-name"
