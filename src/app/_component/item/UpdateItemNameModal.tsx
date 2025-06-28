@@ -14,7 +14,7 @@ type Props = {
   label?: string;
 };
 
-export default function EditItemHiddenForm({
+export default function UpdateItemNameModal({
   updateItem,
   selectedItem,
   label,

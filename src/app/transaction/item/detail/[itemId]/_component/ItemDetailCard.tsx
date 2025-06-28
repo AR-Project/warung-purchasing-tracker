@@ -1,4 +1,4 @@
-import EditItemHiddenForm from "@/app/create/_component/EditItemHiddenForm";
+import UpdateItemNameModal from "@/app/_component/item/UpdateItemNameModal";
 import { ItemRowData } from "@/lib/schema/item";
 import { DateTime } from "luxon";
 
@@ -32,7 +32,7 @@ export default function ItemDetailCard({ itemData }: Props) {
               minute: "2-digit",
             })}
         </div>
-        <EditItemHiddenForm
+        <UpdateItemNameModal
           selectedItem={{ id: itemData.id, name: itemData.name }}
           label="Ubah Nama"
         />
