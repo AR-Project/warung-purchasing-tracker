@@ -6,7 +6,7 @@ import { ImCancelCircle, ImCheckmark } from "react-icons/im";
 import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { updateItemName } from "@/app/transaction/item/detail/[itemId]/_action/updateItemName.action";
+import { updateItemName } from "@/app/_globalAction/item/updateItemName.action";
 
 type Props = {
   selectedItem: Item;
