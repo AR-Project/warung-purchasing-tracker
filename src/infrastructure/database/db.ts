@@ -31,4 +31,6 @@ const db = drizzle(pool, {
   },
 });
 
+export type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
 export default db;
