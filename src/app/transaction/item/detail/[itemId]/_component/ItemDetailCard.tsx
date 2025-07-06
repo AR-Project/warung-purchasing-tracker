@@ -1,3 +1,4 @@
+import UpdateItemCategoryModal from "@/app/_component/item/UpdateItemCategoryModal";
 import UpdateItemNameModal from "@/app/_component/item/UpdateItemNameModal";
 import { ItemRowData } from "@/lib/schema/item";
 import { DateTime } from "luxon";
@@ -35,6 +36,9 @@ export default function ItemDetailCard({ itemData }: Props) {
         <UpdateItemNameModal
           selectedItem={{ id: itemData.id, name: itemData.name }}
           label="Ubah Nama"
+        />
+        <UpdateItemCategoryModal
+          item={{ id: itemData.id, name: itemData.name }}
         />
       </div>
       <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
