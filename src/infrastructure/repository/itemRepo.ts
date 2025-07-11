@@ -71,7 +71,7 @@ export async function create(
         );
       }
 
-      const [itemCreated] = await db.insert(item).values(dbPayload).returning({
+      const [itemCreated] = await tx.insert(item).values(dbPayload).returning({
         id: item.id,
         name: item.name,
         categoryId: item.categoryId,
