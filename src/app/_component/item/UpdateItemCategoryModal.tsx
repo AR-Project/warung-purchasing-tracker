@@ -7,7 +7,7 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "react-toastify";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -18,6 +18,7 @@ import { createCategoryAndMoveItem } from "@/app/_globalAction/categoryItem/crea
 
 type Props = {
   item: { id: string; name: string };
+  currentCategoryId: string;
 };
 
 /**
@@ -27,16 +28,26 @@ type Props = {
 export default function UpdateItemCategoryModal(props: Props) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [categorylist, setCategoryList] = useState<
+    { id: string; name: string }[]
+  >([]);
 
   function openModal() {
-    setIsOpen(true);
+    startTransition(async () => {
+      const categoryListResult = await getCategory();
+      categoryListResult !== null
+        ? setCategoryList(categoryListResult)
+        : setCategoryList([]);
+      setIsOpen(true);
+    });
   }
 
   function closeModal() {
     setIsOpen(false);
   }
 
-  const [wrappedAction, isPending] = useServerAction(
+  const [wrappedAction] = useServerAction(
     updateItemCategory,
     (msg) => {
       toast.success(msg);
@@ -54,7 +65,7 @@ export default function UpdateItemCategoryModal(props: Props) {
         onClick={openModal}
         className="h-8 border border-white/50 px-2 bg-green-950 rounded-sm text-white focus:outline-none data-[hover]:bg-green-800 data-[focus]:outline-1 data-[focus]:outline-white flex flex-row gap-2 justify-center items-center"
       >
-        Change Category
+        {isPending ? "Loading..." : "Ubah Kategori"}
       </Button>
 
       <Dialog
@@ -66,7 +77,12 @@ export default function UpdateItemCategoryModal(props: Props) {
         <DialogBackdrop className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <Panel closeDialog={closeModal} action={wrappedAction} {...props} />
+            <Panel
+              closeDialog={closeModal}
+              action={wrappedAction}
+              categoryList={categorylist}
+              {...props}
+            />
           </div>
         </div>
       </Dialog>
@@ -81,30 +97,18 @@ export default function UpdateItemCategoryModal(props: Props) {
 type PanelProps = Props & {
   closeDialog: () => void;
   action: (formData: FormData) => void;
-  item: { id: string; name: string };
+  categoryList: { id: string; name: string }[];
 };
 
-function Panel({ closeDialog, action, item }: PanelProps) {
+function Panel({
+  closeDialog,
+  action,
+  item,
+  categoryList,
+  currentCategoryId,
+}: PanelProps) {
   const router = useRouter();
-
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [isPending, startTransition] = useTransition();
   const currentPath = usePathname();
-  const [categorylist, setCategoryList] = useState<
-    { id: string; name: string }[]
-  >([]);
-
-  useEffect(() => {
-    startTransition(async () => {
-      const categoryListResult = await getCategory();
-      if (categoryListResult !== null) {
-        setCategoryList(categoryListResult);
-      } else {
-        setCategoryList([]);
-      }
-    });
-    inputRef.current?.focus();
-  }, []);
 
   const [secondAction] = useServerAction(
     createCategoryAndMoveItem,
@@ -133,13 +137,9 @@ function Panel({ closeDialog, action, item }: PanelProps) {
         <select
           name="target-category-id"
           className="bg-gray-600 p-3 outline-1 outline-white rounded-sm w-full"
+          defaultValue={currentCategoryId}
         >
-          {isPending && (
-            <option className="font-sans italic animate-pulse">
-              Loading...
-            </option>
-          )}
-          {categorylist.map((ctg) => (
+          {categoryList.map((ctg) => (
             <option value={ctg.id} key={ctg.id} className="font-sans">
               {ctg.name}
             </option>
