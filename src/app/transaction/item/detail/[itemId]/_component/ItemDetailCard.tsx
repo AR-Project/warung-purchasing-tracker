@@ -39,6 +39,7 @@ export default function ItemDetailCard({ itemData }: Props) {
         />
         <UpdateItemCategoryModal
           item={{ id: itemData.id, name: itemData.name }}
+          currentCategoryId={itemData.categoryId}
         />
       </div>
       <div className="h-28 aspect-square flex flex-row justify-center items-center bg-blue-700/20">
