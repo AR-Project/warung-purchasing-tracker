@@ -8,5 +8,13 @@ export default async function categoriesLoader(requesterId: string) {
   return await db.query.category.findMany({
     where: eq(category.ownerId, requesterId),
     orderBy: asc(category.sortOrder),
+    with: {
+      items: {
+        columns: {
+          id: true,
+          name: true,
+        },
+      },
+    },
   });
 }
