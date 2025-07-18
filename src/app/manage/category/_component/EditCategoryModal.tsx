@@ -16,7 +16,6 @@ import { useServerAction } from "@/presentation/hooks/useServerAction";
 import updateCategoryAction from "../_action/updateCategory.action";
 
 type Props = {
-  user: UserSession;
   category: {
     id: string;
     name: string;
@@ -64,10 +63,10 @@ type PanelProps = Props & {
   closeDialog: () => void;
 };
 
-function Panel({ closeDialog, user, category }: PanelProps) {
+function Panel({ closeDialog, category }: PanelProps) {
   const router = useRouter();
 
-  const [wrappedAction, isPending] = useServerAction(
+  const [wrappedAction] = useServerAction(
     updateCategoryAction,
     (msg) => {
       toast.success(msg);
