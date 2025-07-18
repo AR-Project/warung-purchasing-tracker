@@ -5,7 +5,7 @@ import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { createItemAction } from "@/app/_globalAction/item/newItem.action";
+import { createItemAction } from "@/app/_globalAction/item/createItem.action";
 
 type Props = {
   name: string | undefined;
