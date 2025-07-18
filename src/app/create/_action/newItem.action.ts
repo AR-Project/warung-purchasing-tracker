@@ -9,7 +9,7 @@ import itemRepo, {
 import { generateId } from "@/lib/utils/generator";
 import { verifyUserAccess } from "@/lib/utils/auth";
 
-export async function newItemAction(
+export async function createItemAction(
   formData: FormData
 ): Promise<FormState<Item>> {
   const allowedRole: AvailableUserRole[] = ["staff", "admin", "manager"];

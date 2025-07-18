@@ -15,7 +15,7 @@ import useList from "@/presentation/hooks/useList";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
 import { ResetItemInputButton } from "../_presentation/ResetItemInputButton";
-import { newItemAction } from "../_action/newItem.action";
+import { createItemAction } from "../_action/newItem.action";
 
 type Props = {
   initialItems: { id: string; name: string }[];
@@ -92,7 +92,7 @@ export default function ComboItemForm({
   }
 
   const [newItemFormAction] = useServerAction(
-    newItemAction,
+    createItemAction,
     (msg, data) => {
       if (!data) return;
       refreshList();
