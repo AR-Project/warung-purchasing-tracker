@@ -11,7 +11,7 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 
 const optionalSchema = z.object({
   pathToRevalidate: z.string(),
-  categoryId: z.string().optional(),
+  categoryId: z.string(),
 });
 
 /**
@@ -40,20 +40,18 @@ export async function createItemAction(
     creatorId: user.userId,
   };
 
-  const { data: optionalData } = optionalSchema.safeParse({
-    categoryId: categoryIdRaw,
-    pathToRevalidateRaw: pathToRevalidateRaw,
-  });
+  const { data: categoryId } = z.string().safeParse(categoryIdRaw);
+  const { data: pathToRevalidate } = z.string().safeParse(pathToRevalidateRaw);
 
-  if (optionalData) {
-    repoPayload.categoryId = optionalData.categoryId;
+  if (categoryId) {
+    repoPayload.categoryId = categoryId;
   }
 
   const [addedItem, repoError] = await itemRepo.create(repoPayload);
-  if (repoError || !addedItem) return { error: repoError };
+  if (repoError !== null) return { error: repoError };
 
   revalidateTag("items");
-  revalidatePath(optionalData ? optionalData.pathToRevalidate : "/create");
+  revalidatePath(pathToRevalidate ? pathToRevalidate : "/create");
 
   return { message: "success", data: addedItem };
 }
