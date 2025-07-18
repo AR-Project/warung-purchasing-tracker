@@ -9,6 +9,16 @@ import itemRepo, {
 import { generateId } from "@/lib/utils/generator";
 import { verifyUserAccess } from "@/lib/utils/auth";
 
+const optionalSchema = z.object({
+  pathToRevalidate: z.string(),
+  categoryId: z.string().optional(),
+});
+
+/**
+ *
+ * @param formData Required field `"name"`. Optional field `"category-id"` and `"path-to-revalidate"`.
+ * @returns
+ */
 export async function createItemAction(
   formData: FormData
 ): Promise<FormState<Item>> {
@@ -17,6 +27,9 @@ export async function createItemAction(
   if (authError) return { error: authError };
 
   const nameRaw = formData.get("name");
+  const categoryIdRaw = formData.get("category-id");
+  const pathToRevalidateRaw = formData.get("path-to-revalidate");
+
   const { data: name, error: payloadError } = z.string().safeParse(nameRaw);
   if (payloadError) return { error: "invalid payload" };
 
@@ -27,11 +40,20 @@ export async function createItemAction(
     creatorId: user.userId,
   };
 
+  const { data: optionalData } = optionalSchema.safeParse({
+    categoryId: categoryIdRaw,
+    pathToRevalidateRaw: pathToRevalidateRaw,
+  });
+
+  if (optionalData) {
+    repoPayload.categoryId = optionalData.categoryId;
+  }
+
   const [addedItem, repoError] = await itemRepo.create(repoPayload);
   if (repoError || !addedItem) return { error: repoError };
 
   revalidateTag("items");
-  revalidatePath("/create");
+  revalidatePath(optionalData ? optionalData.pathToRevalidate : "/create");
 
   return { message: "success", data: addedItem };
 }
