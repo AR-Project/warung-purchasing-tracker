@@ -3,8 +3,9 @@ import { type SetStateAction } from "react";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-import { createItemAction } from "../_action/newItem.action";
+
 import { useServerAction } from "@/presentation/hooks/useServerAction";
+import { createItemAction } from "@/app/_globalAction/item/newItem.action";
 
 type Props = {
   name: string | undefined;

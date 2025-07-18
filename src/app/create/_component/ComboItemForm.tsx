@@ -11,11 +11,11 @@ import { NumericFormat } from "react-number-format";
 import { MdAdd } from "react-icons/md";
 import { SlBasket } from "react-icons/sl";
 
+import { createItemAction } from "@/app/_globalAction/item/newItem.action";
 import useList from "@/presentation/hooks/useList";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { anyNumberToHundred, anyNumberToNumber } from "@/lib/utils/validator";
 import { ResetItemInputButton } from "../_presentation/ResetItemInputButton";
-import { createItemAction } from "../_action/newItem.action";
 
 type Props = {
   initialItems: { id: string; name: string }[];
