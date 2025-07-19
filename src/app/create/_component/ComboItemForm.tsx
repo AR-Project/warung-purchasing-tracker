@@ -129,6 +129,8 @@ export default function ComboItemForm({
         value={selectedItem}
         onChange={(value) => {
           if (!value) return;
+
+          // Creating new Item is handled here, when option is selected
           if (value.id === "pending") {
             newItemHandler(value.name);
           } else {
@@ -137,7 +139,7 @@ export default function ComboItemForm({
         }}
         onClose={() => setQuery("")}
       >
-        <div className="flex flex-row items-center basis-5/6">
+        <div className="flex flex-row">
           <ComboboxInput
             aria-label="Assignee"
             ref={itemFieldRef}
@@ -155,30 +157,31 @@ export default function ComboItemForm({
           {selectedItem && (
             <ResetItemInputButton resetComboForm={resetComboForm} />
           )}
-          <ComboboxOptions
-            anchor="bottom start"
-            className="border bg-gray-800 empty:invisible z-50 flex flex-col w-[400px]"
-          >
-            {filteredList.map((item) => (
-              <ComboboxOption
-                key={item.id}
-                value={item}
-                className="data-[focus]:bg-gray-500 p-3 w-full"
-              >
-                {item.name}
-              </ComboboxOption>
-            ))}
-            {query && query.length > 3 && (
-              <ComboboxOption
-                value={{ id: "pending", name: query }}
-                className="data-[focus]:bg-green-500/60 p-3 italic bg-green-900 flex flex-row gap-2"
-              >
-                <MdAdd className="text-xl" /> {query}
-              </ComboboxOption>
-            )}
-          </ComboboxOptions>
         </div>
+        <ComboboxOptions
+          anchor="bottom start"
+          className="border bg-gray-800 empty:invisible z-50 flex flex-col w-[400px]"
+        >
+          {filteredList.map((item) => (
+            <ComboboxOption
+              key={item.id}
+              value={item}
+              className="data-[focus]:bg-gray-500 p-3 w-full"
+            >
+              {item.name}
+            </ComboboxOption>
+          ))}
+          {query && query.length > 3 && (
+            <ComboboxOption
+              value={{ id: "pending", name: query }}
+              className="data-[focus]:bg-green-500/60 p-3 italic bg-green-900 flex flex-row gap-2"
+            >
+              <MdAdd className="text-xl" /> {query}
+            </ComboboxOption>
+          )}
+        </ComboboxOptions>
       </Combobox>
+
       <div className="flex flex-row gap-2 items-center justify-stretch">
         <NumericFormat
           className="bg-gray-800 border border-gray-500 p-1 rounded-sm h-16 w-full basis-3/12 "
