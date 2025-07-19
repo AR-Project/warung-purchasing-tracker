@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useTransition } from "react";
 
 type ServerAction<T> = (formData: FormData) => Promise<FormState<T>>;
 
@@ -18,25 +18,19 @@ export function useServerAction<T = any>(
   onSuccess: OnSuccessCb<T>,
   onError: OnErrorCb
 ) {
-  const [isPending, setIsPending] = useState<boolean>(false);
+  const [isPending, setTransition] = useTransition();
 
   function actionHandler(formData: FormData) {
-    setIsPending(true);
-    serverAction(formData)
-      .then((state) => {
-        if (state.message) {
-          onSuccess(state.message, state.data);
-        }
+    setTransition(async () => {
+      const result = await serverAction(formData);
+      if (result.message) {
+        onSuccess(result.message, result.data);
+      }
 
-        if (state.error) {
-          onError(state.error);
-        }
-        setIsPending(false);
-      })
-      .catch((error) => {
-        setIsPending(false);
-        console.log(error);
-      });
+      if (result.error) {
+        onError(result.error);
+      }
+    });
   }
 
   return [actionHandler, isPending] as const;
