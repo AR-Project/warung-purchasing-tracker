@@ -24,7 +24,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className={`${inter.className} bg-black text-white`}>
+      <body className={`${inter.className} flex flex-col bg-black text-white`}>
         <Navigation userData={userSessionWithRole} />
         {children}
         <ToastContainer
