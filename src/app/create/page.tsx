@@ -5,6 +5,11 @@ import PurchaseCreator from "./_component/PurchaseCreator";
 import getUserVendors from "../_loader/getUserVendors.loader";
 import getUserItems from "../_loader/getUserItems.loader";
 import NotAllowedWarning from "../_component/auth/NotAllowedWarning";
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "WPT - Create Purchase",
+};
 
 export default async function Create() {
   const [userInfo, verifyError] = await verifyUserAccess([
@@ -24,11 +29,9 @@ export default async function Create() {
   const itemsInitialData = await getUserItems(userInfo.parentId);
 
   return (
-    <>
-      <PurchaseCreator
-        initialVendors={vendorsInitialData}
-        initialItems={itemsInitialData}
-      />
-    </>
+    <PurchaseCreator
+      initialVendors={vendorsInitialData}
+      initialItems={itemsInitialData}
+    />
   );
 }
