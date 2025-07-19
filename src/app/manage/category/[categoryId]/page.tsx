@@ -1,9 +1,11 @@
-import { BackButton } from "@/app/_component/BackButton";
-import { manageCategoryDetailLoader } from "./loader";
 import { notFound } from "next/navigation";
-import EditCategoryModal from "../_component/EditCategoryModal";
-import { MenuItem } from "@headlessui/react";
+import Link from "next/link";
+
+import { BackButton } from "@/app/_component/BackButton";
+import CreateItemModal from "@/app/_component/item/CreateItemModal";
 import { ItemRowData } from "@/lib/schema/item";
+import { manageCategoryDetailLoader } from "./loader";
+import EditCategoryModal from "../_component/EditCategoryModal";
 
 type Params = { categoryId: string };
 
@@ -31,12 +33,18 @@ export default async function Page({ params }: Props) {
       </div>
 
       {/* ITEM LIST */}
-      <div className="border border-white/20 items-center-safe p-2 rounded-md">
-        <div className="text-xs/tight opacity-30 italic">Daftar Item</div>
-        <div className="grid grid-cols-3 gap-3">
+      <div className="border border-white/20 p-2 rounded-md flex flex-col gap-2">
+        <div className=" flex flex-row justify-between">
+          <div className="opacity-30 italic ">Daftar Item</div>
+          <div className=" opacity-50 px-3 hover:underline border border-white/70 cursor-not-allowed">
+            Ubah Urutan
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-3 row-auto">
           {data.items.map((item) => (
             <ItemUnderCategory key={item.id} item={item} />
           ))}
+          <CreateItemModal categoryId={categoryId} label="Buat item Baru" />
         </div>
       </div>
     </div>
@@ -48,5 +56,13 @@ type ItemUnderCategoryProps = {
 };
 
 function ItemUnderCategory({ item }: ItemUnderCategoryProps) {
-  return <div className="border-blue-500/50 border p-2 ">{item.name}</div>;
+  return (
+    <Link
+      href={`/transaction/item/detail/${item.id}`}
+      className="border-blue-500/50 border p-2 text-sm hover:bg-white/10"
+      target="_blank"
+    >
+      {item.name}
+    </Link>
+  );
 }
