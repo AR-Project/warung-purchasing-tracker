@@ -80,24 +80,14 @@ export default function PurchaseCreator({
   }
 
   return (
-    <div className="flex flex-col p-0.5 pt-2 gap-3 w-full max-w-[700px] mx-auto">
-      <div className="flex flex-row gap-1 items-center">
-        <Suspense fallback={<span>loading...</span>}>
-          <ComboVendorForm
-            initialVendors={initialVendors}
-            selectedVendor={selectedVendor}
-            selectVendor={selectVendor}
-          />
-        </Suspense>
-        <div>@</div>
-        <DatePicker txDate={txDate} setTxDate={setTxDate} />
-      </div>
-
+    <div className="flex flex-col p-0.5 pt-2 gap-3 w-full max-w-[700px] mx-auto bg-black">
+      {/* Cart Section */}
       {itemsCart.length === 0 && (
-        <span className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
+        <div className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
           Transaksi kosong...
-        </span>
+        </div>
       )}
+
       {itemsCart.length > 0 && (
         <div
           className="relative"
@@ -121,24 +111,42 @@ export default function PurchaseCreator({
           </div>
         </div>
       )}
-      <h4 className="text-xl font-black text-center border border-gray-700 p-2">
-        {formatNumberToIDR(cartTotalPrice)}
-      </h4>
-      <Suspense fallback={<span>loading...</span>}>
-        <div className="sticky bottom-0 bg-black/90 py-3">
+
+      {/* Item input section */}
+      <div className="sticky bottom-0 flex flex-col gap-2 mb-3 ">
+        <div className="w-full flex flex-row justify-end">
+          <h4 className="text-xl font-black font-mono border border-gray-700 p-2 w-fit bg-blue-800">
+            {formatNumberToIDR(cartTotalPrice)}
+          </h4>
+        </div>
+        <Suspense fallback={<span>loading...</span>}>
           <ComboItemForm
             initialItems={initialItems}
             appendItemOnCart={appendItemOnCartWrapper}
           />
-        </div>
-      </Suspense>
+        </Suspense>
+      </div>
 
+      {/* Image input Section */}
       <Suspense fallback={<span>loading...</span>}>
         <ImageSelector
           resizedFile={resizedImage}
           setResizedFile={setResizedImage}
         />
       </Suspense>
+
+      {/* Vendor and Date Section */}
+      <div className="flex flex-row gap-1 items-center">
+        <Suspense fallback={<span>loading...</span>}>
+          <ComboVendorForm
+            initialVendors={initialVendors}
+            selectedVendor={selectedVendor}
+            selectVendor={selectVendor}
+          />
+        </Suspense>
+        <div>@</div>
+        <DatePicker txDate={txDate} setTxDate={setTxDate} />
+      </div>
 
       <MakePurchaseHiddenForm
         purchasedAt={txDate}
@@ -148,8 +156,12 @@ export default function PurchaseCreator({
         image={resizedImage}
         clearFrom={resetAll}
       />
-      <button tabIndex={-1} onClick={() => resetAll()}>
-        Reset
+      <button
+        tabIndex={-1}
+        onClick={() => resetAll()}
+        className="underline cursor-pointer"
+      >
+        Reset All
       </button>
     </div>
   );
