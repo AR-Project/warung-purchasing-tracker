@@ -45,8 +45,8 @@ export default async function Page({ params }: Props) {
         purchaseItems={purchaseItems}
         totalPrice={totalPrice}
       />
-      {isUserCanEdit && (
-        <div className="flex flex-row gap-2">
+      {user && (
+        <div className="flex flex-row gap-2 max-w-md mx-auto w-full">
           <Link
             className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center "
             href={`./${purchaseId}/edit`}
@@ -56,7 +56,11 @@ export default async function Page({ params }: Props) {
         </div>
       )}
 
-      {details.imageId && <DisplayImage imageId={details.imageId} />}
+      {details.imageId && (
+        <div className="flex flex-row gap-2 max-w-md mx-auto w-full">
+          <DisplayImage imageId={details.imageId} />
+        </div>
+      )}
     </div>
   );
 }
