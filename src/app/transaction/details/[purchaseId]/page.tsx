@@ -7,29 +7,21 @@ import PurchaseItemDisplayer from "@/app/_component/PurchaseItemDisplayer";
 import { BackButton } from "@/app/_component/BackButton";
 
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
-import { auth } from "@/auth";
-import getUserRole from "@/app/_loader/getUserRole.loader";
+import { verifyUserAccess } from "@/lib/utils/auth";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
 };
 
 export default async function Page({ params }: Props) {
-  const session = await auth();
-
-  const allowedRole = ["admin", "manager", "staff"];
-  const role = session ? await getUserRole(session.user.userId) : "loggedOut";
-
-  const isUserCanEdit = allowedRole.includes(role);
-
   const { purchaseId: purchaseIdParam } = await params;
-
   const details = await singlePurchaseLoader(purchaseIdParam);
   if (!details) {
-    notFound();
+    return notFound();
   }
-
   const { items: purchaseItems, totalPrice, id: purchaseId } = details;
+
+  const [user, _] = await verifyUserAccess(["admin", "manager", "staff"]);
 
   return (
     <div className="flex flex-col gap-4">
