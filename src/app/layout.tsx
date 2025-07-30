@@ -33,6 +33,7 @@ export default async function RootLayout({
           closeOnClick
           theme="dark"
           autoClose={7000}
+          pauseOnFocusLoss={false}
         />
       </body>
     </html>
