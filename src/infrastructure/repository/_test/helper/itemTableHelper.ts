@@ -1,58 +1,54 @@
-import { eq } from "drizzle-orm";
-
 import db from "@/infrastructure/database/db";
-import { category, CreateCategoryDbPayload } from "@/lib/schema/item";
-import { defaultHelperUser } from "./userTableHelper";
+import { item, NewItemDbPayload } from "@/lib/schema/item";
 
-export const categoryTableHelper = {
-  async add({
-    id = "cat-123",
-    name = "test-category",
-    ownerId = defaultHelperUser.id,
-    creatorId = defaultHelperUser.id,
-  }: Partial<CreateCategoryDbPayload>) {
+type AddFnParam = Omit<NewItemDbPayload, "name" | "id"> &
+  Partial<Pick<NewItemDbPayload, "name" | "id">>;
+
+export const itemTableHelper = {
+  /** Adding item required categoryId, and userId */
+  add: async (payload: AddFnParam) => {
+    const {
+      id = "000",
+      categoryId,
+      creatorId,
+      ownerId,
+      name = "Test",
+      sortOrder,
+    } = payload;
+
     return db
-      .insert(category)
+      .insert(item)
       .values({
         id,
-        name,
-        ownerId,
+        categoryId,
         creatorId,
+        ownerId,
+        name,
+        sortOrder,
       })
       .returning();
   },
-  async addMultiple(total: number) {
-    const payloads: Array<CreateCategoryDbPayload> = [];
-
-    for (let index = 0; index < total; index++) {
-      payloads.push(generateSinglePayload(padNumber(index), index));
-    }
-    return db.insert(category).values(payloads).returning();
-
-    function generateSinglePayload(
-      id: string,
-      sortOrder: number
-    ): CreateCategoryDbPayload {
-      return {
-        id: `cat-${id}`,
-        name: `test-category-#${id}`,
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-        sortOrder,
-      };
-    }
-
-    function padNumber(number: number, length: number = 3) {
-      return String(number).padStart(length, "0");
-    }
+  findAll: async () => {
+    return db.select().from(item);
   },
-  async findById(idToSearch: string) {
-    return db.select().from(category).where(eq(category.id, idToSearch));
+  findById: async (itemId: string) => {
+    return db.query.item.findMany({
+      where: (item, { eq }) => eq(item.id, itemId),
+    });
   },
-  async findAll() {
-    return db.select().from(category);
+
+  findByUserId: async (userId: string) => {
+    return db.query.item.findMany({
+      where: (item, { eq }) => eq(item.ownerId, userId),
+    });
   },
-  async clean() {
-    return db.delete(category);
+  findByCategoryId: async (categoryId: string) => {
+    return db.query.item.findMany({
+      where: (item, { eq }) => eq(item.categoryId, categoryId),
+      orderBy: (item, { asc }) => asc(item.sortOrder),
+    });
+  },
+  clean: async () => {
+    return db.delete(item);
   },
 };

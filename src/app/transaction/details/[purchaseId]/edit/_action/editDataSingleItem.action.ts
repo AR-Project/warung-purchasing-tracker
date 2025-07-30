@@ -5,10 +5,10 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidateTag } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItem, purchase } from "@/lib/schema/purchase";
 import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 
 export async function editDataSingleItem(
   formData: FormData
@@ -56,12 +56,12 @@ export async function editDataSingleItem(
       // Validate existance of purchase
       const currentPurchases = await tx
         .select({
-          totalPrice: purchases.totalPrice,
-          creatorId: purchases.creatorId,
-          ownerId: purchases.ownerId,
+          totalPrice: purchase.totalPrice,
+          creatorId: purchase.creatorId,
+          ownerId: purchase.ownerId,
         })
-        .from(purchases)
-        .where(eq(purchases.id, purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, purchaseId));
       if (currentPurchases.length == 0) {
         invariantError = "purchase not exist";
         tx.rollback();
@@ -77,13 +77,13 @@ export async function editDataSingleItem(
       // Validate existance of purchaseItem
       const currentPurchasedItem = await tx
         .select({
-          totalPrice: purchasedItems.totalPrice,
-          itemId: purchasedItems.itemId,
-          itemName: items.name,
+          totalPrice: purchasedItem.totalPrice,
+          itemId: purchasedItem.itemId,
+          itemName: item.name,
         })
-        .from(purchasedItems)
-        .where(eq(purchasedItems.id, purchaseItemIdToUpdate))
-        .innerJoin(items, eq(purchasedItems.itemId, items.id));
+        .from(purchasedItem)
+        .where(eq(purchasedItem.id, purchaseItemIdToUpdate))
+        .innerJoin(item, eq(purchasedItem.itemId, item.id));
       if (currentPurchasedItem.length == 0) {
         invariantError = "purchased item not exist";
         tx.rollback();
@@ -102,21 +102,21 @@ export async function editDataSingleItem(
 
       // Append change to database
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({
           totalPrice: newTotalPrice,
           modifiedAt: new Date(),
         })
-        .where(eq(purchases.id, purchaseId));
+        .where(eq(purchase.id, purchaseId));
       await tx
-        .update(purchasedItems)
+        .update(purchasedItem)
         .set({
           totalPrice: updatedPurchasedItemTotalPrice,
           quantityInHundreds: parseInt(updatedQuantityInHundred),
           pricePerUnit: parseInt(updatedPricePerUnit),
           modifiedAt: new Date(),
         })
-        .where(eq(purchasedItems.id, purchaseItemIdToUpdate));
+        .where(eq(purchasedItem.id, purchaseItemIdToUpdate));
 
       // const [item] = await tx
       //   .select({ name: items.name })

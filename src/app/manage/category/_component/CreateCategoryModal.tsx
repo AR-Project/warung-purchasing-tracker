@@ -65,7 +65,12 @@ export default function CreateCategoryModal(props: Props) {
         <DialogBackdrop className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
-            <Panel closeDialog={closeModal} action={wrappedAction} {...props} />
+            <Panel
+              closeDialog={closeModal}
+              action={wrappedAction}
+              {...props}
+              isPending={isPending}
+            />
           </div>
         </div>
       </Dialog>
@@ -79,10 +84,11 @@ export default function CreateCategoryModal(props: Props) {
 
 type PanelProps = Props & {
   closeDialog: () => void;
+  isPending: boolean;
   action: (formData: FormData) => void;
 };
 
-function Panel({ closeDialog, action }: PanelProps) {
+function Panel({ closeDialog, action, isPending }: PanelProps) {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -104,6 +110,7 @@ function Panel({ closeDialog, action }: PanelProps) {
           name="category-name"
           className="mt-2 text-base text-white/70 bg-gray-700 border border-white w-full p-2"
           placeholder="Ketik nama kategori baru..."
+          disabled={isPending}
         />
 
         <div className="mt-4 flex flex-row gap-3">
@@ -111,7 +118,7 @@ function Panel({ closeDialog, action }: PanelProps) {
             type="submit"
             className="inline-flex items-center gap-2 rounded-sm bg-blue-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-blue-500 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
           >
-            Buat Baru
+            {isPending ? "Sedang diprosess..." : "Buat Baru"}
           </Button>
           <Button
             className="inline-flex items-center gap-2 rounded-sm bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"

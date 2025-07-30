@@ -1,7 +1,7 @@
 "use server";
 import { z } from "zod";
 
-import { updateCategorySortOrderRepo } from "@/infrastructure/repository/itemRepo";
+import { updateCategorySortOrderRepo } from "@/infrastructure/repository/categoryRepo";
 import { verifyUserAccess } from "@/lib/utils/auth";
 
 const updateOrderReqSchema = z.string();

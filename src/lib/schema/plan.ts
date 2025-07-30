@@ -8,7 +8,7 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { user } from "./user";
-import { items } from "./item";
+import { item } from "./item";
 import { generateId } from "../utils/generator";
 import { DateTime } from "luxon";
 
@@ -40,11 +40,7 @@ export const plan = pgTable(
       .$onUpdateFn(() => DateTime.now().toJSDate()),
     totalPrice: integer("total_price").notNull(),
   },
-  (table) => {
-    return {
-      planCreatorIdIdx: index("plan_creator_id_idx").on(table.creatorId),
-    };
-  }
+  (table) => [index("plan_creator_id_idx").on(table.creatorId)]
 );
 
 export const planRelation = relations(plan, ({ one, many }) => ({
@@ -75,7 +71,7 @@ export const planItem = pgTable(
       .references(() => plan.id, { onDelete: "cascade" })
       .notNull(),
     itemId: text("item_id")
-      .references(() => items.id)
+      .references(() => item.id)
       .notNull(),
     quantityInHundreds: integer("quantity_in_hundreds").notNull(),
     pricePerUnit: integer("price_per_unit").notNull(),
@@ -89,15 +85,11 @@ export const planItem = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => {
-    return {
-      planItemItemIdIdx: index("plan_item_item_id_idx").on(table.itemId),
-      planItemPlanIdIdx: index("plan_item_plan_id").on(table.planId),
-      planItemCreatorIdIdx: index("plan_item_creator_id_idx").on(
-        table.creatorId
-      ),
-    };
-  }
+  (table) => [
+    index("plan_item_item_id_idx").on(table.itemId),
+    index("plan_item_plan_id").on(table.planId),
+    index("plan_item_creator_id_idx").on(table.creatorId),
+  ]
 );
 
 export const planItemRelations = relations(planItem, ({ one }) => ({
@@ -109,8 +101,8 @@ export const planItemRelations = relations(planItem, ({ one }) => ({
     fields: [planItem.planId],
     references: [plan.id],
   }),
-  item: one(items, {
+  item: one(item, {
     fields: [planItem.itemId],
-    references: [items.id],
+    references: [item.id],
   }),
 }));

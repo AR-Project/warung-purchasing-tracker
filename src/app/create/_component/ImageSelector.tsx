@@ -4,16 +4,17 @@ import React, {
   ChangeEvent,
   Dispatch,
   SetStateAction,
+  useEffect,
   useRef,
   useState,
 } from "react";
+import { FaRegFileImage } from "react-icons/fa";
+import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
+
 import {
   type ImageReaderCallBack,
   userImageFileReader,
 } from "@/lib/utils/reader";
-import { FaRegFileImage } from "react-icons/fa";
-import { MdDelete, MdExpandLess, MdExpandMore } from "react-icons/md";
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 type Props = {
   resizedFile: Blob | null;
@@ -21,8 +22,7 @@ type Props = {
 };
 
 export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
-  const [file, setFile] = useState<File>();
-  const [minimize, setMinimize] = useState<boolean>(true);
+  const [isMinimized, setMinimize] = useState<boolean>(true);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -33,49 +33,50 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
 
     if (!canvasElement || !canvasContext || !image) return;
 
-    // Process Image - Resize to 400
+    // Define canvas size
     const CANVAS_WIDTH = 400;
     const scale_factor = CANVAS_WIDTH / image.naturalWidth;
     canvasElement.width = CANVAS_WIDTH;
     canvasElement.height = image.naturalHeight * scale_factor;
-    const imageNewWidth = CANVAS_WIDTH;
-    const imageNewHeight = image.naturalHeight * scale_factor;
 
-    canvasContext.drawImage(image, 0, 0, imageNewWidth, imageNewHeight);
+    // Impose image to canvas
+    canvasContext.drawImage(
+      image,
+      0,
+      0,
+      canvasElement.width,
+      canvasElement.height
+    );
 
-    // Transfer from canvas to resizedFile State
-    canvasElement.toBlob(canvasToBlobCb, "image/jpeg", 0.7);
+    // Transfer from canvas to blob
+    canvasElement.toBlob(canvasToBlobCb, "image/jpeg", 0.5);
 
+    // Callback function when `toBlob` is used
     function canvasToBlobCb(blob: Blob | null) {
       if (blob === null) return;
       setResizedFile(blob);
     }
   };
 
-  useStateChanged(() => {
-    if (file) userImageFileReader(file, imageReaderCb);
-  }, file);
-
-  useStateChanged(() => {
+  useEffect(() => {
     if (resizedFile === null) resetCanvas();
-  }, resizedFile);
+  }, [resizedFile]);
 
   const inputFileOnChangeHandler = ({
     target: { files },
   }: ChangeEvent<HTMLInputElement>) => {
     if (files && files.length > 0) {
-      setFile(files[0]);
+      const [fileOnForm] = files;
+      userImageFileReader(fileOnForm, imageReaderCb);
     }
   };
 
   function resetCanvas() {
     const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-    if (!canvas || !ctx) return;
+    if (!canvas) return;
 
     canvas.width = 0;
     canvas.height = 0;
-    setFile(undefined);
     setResizedFile(null);
   }
 
@@ -88,8 +89,9 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
         name="image"
         accept="image/*"
         onChange={inputFileOnChangeHandler}
+        multiple={false}
       />
-      {file ? (
+      {resizedFile ? (
         <button
           className="absolute z-10 h-8 aspect-square flex items-center justify-center top-0 right-0 text-xl hover:text-red-500 border border-gray-600/50 bg-gray-500/50  text-white/50 rounded-sm"
           onClick={resetCanvas}
@@ -108,7 +110,7 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
       )}
       <div
         className={`flex flex-col relative ${
-          minimize && "max-h-40 overflow-y-scroll"
+          isMinimized && "max-h-40 overflow-y-scroll"
         }`}
       >
         <canvas
@@ -116,23 +118,26 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
           ref={canvasRef}
           width={0}
           height={0}
+          data-comment="Active image will displayed here"
         />
       </div>
-      {file && (
+      {resizedFile && (
         <div className="flex flex-row">
           <button
             className="text-xs w-full border border-white flex flex-row items-center justify-center gap-5"
             onClick={() => setMinimize((prev) => !prev)}
           >
-            {minimize ? (
+            {isMinimized ? (
               <>
-                <MdExpandMore className="text-base" /> Expand
+                <MdExpandMore className="text-base" />
+                <div>Expand Image</div>
+                <MdExpandMore className="text-base" />
               </>
             ) : (
               <>
-                {" "}
                 <MdExpandLess />
-                Minimize
+                <div>Minimize Image</div>
+                <MdExpandLess />
               </>
             )}
           </button>

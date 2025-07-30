@@ -1,8 +1,9 @@
 "use server";
 
 import db from "@/infrastructure/database/db";
-import { category, items } from "@/lib/schema/item";
-import { purchasedItems } from "@/lib/schema/schema";
+import { item } from "@/lib/schema/item";
+import { category } from "@/lib/schema/category";
+import { purchasedItem } from "@/lib/schema/purchase";
 import { and, asc, between, desc, eq, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 
@@ -30,8 +31,8 @@ export async function listOfItemsLoader(
     ? DateTime.fromISO(dateFilter.to).toJSDate()
     : DEFAULT_DATE_TO;
 
-  const result = await db.query.items.findMany({
-    where: eq(items.ownerId, requesterId),
+  const result = await db.query.item.findMany({
+    where: eq(item.ownerId, requesterId),
     columns: {
       id: true,
       name: true,
@@ -42,11 +43,7 @@ export async function listOfItemsLoader(
           id: true,
           quantityInHundreds: true,
         },
-        where: between(
-          purchasedItems.purchasedAt,
-          dateFilterFrom,
-          dateFilterTo
-        ),
+        where: between(purchasedItem.purchasedAt, dateFilterFrom, dateFilterTo),
       },
       category: {
         columns: {

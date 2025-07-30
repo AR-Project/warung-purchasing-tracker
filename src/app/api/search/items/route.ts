@@ -3,7 +3,7 @@ import db from "@/infrastructure/database/db";
 import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
 import { auth } from "@/auth";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -18,16 +18,15 @@ export async function POST(req: Request) {
   };
 
   const getCachedItemsLoaders = unstable_cache(
-    async () =>
-      await db.select().from(items).where(eq(items.ownerId, parentId)),
+    async () => await db.select().from(item).where(eq(item.ownerId, parentId)),
     [],
     { tags: ["items"] }
   );
   // const allItems = await getCachedItemsLoaders();
   const allItems = await db
     .select()
-    .from(items)
-    .where(eq(items.ownerId, parentId));
+    .from(item)
+    .where(eq(item.ownerId, parentId));
 
   const fuse = new Fuse(allItems, {
     includeScore: true,

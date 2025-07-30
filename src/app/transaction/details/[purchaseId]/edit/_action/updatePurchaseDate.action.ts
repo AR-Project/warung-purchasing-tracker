@@ -4,7 +4,7 @@ import { DrizzleError, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchases } from "@/lib/schema/schema";
+import { purchase } from "@/lib/schema/purchase";
 import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
 
@@ -44,25 +44,25 @@ export async function updatePurchaseDate(prevState: any, formData: FormData) {
       }
 
       // Validate Purchase
-      const purchase = await tx
+      const purchaseResult = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, payload.purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, payload.purchaseId));
 
-      if (purchase.length == 0) {
+      if (purchaseResult.length == 0) {
         invariantError = "Purchase Not Exist";
         tx.rollback();
       }
 
       // Commit database change
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({
           purchasedAt: new Date(payload.newPurchaseDateString),
           modifiedAt: new Date(),
         })
-        .where(eq(purchases.id, payload.purchaseId))
-        .returning({ id: purchases.id });
+        .where(eq(purchase.id, payload.purchaseId))
+        .returning({ id: purchase.id });
     });
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Purchase Date changed` };

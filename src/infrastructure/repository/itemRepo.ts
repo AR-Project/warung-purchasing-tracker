@@ -1,184 +1,243 @@
-import { and, asc, eq, inArray, sql, SQL } from "drizzle-orm";
+import { eq, inArray, sql, SQL } from "drizzle-orm";
 
+import { item, NewItemDbPayload } from "@/lib/schema/item";
+import db from "@/infrastructure/database/db";
 import { arraysHaveEqualElements } from "@/lib/utils/validator";
-import { category, CreateCategoryDbPayload, items } from "@/lib/schema/item";
-import db from "../database/db";
 
-type CategoryId = string;
-type ErrorMessage = string;
-type DefaultResult<T = string> = [T, null] | [null, ErrorMessage];
-
-type CreateCategoryResult = DefaultResult<CategoryId>;
-
-export async function getCategoryByParentId(parentId: string) {
-  return await db.query.category.findMany({
-    where: eq(category.ownerId, parentId),
-    orderBy: [asc(category.sortOrder)],
-  });
-}
-
-export async function createCategory(
-  payload: CreateCategoryDbPayload
-): Promise<CreateCategoryResult> {
-  let invariantError: string | undefined;
-  try {
-    const categoryCreated = await db.transaction(async (tx) => {
-      const categories = await tx.query.category.findMany({
-        where: eq(category.ownerId, payload.ownerId),
-        columns: { id: true, name: true },
-      });
-
-      const mappedCtgrName = categories.map((ctg) => ctg.name);
-      if (mappedCtgrName.includes(payload.name)) {
-        invariantError = "Category name already used";
-        tx.rollback();
-      }
-
-      const [categoryCreated] = await tx
-        .insert(category)
-        .values({ ...payload, sortOrder: categories.length + 1 })
-        .returning({ id: category.id });
-      return categoryCreated;
-    });
-    return [categoryCreated.id, null];
-  } catch (error) {
-    return [null, invariantError ? invariantError : "internal error"];
-  }
-}
-
-/**
- * UPDATE CATEGORY
- */
-
-export type UpdateCategoryDBPayload = {
+export type CreateItemRepoPayload = {
   id: string;
   name: string;
-  requesterParentId: string;
+  ownerId: string;
+  creatorId: string;
+  categoryId?: string;
 };
 
-type UpdateCategoryResult = DefaultResult<CategoryId>;
+type CreateItemRepoResult = SafeResult<{
+  id: string;
+  name: string;
+  categoryId: string;
+}>;
 
-export async function updateCategoryRepo(
-  payload: UpdateCategoryDBPayload
-): Promise<UpdateCategoryResult> {
+/**
+ * Create Item Repository. Not including `categoryId` fallback to owners/parent users default.
+ */
+export async function create(
+  payload: CreateItemRepoPayload
+): Promise<CreateItemRepoResult> {
   let invariantError: string | undefined;
 
   try {
-    const updatedCategoryId = await db.transaction(async (tx) => {
-      const existedCategory = await tx
-        .select()
-        .from(category)
-        .where(eq(category.id, payload.id));
+    const itemCreated = await db.transaction(async (tx) => {
+      const { categoryId, ...rest } = payload;
+      const dbPayload: NewItemDbPayload = {
+        ...rest,
+        categoryId: "",
+        sortOrder: 0,
+      };
 
-      if (existedCategory.length === 0) {
-        invariantError = "Invalid category ID";
-        tx.rollback();
+      if (categoryId) {
+        const category = await tx.query.category.findMany({
+          where: (category, { eq }) => eq(category.id, categoryId),
+        });
+
+        if (category.length === 0) {
+          invariantError = "categoryId invalid";
+          tx.rollback();
+        }
+
+        // modify dbPayload
+        dbPayload.categoryId = categoryId;
+        dbPayload.sortOrder = await tx.$count(
+          item,
+          eq(item.categoryId, categoryId)
+        );
+      } else {
+        const [{ defaultCategory }] = await tx.query.user.findMany({
+          columns: { defaultCategory: true },
+          where: (user, { eq }) => eq(user.id, dbPayload.ownerId),
+        });
+        if (!defaultCategory) {
+          tx.rollback();
+          throw new Error(
+            "should be impossible - just for supress typescript error"
+          );
+        }
+
+        // modify dbPayload
+        dbPayload.categoryId = defaultCategory;
+        dbPayload.sortOrder = await tx.$count(
+          item,
+          eq(item.categoryId, defaultCategory)
+        );
       }
 
-      const [updatedCategory] = await tx
-        .update(category)
-        .set({ name: payload.name, modifiedAt: new Date() })
-        .where(eq(category.id, payload.id))
-        .returning({ id: category.id });
-
-      return updatedCategory.id;
+      const [itemCreated] = await tx.insert(item).values(dbPayload).returning({
+        id: item.id,
+        name: item.name,
+        categoryId: item.categoryId,
+      });
+      return itemCreated;
     });
-    return [updatedCategoryId, null];
+    return [itemCreated, null];
   } catch (error) {
     return [null, invariantError ? invariantError : "internal error"];
   }
 }
 
-/**
- * UPDATE CATEGORY SORT ORDER
- */
-
-export type updateCategorySortOrderDb = {
-  newOrder: Array<string>;
-  requesterUserParentId: string;
+export type UpdateItemRepoPayload = {
+  id: string;
+  newName: string;
+  parentId: string;
+  userId: string;
 };
 
-export async function updateCategorySortOrderRepo(
-  payload: updateCategorySortOrderDb
-): Promise<DefaultResult<"ok">> {
+/**
+ * UNTESTED
+ */
+export async function update(
+  payload: UpdateItemRepoPayload
+): Promise<SafeResult<{ id: string; name: string }>> {
+  let invariantError: string | undefined;
+
+  try {
+    const result = await db.transaction(async (tx) => {
+      const currentItem = await tx.query.item.findMany({
+        where: (item, { eq }) => eq(item.id, payload.id),
+      });
+
+      if (currentItem.length === 0) {
+        invariantError = "itemId invalid";
+        tx.rollback();
+      }
+
+      const { ownerId, creatorId } = currentItem[0];
+      if (![ownerId, creatorId].includes(payload.parentId)) {
+        invariantError = "update unauthorized";
+        tx.rollback();
+      }
+
+      const [updatedItem] = await db
+        .update(item)
+        .set({ name: payload.newName })
+        .where(eq(item.id, payload.id))
+        .returning({ id: item.id, name: item.name });
+
+      return updatedItem;
+    });
+    return [result, null];
+  } catch (_) {
+    return [null, invariantError ? invariantError : "internal error"];
+  }
+}
+
+export type UpdateCategoryIdRepoPayload = {
+  itemId: string;
+  targetCategoryId: string;
+  userId: string;
+  parentId: string;
+};
+
+export async function updateCategoryId(
+  payload: UpdateCategoryIdRepoPayload
+): Promise<SafeResult<"ok">> {
+  let invariantError: string | undefined;
+
+  try {
+    await db.transaction(async (tx) => {
+      const targetCategory = await tx.query.category.findMany({
+        columns: { id: true },
+        with: {
+          items: true,
+        },
+        where: (category, { eq }) => eq(category.id, payload.targetCategoryId),
+      });
+
+      if (targetCategory.length === 0) {
+        invariantError = "categoryId invalid";
+        tx.rollback();
+      }
+
+      await tx
+        .update(item)
+        .set({
+          categoryId: payload.targetCategoryId,
+          sortOrder: targetCategory[0].items.length,
+        })
+        .where(eq(item.id, payload.itemId));
+    });
+
+    return ["ok", null];
+  } catch (error) {
+    return [null, invariantError ? invariantError : "internal error"];
+  }
+}
+
+export type UpdateOrderItemRepoPayload = {
+  categoryId: string;
+  newOrder: string[];
+  userId: string;
+  parentId: string;
+};
+
+export async function updateSortOrder(
+  payload: UpdateOrderItemRepoPayload
+): Promise<SafeResult<"ok">> {
   let invariantError: string | undefined;
   try {
     await db.transaction(async (tx) => {
-      const categories = await tx.query.category.findMany({
+      const data = await tx.query.category.findMany({
         columns: {
           id: true,
         },
-        where: eq(category.ownerId, payload.requesterUserParentId),
+        with: {
+          items: {
+            columns: {
+              id: true,
+              sortOrder: true,
+            },
+            orderBy: (item, { asc }) => asc(item.sortOrder),
+          },
+        },
+        where: (category, { eq }) => eq(category.id, payload.categoryId),
       });
-      if (categories.length === 0) {
-        invariantError = "empty category";
+
+      if (data.length === 0) {
+        invariantError = "categoryId invalid";
         tx.rollback();
       }
-      const mappedCategories = categories.map((ctg) => ctg.id);
 
-      if (
-        arraysHaveEqualElements(mappedCategories, payload.newOrder) === false
-      ) {
+      const mappedItemIds = data[0].items.map((item) => item.id);
+
+      if (arraysHaveEqualElements(mappedItemIds, payload.newOrder) === false) {
         invariantError = "newOrder invalid";
         tx.rollback();
       }
 
-      // https://orm.drizzle.team/docs/guides/update-many-with-different-value
       const sqlChunks: SQL[] = [];
       sqlChunks.push(sql`(case`);
       payload.newOrder.forEach((id, index) => {
-        sqlChunks.push(sql`when ${category.id} = ${id} then ${index}::INTEGER`);
+        sqlChunks.push(sql`when ${item.id} = ${id} then ${index}::INTEGER`);
       });
       sqlChunks.push(sql`end)`);
       const finalSql: SQL = sql.join(sqlChunks, sql.raw(" "));
 
       await tx
-        .update(category)
+        .update(item)
         .set({ sortOrder: finalSql })
-        .where(inArray(category.id, payload.newOrder));
+        .where(inArray(item.id, payload.newOrder));
     });
+
     return ["ok", null];
   } catch (error) {
     return [null, invariantError ? invariantError : "Internal Error"];
   }
 }
 
-/**
- * DELETE CATEGORY
- */
-
-export type DeleteCategoryRepoPayload = {
-  categoryId: string;
-  requesterParentId: string;
+const itemRepo = {
+  create,
+  update,
+  updateCategoryId,
+  updateSortOrder,
 };
 
-export async function deleteCategory(
-  payload: DeleteCategoryRepoPayload
-): Promise<DefaultResult<"ok">> {
-  let invariantError: string | undefined;
-  try {
-    await db.transaction(async (tx) => {
-      const categoryToDelete = await tx.query.category.findMany({
-        where: and(
-          eq(category.id, payload.categoryId),
-          eq(category.ownerId, payload.requesterParentId)
-        ),
-      });
-      if (categoryToDelete.length === 0) {
-        invariantError = "invalid payload";
-        tx.rollback();
-      }
-
-      // Untested line --->
-      // await tx
-      //   .update(items)
-      //   .set({ sortOrder: null, categoryId: null })
-      //   .where(eq(items.categoryId, payload.categoryId));
-      // <---
-      await tx.delete(category).where(eq(category.id, payload.categoryId));
-    });
-    return ["ok", null];
-  } catch (error) {
-    return [null, invariantError ? invariantError : "Internal Error"];
-  }
-}
+export default itemRepo;

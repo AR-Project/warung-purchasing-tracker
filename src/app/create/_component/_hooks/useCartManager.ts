@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { toast } from "react-toastify";
 
 export default function useCartManager(listOfItemId?: string[]) {
   const listOfItemIdOnExternal = listOfItemId ? listOfItemId : [];
@@ -18,7 +17,7 @@ export default function useCartManager(listOfItemId?: string[]) {
       ...listOfItemIdOnExternal,
     ].includes(item.itemId);
 
-    if (isAlreadyAdded) return "Tambahkan item lain";
+    if (isAlreadyAdded) return "Item sudah ada dikeranjang";
     if (item.quantityInHundreds == 0) return "Jumlah barang tidak boleh kosong";
     if (item.totalPrice == 0 || item.pricePerUnit == 0)
       return "Harga tidak boleh kosong";
@@ -38,7 +37,6 @@ export default function useCartManager(listOfItemId?: string[]) {
   }
 
   function deleteItemOnCart(itemIndex: number) {
-    toast.info(`Item ${itemsCart[itemIndex].name} deleted`);
     setItemsCart((prevItems) =>
       [...prevItems].filter((_, index) => index != itemIndex)
     );

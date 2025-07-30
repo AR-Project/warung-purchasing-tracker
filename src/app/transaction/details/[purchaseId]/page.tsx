@@ -7,29 +7,21 @@ import PurchaseItemDisplayer from "@/app/_component/PurchaseItemDisplayer";
 import { BackButton } from "@/app/_component/BackButton";
 
 import { singlePurchaseLoader } from "./_loader/singlePurchase.loader";
-import { auth } from "@/auth";
-import getUserRole from "@/app/_loader/getUserRole.loader";
+import { verifyUserAccess } from "@/lib/utils/auth";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
 };
 
 export default async function Page({ params }: Props) {
-  const session = await auth();
-
-  const allowedRole = ["admin", "manager", "staff"];
-  const role = session ? await getUserRole(session.user.userId) : "loggedOut";
-
-  const isUserCanEdit = allowedRole.includes(role);
-
   const { purchaseId: purchaseIdParam } = await params;
-
   const details = await singlePurchaseLoader(purchaseIdParam);
   if (!details) {
-    notFound();
+    return notFound();
   }
-
   const { items: purchaseItems, totalPrice, id: purchaseId } = details;
+
+  const [user, _] = await verifyUserAccess(["admin", "manager", "staff"]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -53,8 +45,8 @@ export default async function Page({ params }: Props) {
         purchaseItems={purchaseItems}
         totalPrice={totalPrice}
       />
-      {isUserCanEdit && (
-        <div className="flex flex-row gap-2">
+      {user && (
+        <div className="flex flex-row gap-2 max-w-md mx-auto w-full">
           <Link
             className="bg-blue-950 border border-gray-500 group-hover:bg-blue-800  h-8 px-2 text-gray-100 flex flex-row items-center gap-3 justify-center "
             href={`./${purchaseId}/edit`}
@@ -64,7 +56,11 @@ export default async function Page({ params }: Props) {
         </div>
       )}
 
-      {details.imageId && <DisplayImage imageId={details.imageId} />}
+      {details.imageId && (
+        <div className="flex flex-row gap-2 max-w-md mx-auto w-full">
+          <DisplayImage imageId={details.imageId} />
+        </div>
+      )}
     </div>
   );
 }

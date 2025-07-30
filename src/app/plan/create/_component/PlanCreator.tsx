@@ -1,54 +1,54 @@
 "use client";
 
-import { ItemWithPrice } from "@/app/_loader/getUserItemsWithLatestPrice";
-import useList from "@/presentation/hooks/useList";
-import { float } from "drizzle-orm/mysql-core";
+import { clsx } from "clsx";
 import { useMemo, useRef, useState } from "react";
-import { GrPowerReset } from "react-icons/gr";
 import { TbShoppingCartMinus } from "react-icons/tb";
 import { NumericFormat } from "react-number-format";
-import { clsx } from "clsx";
+
+import {
+  CategoryWithItems,
+  ItemWithPrice,
+} from "@/app/_loader/getUserCategoryWithItemLatestPrice";
 import { formatNumberToIDR } from "@/lib/utils/formatter";
-import { MdShoppingCart } from "react-icons/md";
 import PlanCartDialog from "./PlanCartDialog";
 
 type Props = {
-  initialItems: ItemWithPrice[];
+  availableData: CategoryWithItems[];
 };
 
 type Quantity = number;
 type ItemId = string;
-type Price = number;
 
-export default function PlanCreator({ initialItems }: Props) {
+type ItemData = {
+  price: number;
+  name: string;
+};
+
+export default function PlanCreator({ availableData }: Props) {
   const [cart, setCart] = useState<Record<ItemId, Quantity>>({});
 
-  const [itemsLastPrice, itemsName] = useMemo((): [
-    Record<ItemId, Price>,
-    Record<ItemId, string>
-  ] => {
-    const lastPrice: Record<ItemId, Price> = {};
-    const name: Record<ItemId, string> = {};
-    initialItems.forEach((item) => {
-      console.log("initial" + new Date().toISOString());
-
-      lastPrice[item.id] = item.lastPrice;
-      name[item.id] = item.name;
+  const list = useMemo((): Record<ItemId, ItemData> => {
+    const list: Record<ItemId, ItemData> = {};
+    availableData.forEach((ctg) => {
+      ctg.items.forEach((item) => {
+        list[item.id] = {
+          name: item.name,
+          price: item.lastPrice,
+        };
+      });
     });
-    return [lastPrice, name];
-  }, [initialItems]);
+    return list;
+  }, [availableData]);
 
-  // Should run everytime cart state changes
-  const arrayOfItemPrice: number[] = [];
   const displayer: PurchaseItemDisplay[] = [];
+
   for (const [itemId, quantity] of Object.entries(cart)) {
-    arrayOfItemPrice.push(quantity * itemsLastPrice[itemId]);
     displayer.push({
       id: `planner-${itemId}`,
       itemId: itemId,
-      name: itemsName[itemId],
+      name: list[itemId].name,
       quantityInHundreds: quantity * 100,
-      pricePerUnit: itemsLastPrice[itemId],
+      pricePerUnit: list[itemId].price,
     });
   }
 
@@ -64,7 +64,7 @@ export default function PlanCreator({ initialItems }: Props) {
     });
   }
 
-  function removeFromCart(itemId: string) {
+  function reduceFromCart(itemId: string) {
     setCart((prev) => {
       if (prev[itemId] === 1 || prev[itemId] - 1 < 0) {
         const newCart = { ...prev };
@@ -76,8 +76,8 @@ export default function PlanCreator({ initialItems }: Props) {
   }
 
   function manualQuantity(itemId: string, quantity: number) {
-    if (quantity == 0) {
-      removeFromCart(itemId);
+    if (quantity <= 0) {
+      reduceFromCart(itemId);
       return;
     }
     setCart((prev) => ({ ...prev, [itemId]: quantity }));
@@ -89,43 +89,46 @@ export default function PlanCreator({ initialItems }: Props) {
 
   return (
     <div className="relative">
-      {/* <pre className="text-xs">{JSON.stringify(displayer, null, 2)}</pre> */}
-      {/* <button
-        onClick={clearCart}
-        className="bg-red-500 h-10 aspect-square flex justify-center items-center text-2xl"
-      >
-        <GrPowerReset />
-      </button> */}
-      <div className="grid grid-cols-3 gap-1">
-        {initialItems.map((item) => (
-          <AddItemButton
-            key={item.id}
-            item={item}
-            quantity={cart[item.id]}
-            clickHandler={() => addToCart(item.id)}
-            removeHandler={() => removeFromCart(item.id)}
-            manualQuantity={manualQuantity}
-          />
-        ))}
+      <div className="flex flex-col gap-3">
+        {availableData.map((ctg) => {
+          const item = ctg.items.map((item) => (
+            <ItemButton
+              key={item.id}
+              item={item}
+              quantity={cart[item.id]}
+              clickHandler={() => addToCart(item.id)}
+              removeHandler={() => reduceFromCart(item.id)}
+              manualQuantity={manualQuantity}
+            />
+          ));
+
+          return (
+            <div key={ctg.id} className="flex flex-col gap-1">
+              <div className="bg-gray-800 p-1  text-sm/tight">{ctg.name}</div>
+              <div className="grid grid-cols-4 gap-1">
+                {item.length === 0 ? (
+                  <div className="italic text-white/50">Item kosong</div>
+                ) : (
+                  <>{item}</>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
       <pre className="text-[0.6rem]/3 text-gray-50 ">
         {JSON.stringify(cart, null, 2)}
       </pre>
+      {/* Floating button container */}
       <div className="fixed bottom-5 right-5 ">
         <PlanCartDialog
-          totalPrice={arrayOfItemPrice.reduce(
-            (bag, current) => current + bag,
+          totalPrice={displayer.reduce(
+            (bag, current) =>
+              (current.pricePerUnit * current.quantityInHundreds) / 100 + bag,
             0
           )}
           purchaseItems={displayer}
         />
-        {/*         
-        <div>
-          {formatNumberToIDR(
-            arrayOfItemPrice.reduce((bag, current) => current + bag, 0)
-          )}
-        </div>
-        <MdShoppingCart /> */}
       </div>
     </div>
   );
@@ -138,7 +141,7 @@ type AddItemButtonProps = {
   quantity: number;
   manualQuantity: (itemId: string, quantity: number) => void;
 };
-function AddItemButton({
+function ItemButton({
   item,
   clickHandler,
   removeHandler,
@@ -147,7 +150,7 @@ function AddItemButton({
 }: AddItemButtonProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="flex flex-col aspect-square">
+    <div className="flex flex-col aspect-square rounded-sm">
       {quantity && (
         <NumericFormat
           className="bg-gray-800 border border-gray-500 p-1 rounded-sm w-full text-center font-black text-lg "
@@ -157,6 +160,7 @@ function AddItemButton({
           decimalSeparator=","
           decimalScale={2}
           placeholder="Jumlah"
+          min={0}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
               inputRef.current?.blur();

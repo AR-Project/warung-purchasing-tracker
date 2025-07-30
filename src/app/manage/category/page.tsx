@@ -5,6 +5,7 @@ import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import EditCategoryModal from "./_component/EditCategoryModal";
 import CreateCategoryModal from "./_component/CreateCategoryModal";
 import categoriesLoader from "./_loader/category.loader";
+import Link from "next/link";
 
 export default async function EditCategory() {
   const session = await auth();
@@ -21,11 +22,18 @@ export default async function EditCategory() {
               key={cat.id}
               className="flex flex-row gap-2 bg-gray-700 rounded-md justify-between items-center pl-2"
             >
-              <div>{cat.name}</div>
-              <EditCategoryModal
-                user={session.user}
-                category={{ id: cat.id, name: cat.name }}
-              />
+              <Link
+                href={`/manage/category/${cat.id}`}
+                className="flex flex-col hover:bg-white/35 w-full"
+              >
+                <div>{cat.name}</div>
+                <div className="text-sm/tight italic opacity-50">
+                  {cat.items.length === 0
+                    ? "No Item"
+                    : `${cat.items.length} Items`}
+                </div>
+              </Link>
+              <EditCategoryModal category={{ id: cat.id, name: cat.name }} />
             </div>
           ))}
         </div>

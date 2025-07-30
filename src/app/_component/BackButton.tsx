@@ -9,14 +9,16 @@ export function BackButton() {
 
   return (
     <button
-      className="bg-blue-900 h-10 aspect-square flex flex-row justify-center items-center rounded-sm  border border-gray-700 text-xl"
-      onClick={() => {
-        const splitPath = path.split("/");
-        splitPath.pop();
-        router.replace(splitPath.join("/"));
-      }}
+      className="bg-blue-900 h-10 aspect-square flex flex-row justify-center items-center rounded-sm  border border-gray-700 text-xl cursor-pointer"
+      onClick={onClickHandler}
     >
       <MdArrowBackIosNew />
     </button>
   );
+
+  function onClickHandler() {
+    const splitPath = path.split("/");
+    splitPath.pop();
+    router.replace(splitPath.join("/"));
+  }
 }

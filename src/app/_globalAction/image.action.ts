@@ -9,7 +9,7 @@ import { z } from "zod";
 import { auth } from "@/auth";
 import db from "@/infrastructure/database/db";
 import { writeImageFile } from "@/infrastructure/storage/localStorage";
-import { images, NewImageDbPayload } from "@/lib/schema/schema";
+import { image, NewImageDbPayload } from "@/lib/schema/image";
 
 export async function uploadImage(
   prevState: any,
@@ -39,9 +39,9 @@ export async function uploadImage(
 
   try {
     const [savedImage] = await db
-      .insert(images)
+      .insert(image)
       .values(newImageDbPayload)
-      .returning({ id: images.id });
+      .returning({ id: image.id });
     revalidatePath("/library");
     return { message: "Image uploaded successfully", data: savedImage.id };
   } catch (error) {
@@ -62,20 +62,20 @@ export async function removeImage(
   if (typeof payload !== "string") return { error: "No payload" };
 
   try {
-    const [image] = await db
+    const [resultImage] = await db
       .select()
-      .from(images)
-      .where(eq(images.id, payload));
-    if (!image) throw new Error("Image Not Found");
+      .from(image)
+      .where(eq(image.id, payload));
+    if (!resultImage) throw new Error("Image Not Found");
 
-    if (![image.creatorId, image.ownerId].includes(user.userId))
+    if (![resultImage.creatorId, resultImage.ownerId].includes(user.userId))
       throw new Error("Unauthorized");
 
-    const imageFilePath = path.join(process.cwd(), image.path);
+    const imageFilePath = path.join(process.cwd(), resultImage.path);
 
     await fs.stat(imageFilePath);
     await fs.unlink(imageFilePath);
-    await db.delete(images).where(eq(images.id, payload));
+    await db.delete(image).where(eq(image.id, payload));
     revalidatePath("/library");
     return { message: "Image deleted successfully" };
   } catch (error) {

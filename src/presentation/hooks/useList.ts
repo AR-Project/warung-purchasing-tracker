@@ -35,7 +35,6 @@ export default function useList<T = Default>(url: string, initalValue: T[]) {
     fetch(url)
       .then((res) => res.json())
       .then((list) => {
-        console.log(list);
         setList(list);
         _initFuse();
       });

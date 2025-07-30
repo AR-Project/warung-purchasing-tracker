@@ -1,12 +1,15 @@
 "use server";
 
 import db from "@/infrastructure/database/db";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 import { getUserInfo } from "@/lib/utils/auth";
 import { isString } from "@/lib/utils/validator";
 import { eq } from "drizzle-orm";
 import { revalidateTag, revalidatePath } from "next/cache";
 
+/**
+ * @deprecated Do not use this, since it is old version and not safe
+ */
 export async function editItem(formData: FormData) {
   const id = formData.get("id");
   const newName = formData.get("name");
@@ -22,10 +25,7 @@ export async function editItem(formData: FormData) {
 
     const changedItem = await db.transaction(async (tx) => {
       // Validate Item Existence
-      const existingItems = await tx
-        .select()
-        .from(items)
-        .where(eq(items.id, id));
+      const existingItems = await tx.select().from(item).where(eq(item.id, id));
       if (existingItems.length === 0) {
         invariantError = "No such Item";
         tx.rollback();
@@ -40,10 +40,10 @@ export async function editItem(formData: FormData) {
 
       // Append Item Name Change
       const [changedItem] = await db
-        .update(items)
+        .update(item)
         .set({ name: newName })
-        .where(eq(items.id, id))
-        .returning({ id: items.id, name: items.name });
+        .where(eq(item.id, id))
+        .returning({ id: item.id, name: item.name });
       return changedItem;
     });
 

@@ -1,5 +1,5 @@
 "use server";
-import { deleteCategory } from "@/infrastructure/repository/itemRepo";
+import { deleteCategory } from "@/infrastructure/repository/categoryRepo";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";

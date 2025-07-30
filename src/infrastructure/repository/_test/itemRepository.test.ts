@@ -1,285 +1,407 @@
-import { CreateCategoryDbPayload } from "@/lib/schema/item";
 import {
-  addUserHelper,
-  cleanUserTableHelper,
-  defaultHelperUser,
-} from "./helper/userTableHelper";
-import { categoryTableHelper } from "./helper/itemTableHelper";
-import {
-  createCategory,
-  deleteCategory,
-  DeleteCategoryRepoPayload,
-  getCategoryByParentId,
-  UpdateCategoryDBPayload,
-  updateCategoryRepo,
-  updateCategorySortOrderDb,
-  updateCategorySortOrderRepo,
+  create,
+  type CreateItemRepoPayload,
+  update,
+  type UpdateItemRepoPayload,
+  updateSortOrder,
+  type UpdateOrderItemRepoPayload,
+  UpdateCategoryIdRepoPayload,
+  updateCategoryId,
 } from "../itemRepo";
-import { aw } from "vitest/dist/chunks/reporters.C4ZHgdxQ.js";
+import { categoryTableHelper } from "./helper/categoryTableHelper";
+import { itemTableHelper } from "./helper/itemTableHelper";
+import { defaultHelperUser, userTableHelper } from "./helper/userTableHelper";
 
-describe("itemRepository", () => {
-  beforeAll(async () => {
-    await addUserHelper({});
-    return async () => {
-      await cleanUserTableHelper();
-    };
+describe("item repository", () => {
+  beforeEach(async () => {
+    await userTableHelper.addWithCategory({});
   });
-  describe("createCategory method", () => {
-    afterEach(async () => {
-      await categoryTableHelper.clean();
-    });
-    test("save and persist newCategory to database", async () => {
-      const mockPayload: CreateCategoryDbPayload = {
-        id: "cat-123",
-        name: "test-cat",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-
-      const [data, error] = await createCategory(mockPayload);
-      const persistedCategory = await categoryTableHelper.findById("cat-123");
-
-      expect(data).toBe("cat-123");
-      expect(error).toBeNull();
-      expect(persistedCategory.length).toBe(1);
-    });
-    test("return error if category name is used from same user", async () => {
-      const preload: CreateCategoryDbPayload = {
-        id: "cat-999",
-        name: "duplicate",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-      const mockPayload: CreateCategoryDbPayload = {
-        id: "cat-123",
-        name: "duplicate",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-      const [preloadData, preloadError] = await createCategory(preload);
-      const [data, error] = await createCategory(mockPayload);
-      const persistedCategory = await categoryTableHelper.findById("cat-999");
-      const persistedData = await categoryTableHelper.findAll();
-      expect(preloadData).toBe("cat-999");
-      expect(preloadError).toBeNull();
-      expect(data).toBeNull;
-      expect(error).toBe("Category name already used");
-      expect(persistedCategory.length).toBe(1);
-      expect(persistedData.length).toBe(1);
-    });
-
-    test("insert correct data with correct sortOrder", async () => {
-      const mock01: CreateCategoryDbPayload = {
-        id: "cat-001",
-        name: "cat-test-001",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-      const mock02: CreateCategoryDbPayload = {
-        id: "cat-002",
-        name: "cat-test-002",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-      const mock03: CreateCategoryDbPayload = {
-        id: "cat-003",
-        name: "cat-test-003",
-        ownerId: defaultHelperUser.id,
-        creatorId: defaultHelperUser.id,
-      };
-
-      await createCategory(mock01);
-      await createCategory(mock02);
-      await createCategory(mock03);
-
-      const [persisted01] = await categoryTableHelper.findById("cat-001");
-      const [persisted02] = await categoryTableHelper.findById("cat-002");
-      const [persisted03] = await categoryTableHelper.findById("cat-003");
-
-      expect(persisted01.sortOrder).toBe(1);
-      expect(persisted02.sortOrder).toBe(2);
-      expect(persisted03.sortOrder).toBe(3);
-    });
+  afterEach(async () => {
+    await itemTableHelper.clean();
+    await categoryTableHelper.clean();
+    await userTableHelper.clean();
   });
 
-  describe("updateCategory method", () => {
-    afterEach(async () => {
-      await categoryTableHelper.clean();
-    });
-
-    test("should fail if id is not exist ", async () => {
-      await categoryTableHelper.addMultiple(4);
-
-      const testPayload: UpdateCategoryDBPayload = {
-        id: "",
-        name: "",
-        requesterParentId: "",
+  describe("create method", () => {
+    test("should fail when categoryId isInvalid", async () => {
+      const payload: CreateItemRepoPayload = {
+        id: "item-000",
+        name: "Invalid Item",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+        categoryId: "cat-invalid",
       };
 
-      const [result, error] = await updateCategoryRepo(testPayload);
-      const currentTotalCategoryRow = await categoryTableHelper.findAll();
-
-      expect(error).toBe("Invalid category ID");
+      const [result, error] = await create(payload);
       expect(result).toBeNull();
-      expect(currentTotalCategoryRow.length).toBe(4);
+      expect(error).toBe("categoryId invalid");
     });
 
-    test("should persist change to updated category", async () => {
-      await categoryTableHelper.addMultiple(5);
-      const testPayload: UpdateCategoryDBPayload = {
-        id: "cat-003",
-        name: "changed-category-name",
-        requesterParentId: defaultHelperUser.id,
+    test("should success when categoryId is valid with correct sortOrder", async () => {
+      await categoryTableHelper.add({ id: "cat-111" });
+      await itemTableHelper.add({
+        id: "item-222",
+        categoryId: "cat-111",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+        sortOrder: 0,
+      });
+      const payload: CreateItemRepoPayload = {
+        id: "item-000",
+        name: "Test Item",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+        categoryId: "cat-111",
       };
+      const [result, error] = await create(payload);
 
-      const [result, error] = await updateCategoryRepo(testPayload);
-      const changedCategory = await categoryTableHelper.findById("cat-003");
+      const itemOnNewCtg = await itemTableHelper.findByCategoryId("cat-111");
+      const itemsOnDefaultCtg = await itemTableHelper.findByCategoryId(
+        "cat-000"
+      );
 
+      const [addedItem] = await itemTableHelper.findById("item-000");
+
+      expect(result).toStrictEqual({
+        id: "item-000",
+        name: "Test Item",
+        categoryId: "cat-111",
+      });
       expect(error).toBeNull();
-      expect(result).toBe("cat-003");
-      expect(changedCategory.length).toBe(1);
-      expect(changedCategory[0].name).toBe("changed-category-name");
+      expect(itemOnNewCtg.length).toBe(2);
+      expect(itemsOnDefaultCtg.length).toBe(0);
+      expect(addedItem.sortOrder).toBe(1);
+    });
+
+    test("should success when categoryId is not included", async () => {
+      await itemTableHelper.add({
+        id: "item-222",
+        categoryId: "cat-000",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+        sortOrder: 0,
+      });
+      await itemTableHelper.add({
+        id: "item-333",
+        categoryId: "cat-000",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+        sortOrder: 1,
+      });
+
+      const payload: CreateItemRepoPayload = {
+        id: "item-000",
+        name: "Test Item",
+        ownerId: defaultHelperUser.id,
+        creatorId: defaultHelperUser.id,
+      };
+      const [result, error] = await create(payload);
+
+      const itemsOnDefaultCtg = await itemTableHelper.findByCategoryId(
+        "cat-000"
+      );
+      const [addedItem] = await itemTableHelper.findById("item-000");
+
+      expect(result).toStrictEqual({
+        id: "item-000",
+        name: "Test Item",
+        categoryId: "cat-000",
+      });
+      expect(error).toBeNull();
+      expect(itemsOnDefaultCtg.length).toBe(3);
+      expect(addedItem.sortOrder).toBe(2);
     });
   });
 
-  describe("updateCategorySortOrder method", () => {
-    afterEach(async () => {
-      await categoryTableHelper.clean();
-    });
-
-    test("should fail when passed with empty payload", async () => {
-      await categoryTableHelper.addMultiple(3);
-      const payload: updateCategorySortOrderDb = {
-        newOrder: [],
-        requesterUserParentId: "",
+  describe("update method", () => {
+    test("should fail when itemId is invalid", async () => {
+      const payload: UpdateItemRepoPayload = {
+        id: "item-invalid",
+        newName: "Invalid Item",
+        parentId: defaultHelperUser.id,
+        userId: defaultHelperUser.id,
       };
 
-      const [result, error] = await updateCategorySortOrderRepo(payload);
+      const [result, error] = await update(payload);
+      expect(result).toBeNull();
+      expect(error).toBe("itemId invalid");
+    });
+
+    test("should fail when item is not owned by user", async () => {
+      // Add item to existing user
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      // add new user
+      await userTableHelper.add({
+        id: `u-222`,
+        username: `test_2`,
+        parentId: `u-222`,
+      });
+      await categoryTableHelper.add({
+        id: "cat-111",
+        ownerId: "u-222",
+        creatorId: "u-222",
+        name: "category user test_2",
+      });
+      await userTableHelper.setDefaultCategory("u-222", "cat-111");
+
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "Invalid Item",
+        parentId: "u-222",
+        userId: "u-222",
+      };
+
+      const [result, error] = await update(payload);
+      const item = await itemTableHelper.findById("item-001");
 
       expect(result).toBeNull();
-      expect(error).toBe("empty category");
+      expect(error).toBe("update unauthorized");
+      expect(item[0].id).toBe("item-001");
+      expect(item[0].name).toBe("original name");
     });
 
-    test("should fail when passed with empty payload but correct user", async () => {
-      await categoryTableHelper.addMultiple(3);
-      const payload: updateCategorySortOrderDb = {
-        newOrder: [],
-        requesterUserParentId: defaultHelperUser.id,
+    test("should success and persist change", async () => {
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "new name",
+        parentId: defaultHelperUser.id,
+        userId: defaultHelperUser.id,
       };
 
-      const [result, error] = await updateCategorySortOrderRepo(payload);
-
-      expect(result).toBeNull();
-      expect(error).toBe("newOrder invalid");
-    });
-
-    test("should fail when passed with different length for newOrder", async () => {
-      await categoryTableHelper.addMultiple(3);
-      const payload: updateCategorySortOrderDb = {
-        newOrder: ["cat-002", "cat-001"],
-        requesterUserParentId: defaultHelperUser.id,
-      };
-
-      const [result, error] = await updateCategorySortOrderRepo(payload);
-
-      expect(result).toBeNull();
-      expect(error).toBe("newOrder invalid");
-    });
-
-    test("should success and persist data", async () => {
-      await categoryTableHelper.addMultiple(4);
-
-      const payload: updateCategorySortOrderDb = {
-        newOrder: ["cat-001", "cat-002", "cat-000", "cat-003"],
-        requesterUserParentId: defaultHelperUser.id,
-      };
-
-      const originalOrder = await getCategoryByParentId(defaultHelperUser.id);
-      const [result, error] = await updateCategorySortOrderRepo(payload);
-
-      const updatedOrder = await getCategoryByParentId(defaultHelperUser.id);
+      const [result, error] = await update(payload);
 
       expect(error).toBeNull();
+      expect(result).toStrictEqual({ id: "item-001", name: "new name" });
+    });
+    test("should success and persist change when performed by child user", async () => {
+      await userTableHelper.add({
+        id: "u-222",
+        parentId: defaultHelperUser.id,
+        username: "child user from u-123",
+      });
+
+      await itemTableHelper.add({
+        id: "item-001",
+        categoryId: "cat-000",
+        name: "original name",
+        creatorId: "u-222",
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateItemRepoPayload = {
+        id: "item-001",
+        newName: "new name",
+        parentId: defaultHelperUser.id,
+        userId: "u-222",
+      };
+
+      const [result, error] = await update(payload);
+
+      expect(error).toBeNull();
+      expect(result).toStrictEqual({ id: "item-001", name: "new name" });
+    });
+  });
+
+  describe("updateCategoryId method ", () => {
+    test("should fail if target category Id is not exist", async () => {
+      await itemTableHelper.add({
+        id: "item-0",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateCategoryIdRepoPayload = {
+        itemId: "item-0",
+        targetCategoryId: "invalid-target",
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
+      };
+
+      const [result, error] = await updateCategoryId(payload);
+
+      expect(result).toBeNull();
+      expect(error).toBe("categoryId invalid");
+    });
+
+    test("should success, persist data, and correctly assign correctsort order", async () => {
+      // Prepare
+      await itemTableHelper.add({
+        id: "item-0",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-0a",
+        categoryId: "cat-000",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      await categoryTableHelper.add({
+        id: "cat-222",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-1",
+        categoryId: "cat-222",
+        name: "Item #1",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        sortOrder: 0,
+      });
+      await itemTableHelper.add({
+        id: "item-2",
+        categoryId: "cat-222",
+        name: "Item #2",
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+        sortOrder: 1,
+      });
+
+      const payload: UpdateCategoryIdRepoPayload = {
+        itemId: "item-0",
+        targetCategoryId: "cat-222",
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
+      };
+
+      // Action
+      const [result, error] = await updateCategoryId(payload);
+
+      const item = await itemTableHelper.findById("item-0");
+      const targetCategoryItems = await itemTableHelper.findByCategoryId(
+        "cat-222"
+      );
+      const sourceCategoryItems = await itemTableHelper.findByCategoryId(
+        "cat-000"
+      );
+      // Assert
       expect(result).toBe("ok");
-      expect(originalOrder.length).toBe(4);
-      expect(updatedOrder.length).toBe(4);
-      expect(originalOrder[0].sortOrder).toBe(0);
-      expect(originalOrder[1].sortOrder).toBe(1);
-      expect(originalOrder[2].sortOrder).toBe(2);
-      expect(originalOrder[3].sortOrder).toBe(3);
-      expect(originalOrder[0].id).toBe("cat-000");
-      expect(originalOrder[1].id).toBe("cat-001");
-      expect(originalOrder[2].id).toBe("cat-002");
-      expect(originalOrder[3].sortOrder).toBe(3);
-
-      expect(updatedOrder[0].sortOrder).toBe(0);
-      expect(updatedOrder[1].sortOrder).toBe(1);
-      expect(updatedOrder[2].sortOrder).toBe(2);
-      expect(updatedOrder[3].sortOrder).toBe(3);
-
-      expect(updatedOrder[0].id).toBe("cat-001");
-      expect(updatedOrder[1].id).toBe("cat-002");
-      expect(updatedOrder[2].id).toBe("cat-000");
-      expect(updatedOrder[3].id).toBe("cat-003");
+      expect(error).toBeNull();
+      expect(item.length).toBe(1);
+      expect(item[0].sortOrder).toBe(2);
+      expect(targetCategoryItems.length).toBe(3);
+      expect(sourceCategoryItems.length).toBe(1);
     });
-
-    //  create mock categories with correct user
-    // Should fail when method called with wrong credential - not an owner
-    // Should fail when method called with bad array/payload, such as:
-    //  different total category
-    //  note: array shape is already validated in SA. Method only need to worry about correct length and correct ids
-    // shoud success
   });
 
-  describe("deleteCategory method", () => {
-    afterEach(async () => {
-      await categoryTableHelper.clean();
-    });
-
-    test("should fail when payload is invalid", async () => {
-      await categoryTableHelper.addMultiple(4);
-
-      const payload: DeleteCategoryRepoPayload = {
-        categoryId: "",
-        requesterParentId: "",
+  describe("update sortOrder method ", () => {
+    test("should fail category is not exist", async () => {
+      const payload: UpdateOrderItemRepoPayload = {
+        categoryId: "cat-invalid",
+        newOrder: ["invalid"],
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
       };
 
-      const [result, error] = await deleteCategory(payload);
+      const [result, error] = await updateSortOrder(payload);
 
+      expect(error).toBe("categoryId invalid");
       expect(result).toBeNull();
-      expect(error).toBe("invalid payload");
     });
-    test("should fail when payload is categoryId is invalid", async () => {
-      await categoryTableHelper.addMultiple(4);
 
-      const payload: DeleteCategoryRepoPayload = {
-        categoryId: "cat-999",
-        requesterParentId: defaultHelperUser.id,
+    test("should fail when new order array length is doesnt match with existing item length", async () => {
+      await itemTableHelper.add({
+        id: "item-01",
+        name: "sortOrder test #1",
+        categoryId: "cat-000",
+        sortOrder: 0,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-02",
+        name: "sortOrder test #2",
+        categoryId: "cat-000",
+        sortOrder: 1,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-03",
+        name: "sortOrder test #3",
+        categoryId: "cat-000",
+        sortOrder: 2,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateOrderItemRepoPayload = {
+        categoryId: "cat-000",
+        newOrder: ["invalid"],
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
       };
 
-      const [result, error] = await deleteCategory(payload);
+      const [result, error] = await updateSortOrder(payload);
 
+      expect(error).toBe("newOrder invalid");
       expect(result).toBeNull();
-      expect(error).toBe("invalid payload");
     });
-    test("should success with valid payload", async () => {
-      await categoryTableHelper.addMultiple(4);
 
-      const payload: DeleteCategoryRepoPayload = {
-        categoryId: "cat-001",
-        requesterParentId: defaultHelperUser.id,
+    test("should persist new order", async () => {
+      await itemTableHelper.add({
+        id: "item-01",
+        name: "sortOrder test #1",
+        categoryId: "cat-000",
+        sortOrder: 0,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-02",
+        name: "sortOrder test #2",
+        categoryId: "cat-000",
+        sortOrder: 1,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+      await itemTableHelper.add({
+        id: "item-03",
+        name: "sortOrder test #3",
+        categoryId: "cat-000",
+        sortOrder: 2,
+        creatorId: defaultHelperUser.id,
+        ownerId: defaultHelperUser.id,
+      });
+
+      const payload: UpdateOrderItemRepoPayload = {
+        categoryId: "cat-000",
+        newOrder: ["item-03", "item-01", "item-02"],
+        userId: defaultHelperUser.id,
+        parentId: defaultHelperUser.id,
       };
 
-      const categoriesPreDelete = await categoryTableHelper.findAll();
-      const [result, error] = await deleteCategory(payload);
-      const categoriesPostDelete = await categoryTableHelper.findAll();
-      const emptyCategory = await categoryTableHelper.findById("cat-001");
+      const [result, error] = await updateSortOrder(payload);
 
-      expect(error).toBeNull();
+      const updatedItem = await itemTableHelper.findByCategoryId("cat-000");
+
       expect(result).toBe("ok");
-      expect(categoriesPreDelete.length).toBe(4);
-      expect(categoriesPostDelete.length).toBe(3);
-      expect(emptyCategory.length).toBe(0);
+      expect(error).toBeNull();
+
+      expect(updatedItem[0].id).toBe("item-03");
+      expect(updatedItem[0].sortOrder).toBe(0);
+      expect(updatedItem[1].id).toBe("item-01");
+      expect(updatedItem[1].sortOrder).toBe(1);
+      expect(updatedItem[2].id).toBe("item-02");
+      expect(updatedItem[2].sortOrder).toBe(2);
     });
   });
 });

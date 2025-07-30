@@ -3,7 +3,8 @@ import { z } from "zod";
 import { DrizzleError, eq } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { purchases, vendors } from "@/lib/schema/schema";
+import { vendor } from "@/lib/schema/vendor";
+import { purchase } from "@/lib/schema/purchase";
 import { revalidatePath } from "next/cache";
 import { user } from "@/lib/schema/user";
 import { getUserInfo } from "@/lib/utils/auth";
@@ -46,8 +47,8 @@ export async function updatePurchaseVendor(formData: FormData) {
 
       const currentPurchase = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, payload.purchaseId));
+        .from(purchase)
+        .where(eq(purchase.id, payload.purchaseId));
       if (currentPurchase.length == 0) {
         invariantError = "Purchase Not Exist";
         tx.rollback();
@@ -58,20 +59,20 @@ export async function updatePurchaseVendor(formData: FormData) {
         tx.rollback();
       }
 
-      const vendor = await tx
+      const vendorResult = await tx
         .select()
-        .from(vendors)
-        .where(eq(vendors.id, payload.newVendorId));
-      if (vendor.length == 0) {
+        .from(vendor)
+        .where(eq(vendor.id, payload.newVendorId));
+      if (vendorResult.length == 0) {
         invariantError = "Vendor not exist";
         tx.rollback();
       }
 
       await tx
-        .update(purchases)
+        .update(purchase)
         .set({ vendorId: payload.newVendorId, modifiedAt: new Date() })
-        .where(eq(purchases.id, payload.purchaseId))
-        .returning({ id: purchases.id });
+        .where(eq(purchase.id, payload.purchaseId))
+        .returning({ id: purchase.id });
     });
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Vendor changed` };

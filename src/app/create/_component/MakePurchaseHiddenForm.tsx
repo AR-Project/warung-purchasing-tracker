@@ -1,9 +1,5 @@
 "use client";
 
-import { toast } from "react-toastify";
-import { savePurchaseAction } from "../_action/savePurchase.action";
-import { useServerAction } from "@/presentation/hooks/useServerAction";
-
 type Props = {
   purchasedAt: string;
   vendorId: string | null;
@@ -11,6 +7,7 @@ type Props = {
   totalPurchase: number;
   image: Blob | null;
   clearFrom: () => void;
+  formAction: (formData: FormData) => void;
 };
 
 function MakePurchaseHiddenForm({
@@ -20,22 +17,8 @@ function MakePurchaseHiddenForm({
   totalPurchase,
   image,
   clearFrom,
+  formAction,
 }: Props) {
-  const [formAction] = useServerAction(
-    savePurchaseAction,
-    (msg) => {
-      toast.success(msg);
-      clearFrom();
-    },
-    (err) => toast.error(err)
-  );
-
-  /** Remove this data processing logic.
-   * Move to parent component.
-   * REASON: Reduce logic, so this component responsibility is focus
-   * on ONLY receiving data -> upload to server component. Not to process any data
-   */
-
   const listOfPurchaseItemPayload: CreatePurchaseItemPayload[] =
     listOfPurchaseItem.map((item) => ({
       itemId: item.itemId,

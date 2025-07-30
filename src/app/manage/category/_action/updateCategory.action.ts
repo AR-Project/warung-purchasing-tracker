@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import { updateCategoryRepo } from "@/infrastructure/repository/itemRepo";
+import { updateCategoryRepo } from "@/infrastructure/repository/categoryRepo";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 

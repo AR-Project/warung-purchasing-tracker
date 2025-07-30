@@ -33,10 +33,6 @@ type Props = {
 export default function CategoryOrderEditor({ categories, user }: Props) {
   const router = useRouter();
 
-  if (categories.length <= 0) {
-    return <EmptyCategory user={user} />;
-  }
-
   const [originalOrder, setOriginalOrder] = useState(
     categories.map((category) => category.id)
   );

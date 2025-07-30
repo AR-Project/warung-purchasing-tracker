@@ -5,7 +5,7 @@ import { DrizzleError, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { purchasedItems, purchases } from "@/lib/schema/schema";
+import { purchasedItem, purchase } from "@/lib/schema/purchase";
 import { getUserInfo } from "@/lib/utils/auth";
 import { user } from "@/lib/schema/user";
 import {
@@ -13,7 +13,7 @@ import {
   purchaseArchive,
 } from "@/lib/schema/archive";
 import { generateId } from "@/lib/utils/generator";
-import { items } from "@/lib/schema/item";
+import { item } from "@/lib/schema/item";
 
 export async function deletePurchase(
   formData: FormData
@@ -50,8 +50,8 @@ export async function deletePurchase(
       // Validate current purchase
       const purchaseToDelete = await tx
         .select()
-        .from(purchases)
-        .where(eq(purchases.id, purchaseIdToDelete));
+        .from(purchase)
+        .where(eq(purchase.id, purchaseIdToDelete));
       if (purchaseToDelete.length == 0) {
         invariantError = "invalid purchase id";
         tx.rollback();
@@ -66,12 +66,12 @@ export async function deletePurchase(
 
       const purchaseItems = await tx
         .select({
-          data: purchasedItems,
-          name: items.name,
+          data: purchasedItem,
+          name: item.name,
         })
-        .from(purchasedItems)
-        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete))
-        .innerJoin(items, eq(purchasedItems.itemId, items.id));
+        .from(purchasedItem)
+        .where(eq(purchasedItem.purchaseId, purchaseIdToDelete))
+        .innerJoin(item, eq(purchasedItem.itemId, item.id));
 
       const listOfPurchaseItem = purchaseItems.map((row) => ({
         ...row.data,
@@ -92,10 +92,10 @@ export async function deletePurchase(
 
       // Commit action to database
       await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
-      await tx.delete(purchases).where(eq(purchases.id, purchaseIdToDelete));
+      await tx.delete(purchase).where(eq(purchase.id, purchaseIdToDelete));
       await tx
-        .delete(purchasedItems)
-        .where(eq(purchasedItems.purchaseId, purchaseIdToDelete));
+        .delete(purchasedItem)
+        .where(eq(purchasedItem.purchaseId, purchaseIdToDelete));
     });
 
     revalidatePath(`/transaction/purchase`);

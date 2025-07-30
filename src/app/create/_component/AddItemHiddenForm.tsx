@@ -1,11 +1,11 @@
 "use client";
-import { type SetStateAction, useCallback, useEffect, useState } from "react";
-import { useFormState } from "react-dom";
+import { type SetStateAction } from "react";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-import { newItemAction } from "../_action/newItem.action";
+
 import { useServerAction } from "@/presentation/hooks/useServerAction";
+import { createItemAction } from "@/app/_globalAction/item/createItem.action";
 
 type Props = {
   name: string | undefined;
@@ -20,7 +20,7 @@ export default function AddItemHiddenForm({
   setNewItemName,
 }: Props) {
   const [formAction] = useServerAction(
-    newItemAction,
+    createItemAction,
     (msg, data) => {
       toast.success(msg);
       if (!data || !name) return;
