@@ -11,6 +11,7 @@ type Props = {
   totalPurchase: number;
   image: Blob | null;
   clearFrom: () => void;
+  formAction: (formData: FormData) => void;
 };
 
 function MakePurchaseHiddenForm({
@@ -20,15 +21,16 @@ function MakePurchaseHiddenForm({
   totalPurchase,
   image,
   clearFrom,
+  formAction,
 }: Props) {
-  const [formAction] = useServerAction(
-    savePurchaseAction,
-    (msg) => {
-      toast.success(msg);
-      clearFrom();
-    },
-    (err) => toast.error(err)
-  );
+  // const [formAction, isPending] = useServerAction(
+  //   savePurchaseAction,
+  //   (msg) => {
+  //     toast.success(msg);
+  //     clearFrom();
+  //   },
+  //   (err) => toast.error(err)
+  // );
 
   /** Remove this data processing logic.
    * Move to parent component.
