@@ -177,6 +177,8 @@ function Panel({
           name="new-category"
           className="bg-gray-600 w-full p-2 outline outline-white rounded-sm"
           placeholder="Nama kategori Baru"
+          minLength={3}
+          required
         />
 
         <div className="mt-4 flex flex-row gap-3">
