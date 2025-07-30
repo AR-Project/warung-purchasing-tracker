@@ -5,11 +5,12 @@ import {
   ComboboxOption,
   ComboboxOptions,
 } from "@headlessui/react";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { NumericFormat } from "react-number-format";
 import { MdAdd } from "react-icons/md";
 import { SlBasket } from "react-icons/sl";
+import { ImSpinner5 } from "react-icons/im";
 
 import { createItemAction } from "@/app/_globalAction/item/createItem.action";
 import useList from "@/presentation/hooks/useList";
@@ -28,15 +29,16 @@ export default function ComboItemForm({
   initialItems,
   appendItemOnCart,
 }: Props) {
-  const [error, setError] = useState<boolean>(false);
+  const [itemAppendError, setItemAppendError] = useState<string>("");
 
   const [isUnitPriceActive, setIsUnitPriceActive] = useState<boolean>(false);
   const [isTotalPriceActive, setIsTotalPriceActive] = useState<boolean>(false);
 
-  const { filteredList, refreshList, search } = useList(
-    "/api/list/item",
-    initialItems
-  );
+  const {
+    filteredList,
+    refreshList: refreshItemList,
+    search,
+  } = useList("/api/list/item", initialItems);
   const [query, setQuery] = useState<string>("");
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
 
@@ -45,9 +47,7 @@ export default function ComboItemForm({
   const [totalPrice, setTotalPrice] = useState<NumberFormState>("");
 
   const itemFieldRef = useRef<HTMLInputElement>(null);
-
-  const isCreateModeActive =
-    selectedItem !== null && selectedItem.id === "pending";
+  const formRef = useRef<HTMLFormElement>(null);
 
   function updateItem(data: Item) {
     setSelectedItem(data);
@@ -59,7 +59,7 @@ export default function ComboItemForm({
     setUnitPrice("");
     setTotalPrice("");
     setQuantity("");
-    setError(false);
+    setItemAppendError("");
   }
 
   function isPayloadValid() {
@@ -87,30 +87,56 @@ export default function ComboItemForm({
       resetComboForm();
       itemFieldRef.current?.focus();
       return;
+    } else {
+      setItemAppendError(result);
     }
-    setError(true);
   }
 
-  const [newItemFormAction] = useServerAction(
+  const [createItemWrappedAction, isCreateItemPending] = useServerAction(
     createItemAction,
     (msg, data) => {
       if (!data) return;
-      refreshList();
+      refreshItemList();
       updateItem(data);
       toast.success(msg);
     },
     (err) => toast.error(err)
   );
 
-  function newItemHandler(name: string) {
+  function createItemHandler(name: string) {
     const formData = new FormData();
     formData.append("name", name);
-    newItemFormAction(formData);
+    createItemWrappedAction(formData);
   }
+
+  const textSizeClass = useMemo(() => {
+    const length = quantity.toString().length;
+    if (length === 1) {
+      return "text-2xl";
+    }
+    if (length === 2) {
+      return "text-xl";
+    }
+    if (length === 3) {
+      return "text-lg";
+    }
+    // Default for 0 or 4+ characters
+    return "text-md";
+  }, [quantity]);
+
+  function focusOnForm() {
+    if (!formRef.current) return;
+    formRef.current.focus();
+  }
+
+  useEffect(() => {
+    focusOnForm();
+  }, []);
 
   return (
     <form
-      className="flex flex-col gap-2"
+      className="relative flex flex-col gap-2"
+      ref={formRef}
       onSubmit={(e) => {
         e.preventDefault();
         finalizeItem();
@@ -125,6 +151,13 @@ export default function ComboItemForm({
         finalizeItem();
       }}
     >
+      {itemAppendError && (
+        <div className="w-full text-xs italic text-red-500 text-center">
+          {itemAppendError}
+        </div>
+      )}
+
+      {isCreateItemPending && <SaveItemPending />}
       <Combobox
         value={selectedItem}
         onChange={(value) => {
@@ -132,7 +165,7 @@ export default function ComboItemForm({
 
           // Creating new Item is handled here, when option is selected
           if (value.id === "pending") {
-            newItemHandler(value.name);
+            createItemHandler(value.name);
           } else {
             setSelectedItem(value);
           }
@@ -149,9 +182,9 @@ export default function ComboItemForm({
               setSelectedItem(null);
               search(event.target.value);
               setQuery(event.target.value);
-              setError(false);
+              setItemAppendError("");
             }}
-            className={`bg-gray-800 border-gray-600 px-1 h-12 w-full border `}
+            className={`bg-gray-800 border-gray-600 px-1 h-12 w-full border placeholder:italic placeholder:text-xs/tight `}
             placeholder="Ketik nama item..."
           />
           {selectedItem && (
@@ -182,16 +215,17 @@ export default function ComboItemForm({
         </ComboboxOptions>
       </Combobox>
 
-      <div className="flex flex-row gap-2 items-center justify-stretch">
+      <div className="flex flex-row gap-2 items-center justify-stretch font-mono">
         <NumericFormat
-          className="bg-gray-800 border border-gray-500 p-1 rounded-sm h-16 w-full basis-3/12 "
+          className={`${textSizeClass} bg-gray-800 border border-gray-500 p-1 rounded-sm h-16 w-full basis-3/12 placeholder:italic placeholder:text-xs/tight text-center`}
           value={quantity}
           thousandSeparator=" "
           decimalSeparator=","
           decimalScale={2}
-          placeholder="Jumlah"
-          onValueChange={(values) => {
-            const updatedQuantity = anyNumberToNumber(values.floatValue);
+          min={0}
+          placeholder="Jumlah..."
+          onValueChange={({ floatValue }) => {
+            const updatedQuantity = anyNumberToNumber(floatValue);
             if (updatedQuantity === 0) return;
             setQuantity(updatedQuantity);
             setUnitPrice("");
@@ -200,19 +234,18 @@ export default function ComboItemForm({
         />
         <div className="flex flex-col basis-7/12 w-full">
           <NumericFormat
-            className="bg-gray-800 border border-gray-500 p-1 rounded-sm w-full h-8"
+            className="bg-gray-800 border border-gray-500 px-1 rounded-t-md w-full h-8 placeholder:italic placeholder:text-xs/tight text-lg text-right"
             value={unitPrice}
-            prefix="Rp"
             thousandSeparator="."
             decimalSeparator=","
             decimalScale={0}
             placeholder="Harga satuan"
             onFocus={() => setIsUnitPriceActive(true)}
             onBlur={() => setIsUnitPriceActive(false)}
-            onValueChange={(values) => {
+            onValueChange={({ floatValue }) => {
               if (!isUnitPriceActive) return;
 
-              const unitPrice = anyNumberToNumber(values.floatValue);
+              const unitPrice = anyNumberToNumber(floatValue);
               if (unitPrice === 0) return;
 
               setUnitPrice(unitPrice);
@@ -220,19 +253,18 @@ export default function ComboItemForm({
             }}
           />
           <NumericFormat
-            className="bg-gray-800 border-b border-x border-gray-500 p-1 rounded-sm font-bold w-full h-8"
+            className="bg-gray-800 border-b border-x border-gray-500 px-1 rounded-b-md font-bold w-full h-8 placeholder:italic placeholder:text-xs/tight text-lg text-right"
             value={totalPrice}
-            prefix="Rp"
             thousandSeparator="."
             decimalSeparator=","
             decimalScale={0}
             onFocus={() => setIsTotalPriceActive(true)}
             onBlur={() => setIsTotalPriceActive(false)}
             placeholder="Total Harga"
-            onValueChange={(values) => {
+            onValueChange={({ floatValue }) => {
               if (!isTotalPriceActive) return;
 
-              const totalPrice = anyNumberToNumber(values.floatValue);
+              const totalPrice = anyNumberToNumber(floatValue);
               if (totalPrice === 0) return;
               setTotalPrice(totalPrice);
               setUnitPrice(totalPrice / anyNumberToNumber(quantity));
@@ -260,5 +292,16 @@ export default function ComboItemForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function SaveItemPending() {
+  return (
+    <div className="absolute top-0 bg-black/70 h-full w-full text-sm italic  ">
+      <div className=" animate-pulse flex-row flex h-full w-full items-center justify-center gap-2">
+        <ImSpinner5 className="animate-spin text-lg/tight" />
+        <div>Menyimpan item baru ke server. Mohon tunggu...</div>
+      </div>
+    </div>
   );
 }
