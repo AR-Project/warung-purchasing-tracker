@@ -9,6 +9,11 @@ import { ItemOnCartCard } from "../_presentation/ItemOnCartCard";
 import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
 import DatePicker from "./DatePicker";
 import useCartManager from "./_hooks/useCartManager";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
+import { savePurchaseAction } from "../_action/savePurchase.action";
+import { ImSpinner5 } from "react-icons/im";
+import Link from "next/link";
 
 const ImageSelector = dynamic(() => import("./ImageSelector"));
 const ComboItemForm = dynamic(() => import("./ComboItemForm"));
@@ -39,63 +44,71 @@ export default function PurchaseCreator({
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
   const [txDate, setTxDate] = useState<string>(DateTime.now().toISODate());
   const [resizedImage, setResizedImage] = useState<Blob | null>(null);
+  const [minimizeCart, setMinimizeCart] = useState<boolean>(true);
 
-  const itemsContainerRef = useRef<HTMLDivElement>(null);
+  const cartRef = useRef<HTMLDivElement>(null);
 
   function selectVendor(data: Vendor | null) {
     setSelectedVendor(data);
   }
 
   function resetAll() {
-    setTxDate("");
     setSelectedVendor(null);
     setResizedImage(null);
     resetCart();
   }
 
   function scrollToView() {
-    itemsContainerRef.current?.lastElementChild?.scrollIntoView({
+    if (!cartRef.current) return;
+    cartRef.current.scrollTo({
+      top: cartRef.current.scrollHeight,
       behavior: "smooth",
-      block: "end",
     });
-    return;
   }
 
   function appendItemOnCartWrapper(
     item: CreatePurchaseItemWithName
   ): string | undefined {
-    const result = appendItemToCart(item);
-    if (!result)
-      toast.info(
-        <div>
-          `<span className="font-bold">{item.name}</span> masuk keranjang`
-        </div>,
-        {
-          position: "top-center",
-          autoClose: 2000,
-        }
-      );
-    setTimeout(scrollToView, 200);
-    return result;
+    const error = appendItemToCart(item);
+    if (!error) setTimeout(scrollToView, 200);
+    return error;
   }
 
-  return (
-    <div className="flex flex-col p-0.5 pt-2 gap-3 w-full max-w-[700px] mx-auto bg-black">
-      {/* Cart Section */}
-      {itemsCart.length === 0 && (
-        <div className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
-          Transaksi kosong...
-        </div>
-      )}
+  const [savePurchaseWrappedAction, isSavePurchaseActionPending] =
+    useServerAction(
+      savePurchaseAction,
+      (msg, data) => {
+        toast.success(SuccessMessage, {
+          data,
+          autoClose: 5000,
+        });
+        resetAll();
+      },
+      (err) => toast.error(err)
+    );
 
-      {itemsCart.length > 0 && (
-        <div
-          className="relative"
-          onMouseLeave={() => itemOnCartClickHandler("")}
-        >
+  return (
+    <div className="flex flex-col p-0.5 pt-2 gap-2 w-full max-w-md mx-auto bg-black h-full relative">
+      {isSavePurchaseActionPending && <SavePurchasePendingOverlay />}
+
+      <Suspense fallback={<span>loading...</span>}>
+        <ImageSelector
+          resizedFile={resizedImage}
+          setResizedFile={setResizedImage}
+        />
+      </Suspense>
+
+      <div className="flex flex-col max-h-[70dvh] gap-2">
+        {/* Cart Section */}
+        {itemsCart.length === 0 && <EmptyPurchaseCart />}
+
+        {itemsCart.length > 0 && (
           <div
-            ref={itemsContainerRef}
-            className="flex flex-col font-mono bg-gray-800/50 mb-2"
+            ref={cartRef}
+            className={`flex flex-col font-mono bg-gray-800/50 w-full max-w-md mx-auto clip overflow-y-scroll flex-1 ${
+              minimizeCart && "max-h-40 overflow-y-scroll"
+            }`}
+            onMouseLeave={() => itemOnCartClickHandler("")}
           >
             {itemsCart.map((item, index) => (
               <ItemOnCartCard
@@ -109,31 +122,45 @@ export default function PurchaseCreator({
               />
             ))}
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Item input section */}
-      <div className="sticky bottom-0 flex flex-col gap-2 mb-3 ">
-        <div className="w-full flex flex-row justify-end">
-          <h4 className="text-xl font-black font-mono border border-gray-700 p-2 w-fit bg-blue-800">
-            {formatNumberToIDR(cartTotalPrice)}
-          </h4>
+        {/* Item input section */}
+        <div className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight">
+          <div className="w-full flex flex-row gap-2 items-center justify-end">
+            <button
+              className={`${
+                itemsCart.length < 4 && "hidden"
+              } text-xs w-full border border-white flex flex-row items-center justify-center gap-5 mr-6`}
+              onClick={() => setMinimizeCart((prev) => !prev)}
+            >
+              {minimizeCart ? (
+                <>
+                  <MdExpandMore /> Expand Cart
+                  <MdExpandMore />
+                </>
+              ) : (
+                <>
+                  <MdExpandLess />
+                  Minimize Cart
+                  <MdExpandLess />
+                </>
+              )}
+            </button>
+            <div>Total</div>
+            <h4 className=" font-black font-mono border border-gray-700 px-2 w-fit bg-blue-800">
+              {formatNumberToIDR(cartTotalPrice)}
+            </h4>
+          </div>
+          <Suspense fallback={<span>loading...</span>}>
+            <ComboItemForm
+              initialItems={initialItems}
+              appendItemOnCart={appendItemOnCartWrapper}
+            />
+          </Suspense>
         </div>
-        <Suspense fallback={<span>loading...</span>}>
-          <ComboItemForm
-            initialItems={initialItems}
-            appendItemOnCart={appendItemOnCartWrapper}
-          />
-        </Suspense>
       </div>
 
       {/* Image input Section */}
-      <Suspense fallback={<span>loading...</span>}>
-        <ImageSelector
-          resizedFile={resizedImage}
-          setResizedFile={setResizedImage}
-        />
-      </Suspense>
 
       {/* Vendor and Date Section */}
       <div className="flex flex-row gap-1 items-center">
@@ -155,6 +182,7 @@ export default function PurchaseCreator({
         totalPurchase={cartTotalPrice}
         image={resizedImage}
         clearFrom={resetAll}
+        formAction={savePurchaseWrappedAction}
       />
       <button
         tabIndex={-1}
@@ -164,5 +192,36 @@ export default function PurchaseCreator({
         Reset All
       </button>
     </div>
+  );
+}
+
+function EmptyPurchaseCart() {
+  return (
+    <div className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
+      Transaksi kosong...
+    </div>
+  );
+}
+
+function SavePurchasePendingOverlay() {
+  return (
+    <div className="absolute top-0 bg-black/70 h-full w-full text-sm italic z-10 ">
+      <div className=" animate-pulse flex-col flex h-full w-full items-center justify-center">
+        <ImSpinner5 className="animate-spin text-5xl/tight mb-4" />
+        <div>Menyimpan pembelian ke server.</div>
+        <div>Mohon tunggu...</div>
+      </div>
+    </div>
+  );
+}
+
+function SuccessMessage({ data }: { data: string }) {
+  return (
+    <Link
+      className="flex flex-col underline text-2xl"
+      href={`/transaction/details/${data}`}
+    >
+      <p>Sukses! Lihat transaksi</p>
+    </Link>
   );
 }
