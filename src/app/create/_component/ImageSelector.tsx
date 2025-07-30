@@ -4,6 +4,7 @@ import React, {
   ChangeEvent,
   Dispatch,
   SetStateAction,
+  useCallback,
   useEffect,
   useRef,
   useState,
@@ -57,10 +58,18 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
       setResizedFile(blob);
     }
   };
+  const resetCanvas = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.width = 0;
+    canvas.height = 0;
+    setResizedFile(null);
+  }, [canvasRef, setResizedFile]);
 
   useEffect(() => {
     if (resizedFile === null) resetCanvas();
-  }, [resizedFile]);
+  }, [resizedFile, resetCanvas]);
 
   const inputFileOnChangeHandler = ({
     target: { files },
@@ -70,15 +79,6 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
       userImageFileReader(fileOnForm, imageReaderCb);
     }
   };
-
-  function resetCanvas() {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    canvas.width = 0;
-    canvas.height = 0;
-    setResizedFile(null);
-  }
 
   return (
     <div className="relative">
