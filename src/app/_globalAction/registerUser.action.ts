@@ -5,6 +5,7 @@ import { hash } from "@node-rs/argon2";
 import { NewUserDbPayload } from "@/lib/schema/user";
 import { generateId } from "@/lib/utils/generator";
 import { createUserRepo } from "@/infrastructure/repository/userRepository";
+import { flag } from "@/lib/flag";
 
 const reqSchema = z.object({
   username: z.string(),
@@ -16,6 +17,10 @@ const reqSchema = z.object({
 export async function registerUserAction(
   formData: FormData
 ): Promise<FormState> {
+  const registrationUserStatus = await flag.userRegistration();
+  if (registrationUserStatus === false)
+    return { error: "Registration is closed" };
+
   const { data: payload, error: schemaError } = reqSchema.safeParse({
     username: formData.get("username"),
     password: formData.get("password"),
