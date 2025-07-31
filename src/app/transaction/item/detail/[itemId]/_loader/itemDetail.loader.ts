@@ -1,5 +1,5 @@
 import db from "@/infrastructure/database/db";
-import { desc, eq } from "drizzle-orm";
+import { asc, desc, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 
 import { item } from "@/lib/schema/item";
@@ -17,7 +17,7 @@ export async function itemDetailLoader(requestedItemId: string) {
           totalPrice: true,
           purchasedAt: true,
         },
-        orderBy: [desc(purchasedItem.purchasedAt)],
+        orderBy: [asc(purchasedItem.purchasedAt)],
       },
       owner: {
         columns: {
