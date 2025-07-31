@@ -81,7 +81,10 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
   };
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col gap-3">
+      <div className="hidden lg:inline font-bold text-center">
+        Struk Belanja
+      </div>
       <input
         className="hidden"
         ref={inputRef}
@@ -99,18 +102,21 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
           <MdDelete />
         </button>
       ) : (
-        <button
-          className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto"
-          onClick={() => inputRef.current?.showPicker()}
-        >
-          <div className="m-1 p-1 border border-dashed border-white/30 flex flex-row items-center justify-center gap-2">
-            <FaRegFileImage /> Upload Foto Struk
-          </div>
-        </button>
+        <div className="flex flex-col lg:h-96 items-center justify-center border border-white/20">
+          <button
+            className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto"
+            onClick={() => inputRef.current?.showPicker()}
+          >
+            <div className="m-1 p-1 border border-dashed border-white/30 flex flex-row items-center justify-center gap-2 lg:h-fit">
+              <FaRegFileImage /> Upload Foto Struk
+            </div>
+          </button>
+        </div>
       )}
       <div
-        className={`flex flex-col relative ${
-          isMinimized && "max-h-40 overflow-y-scroll"
+        data-comment="Canvas container"
+        className={`flex flex-col relative  ${
+          isMinimized && "max-h-40 lg:max-h-96 overflow-y-scroll"
         }`}
       >
         <canvas

@@ -42,7 +42,7 @@ function MakePurchaseHiddenForm({
   }
 
   return (
-    <form action={interceptAction}>
+    <form action={interceptAction} className="w-full">
       {vendorId && <input type="hidden" name="vendor-id" value={vendorId} />}
       <input type="hidden" name="purchased-at" value={purchasedAt} />
       <input type="hidden" name="total-price" value={totalPurchase} />

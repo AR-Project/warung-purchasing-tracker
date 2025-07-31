@@ -88,25 +88,34 @@ export default function PurchaseCreator({
     );
 
   return (
-    <div className="flex flex-col p-0.5 pt-2 gap-2 w-full max-w-md mx-auto bg-black h-full relative">
+    <div className="flex flex-col p-0.5 pt-2 gap-2 w-full max-w-md mx-auto bg-black h-full relative lg:max-w-screen lg:w-full lg:grid lg:grid-cols-3 lg:gap-8 lg:max-h-screen lg:h-screen">
       {isSavePurchaseActionPending && <SavePurchasePendingOverlay />}
 
-      <Suspense fallback={<span>loading...</span>}>
+      <Suspense
+        fallback={<span>loading...</span>}
+        data-comment="Image Selector"
+      >
         <ImageSelector
           resizedFile={resizedImage}
           setResizedFile={setResizedImage}
         />
       </Suspense>
 
-      <div className="flex flex-col max-h-[70dvh] gap-2">
+      <div
+        data-comment="cart container"
+        className="flex flex-col max-h-[70dvh] gap-3"
+      >
+        <div className="hidden lg:inline font-bold text-center">
+          Keranjang Pembelian
+        </div>
         {/* Cart Section */}
         {itemsCart.length === 0 && <EmptyPurchaseCart />}
 
         {itemsCart.length > 0 && (
           <div
             ref={cartRef}
-            className={`flex flex-col font-mono bg-gray-800/50 w-full max-w-md mx-auto clip overflow-y-scroll flex-1 ${
-              minimizeCart && "max-h-40 overflow-y-scroll"
+            className={`flex flex-col font-mono bg-gray-800/50 lg:h-full  w-full max-w-md mx-auto clip lg:max-h-full overflow-y-scroll flex-1 ${
+              minimizeCart && "max-h-40 lg:max-h-full overflow-y-scroll"
             }`}
             onMouseLeave={() => itemOnCartClickHandler("")}
           >
@@ -123,14 +132,12 @@ export default function PurchaseCreator({
             ))}
           </div>
         )}
-
-        {/* Item input section */}
-        <div className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight">
+        <div className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight ">
           <div className="w-full flex flex-row gap-2 items-center justify-end">
             <button
               className={`${
                 itemsCart.length < 4 && "hidden"
-              } text-xs w-full border border-white flex flex-row items-center justify-center gap-5 mr-6`}
+              } text-xs w-full border border-white flex flex-row items-center justify-center gap-5 mr-6 lg:hidden`}
               onClick={() => setMinimizeCart((prev) => !prev)}
             >
               {minimizeCart ? (
@@ -151,53 +158,65 @@ export default function PurchaseCreator({
               {formatNumberToIDR(cartTotalPrice)}
             </h4>
           </div>
-          <Suspense fallback={<span>loading...</span>}>
-            <ComboItemForm
-              initialItems={initialItems}
-              appendItemOnCart={appendItemOnCartWrapper}
-            />
-          </Suspense>
         </div>
+
+        {/* Item input section */}
       </div>
 
-      {/* Image input Section */}
-
-      {/* Vendor and Date Section */}
-      <div className="flex flex-row gap-1 items-center">
+      <div
+        data-comment="input-container"
+        className="flex flex-col items-center gap-3 w-full"
+      >
+        <div className="hidden lg:inline font-bold">
+          Tambah Item Ke Keranjang
+        </div>
         <Suspense fallback={<span>loading...</span>}>
-          <ComboVendorForm
-            initialVendors={initialVendors}
-            selectedVendor={selectedVendor}
-            selectVendor={selectVendor}
+          <ComboItemForm
+            initialItems={initialItems}
+            appendItemOnCart={appendItemOnCartWrapper}
           />
         </Suspense>
-        <div>@</div>
-        <DatePicker txDate={txDate} setTxDate={setTxDate} />
-      </div>
 
-      <MakePurchaseHiddenForm
-        purchasedAt={txDate}
-        vendorId={selectedVendor ? selectedVendor.id : null}
-        listOfPurchaseItem={itemsCart}
-        totalPurchase={cartTotalPrice}
-        image={resizedImage}
-        clearFrom={resetAll}
-        formAction={savePurchaseWrappedAction}
-      />
-      <button
-        tabIndex={-1}
-        onClick={() => resetAll()}
-        className="underline cursor-pointer"
-      >
-        Reset All
-      </button>
+        {/* Vendor and Date Section */}
+        <div className="hidden lg:inline font-bold">
+          Lokasi dan waktu transaksi
+        </div>
+        <div className="flex flex-row gap-1 items-center w-full">
+          <Suspense fallback={<span>loading...</span>}>
+            <ComboVendorForm
+              initialVendors={initialVendors}
+              selectedVendor={selectedVendor}
+              selectVendor={selectVendor}
+            />
+          </Suspense>
+          <div>@</div>
+          <DatePicker txDate={txDate} setTxDate={setTxDate} />
+        </div>
+
+        <MakePurchaseHiddenForm
+          purchasedAt={txDate}
+          vendorId={selectedVendor ? selectedVendor.id : null}
+          listOfPurchaseItem={itemsCart}
+          totalPurchase={cartTotalPrice}
+          image={resizedImage}
+          clearFrom={resetAll}
+          formAction={savePurchaseWrappedAction}
+        />
+        <button
+          tabIndex={-1}
+          onClick={() => resetAll()}
+          className="underline cursor-pointer"
+        >
+          Reset All
+        </button>
+      </div>
     </div>
   );
 }
 
 function EmptyPurchaseCart() {
   return (
-    <div className="w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
+    <div className="w-full h-full lg:h-96 italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
       Transaksi kosong...
     </div>
   );

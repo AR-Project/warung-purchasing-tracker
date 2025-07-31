@@ -135,7 +135,7 @@ export default function ComboItemForm({
 
   return (
     <form
-      className="relative flex flex-col gap-2"
+      className="relative flex flex-col gap-2 lg:mb-8 w-full"
       ref={formRef}
       onSubmit={(e) => {
         e.preventDefault();
