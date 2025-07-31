@@ -25,10 +25,10 @@ export async function listOfItemsLoader(
   const DEFAULT_DATE_TO = DateTime.now().endOf("day").toJSDate();
 
   const dateFilterFrom = dateFilter
-    ? DateTime.fromISO(dateFilter.from).toJSDate()
+    ? DateTime.fromISO(dateFilter.from).startOf("day").toJSDate()
     : DEFAULT_DATE_FROM;
   const dateFilterTo = dateFilter
-    ? DateTime.fromISO(dateFilter.to).toJSDate()
+    ? DateTime.fromISO(dateFilter.to).endOf("day").toJSDate()
     : DEFAULT_DATE_TO;
 
   const result = await db.query.item.findMany({

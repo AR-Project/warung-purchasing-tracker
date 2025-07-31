@@ -9,7 +9,7 @@ import { generateId } from "@/lib/utils/generator";
 
 const schema = z.object({
   itemId: z.string(),
-  newCategory: z.string(),
+  newCategory: z.string().min(3),
   pathToRevalidate: z.string(),
 });
 

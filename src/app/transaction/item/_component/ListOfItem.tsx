@@ -24,6 +24,8 @@ type SplittedItems = {
 export default function ListOfItem({ items }: Props) {
   const { filteredList, search } = useList("", items);
   const [query, setQuery] = useState<string>("");
+  const [showZeroPurchaseItem, setShowZeroPurchaseItem] =
+    useState<boolean>(false);
 
   const splittedItems = filteredList.reduce<SplittedItems>(
     (bag, currentItem) => {
@@ -36,6 +38,8 @@ export default function ListOfItem({ items }: Props) {
     },
     { zeroPurchase: [], nonZeroPurchase: [] }
   );
+
+  const zeroPurchaseItemCount = splittedItems.zeroPurchase.length;
 
   return (
     <div className="flex flex-col">
@@ -55,12 +59,21 @@ export default function ListOfItem({ items }: Props) {
           <ItemLinkCard key={item.id} item={item} />
         ))}
       </div>
-      <h1>Item with no purchase</h1>
-      <div className="grid grid-cols-2 gap-1">
-        {splittedItems.zeroPurchase.map((item) => (
-          <ItemLinkCard key={item.id} item={item} />
-        ))}
-      </div>
+      <button
+        onClick={() => setShowZeroPurchaseItem((prev) => !prev)}
+        className="border border-white p-3 italic text-gray-500 hover:underline decoration-gray-500/50 underline hover:decoration-gray-500 cursor-pointer text-sm hover:bg-gray-900 hover:text-white"
+      >
+        {showZeroPurchaseItem
+          ? `${zeroPurchaseItemCount} item tanpa pembelian ditampilkan. Sembunyikan?`
+          : `${zeroPurchaseItemCount} item tanpa pembelian disembunyikan. Tampilkan?`}
+      </button>
+      {showZeroPurchaseItem && (
+        <div className="grid grid-cols-2 gap-1">
+          {splittedItems.zeroPurchase.map((item) => (
+            <ItemLinkCard key={item.id} item={item} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
