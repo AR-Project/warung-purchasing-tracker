@@ -9,6 +9,7 @@ import * as userSchema from "@/lib/schema/user";
 import * as categorySchema from "@/lib/schema/category";
 import * as purchaseSchema from "@/lib/schema/purchase";
 import * as vendorSchema from "@/lib/schema/vendor";
+import * as featureFlag from "@/lib/schema/featureFlag";
 
 const isTest = () => process.env.NODE_ENV === "test";
 
@@ -28,6 +29,7 @@ const db = drizzle(pool, {
     ...categorySchema,
     ...purchaseSchema,
     ...vendorSchema,
+    ...featureFlag,
   },
 });
 
