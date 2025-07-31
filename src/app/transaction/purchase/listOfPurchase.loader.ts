@@ -14,10 +14,10 @@ export async function transactionLoader(
 ): Promise<PurchaseDisplay[]> {
   const dateFrom = range
     ? DateTime.fromISO(range.from).startOf("day").toJSDate()
-    : DateTime.now().toJSDate();
+    : DateTime.now().startOf("day").toJSDate();
   const dateTo = range
     ? DateTime.fromISO(range.to).endOf("day").toJSDate()
-    : DateTime.now().toJSDate();
+    : DateTime.now().endOf("day").toJSDate();
   const keywordFilter = keyword ? keyword : "";
 
   const userFilter = eq(purchase.ownerId, userId);
