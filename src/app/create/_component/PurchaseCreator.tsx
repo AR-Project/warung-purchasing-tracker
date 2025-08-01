@@ -14,6 +14,7 @@ import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { savePurchaseAction } from "../_action/savePurchase.action";
 import { ImSpinner5 } from "react-icons/im";
 import Link from "next/link";
+import clsx from "clsx";
 
 const ImageSelector = dynamic(() => import("./ImageSelector"));
 const ComboItemForm = dynamic(() => import("./ComboItemForm"));
@@ -88,36 +89,36 @@ export default function PurchaseCreator({
     );
 
   return (
-    <div className="flex flex-col p-0.5 pt-2 gap-2 w-full max-w-md mx-auto bg-black h-full relative lg:max-w-screen lg:w-full lg:grid lg:grid-cols-3 lg:gap-8 lg:max-h-screen lg:h-screen">
+    <div className="relative flex flex-col p-0.5 lg:p-2 pt-2 gap-2 w-full max-w-md lg:max-w-screen mx-auto bg-black h-full lg:h-screen lg:flex-row lg:max-h-screen">
       {isSavePurchaseActionPending && <SavePurchasePendingOverlay />}
 
       {/* Image Section */}
-      <Suspense
-        fallback={<span>loading...</span>}
-        data-comment="Image Selector"
-      >
-        <ImageSelector
-          resizedFile={resizedImage}
-          setResizedFile={setResizedImage}
-        />
-      </Suspense>
+      <div className="flex flex-col basis-1/3 gap-3 h-full">
+        <Suspense
+          fallback={<span>loading...</span>}
+          data-comment="Image Selector"
+        >
+          <ImageSelector
+            resizedFile={resizedImage}
+            setResizedFile={setResizedImage}
+          />
+        </Suspense>
+      </div>
 
       {/* Cart Section */}
       <div
         data-comment="cart container"
-        className="flex flex-col max-h-[70dvh] gap-3"
+        className="flex flex-col gap-3 basis-1/3"
       >
-        <div className="hidden lg:inline font-bold text-center">
-          Keranjang Pembelian
-        </div>
         {itemsCart.length === 0 && <EmptyPurchaseCart />}
 
         {itemsCart.length > 0 && (
           <div
             ref={cartRef}
-            className={`flex flex-col font-mono bg-gray-800/50 lg:h-full  w-full max-w-md mx-auto clip lg:max-h-full overflow-y-scroll flex-1 ${
-              minimizeCart && "max-h-40 lg:max-h-full overflow-y-scroll"
-            }`}
+            className={clsx(
+              "flex flex-col font-mono bg-gray-800/50 lg:h-full w-full max-w-md mx-auto lg:max-h-full overflow-y-scroll flex-1",
+              minimizeCart && "max-h-40"
+            )}
             onMouseLeave={() => itemOnCartClickHandler("")}
           >
             {itemsCart.map((item, index) => (
@@ -133,15 +134,17 @@ export default function PurchaseCreator({
             ))}
           </div>
         )}
+
         <div
           data-comment="cart bottom info container"
           className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight "
         >
           <div className="w-full flex flex-row gap-2 items-center justify-end">
             <button
-              className={`${
+              className={clsx(
+                `text-xs w-full border border-white flex flex-row items-center justify-center gap-5 mr-6 lg:hidden`,
                 itemsCart.length < 4 && "hidden"
-              } text-xs w-full border border-white flex flex-row items-center justify-center gap-5 mr-6 lg:hidden`}
+              )}
               onClick={() => setMinimizeCart((prev) => !prev)}
             >
               {minimizeCart ? (
@@ -157,10 +160,12 @@ export default function PurchaseCreator({
                 </>
               )}
             </button>
-            <div>Total</div>
-            <h4 className=" font-black font-mono border border-gray-700 px-2 w-fit bg-blue-800">
-              {formatNumberToIDR(cartTotalPrice)}
-            </h4>
+            <div className="flex flex-row gap-2 lg:text-xl">
+              <div>Total</div>
+              <h4 className=" font-black font-mono border border-gray-700 px-2 w-fit bg-blue-800">
+                {formatNumberToIDR(cartTotalPrice)}
+              </h4>
+            </div>
           </div>
         </div>
       </div>
@@ -168,7 +173,7 @@ export default function PurchaseCreator({
       {/* Item input section */}
       <div
         data-comment="input-container"
-        className="flex flex-col items-center gap-3 w-full"
+        className="flex flex-col items-center gap-3 w-full basis-1/3"
       >
         <div className="hidden lg:inline font-bold">
           Tambah Item Ke Keranjang
@@ -219,7 +224,7 @@ export default function PurchaseCreator({
 
 function EmptyPurchaseCart() {
   return (
-    <div className="w-full h-full lg:h-96 italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
+    <div className="flex flex-col items-center justify-center w-full h-full italic text-center text-sm text-gray-600 border border-gray-600/50 p-3">
       Transaksi kosong...
     </div>
   );

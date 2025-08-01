@@ -16,6 +16,7 @@ import {
   type ImageReaderCallBack,
   userImageFileReader,
 } from "@/lib/utils/reader";
+import clsx from "clsx";
 
 type Props = {
   resizedFile: Blob | null;
@@ -23,7 +24,7 @@ type Props = {
 };
 
 export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
-  const [isMinimized, setMinimize] = useState<boolean>(true);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -81,10 +82,7 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
   };
 
   return (
-    <div className="relative flex flex-col gap-3">
-      <div className="hidden lg:inline font-bold text-center">
-        Struk Belanja
-      </div>
+    <div className="relative flex flex-col bg-blue-800/10 h-full">
       <input
         className="hidden"
         ref={inputRef}
@@ -94,61 +92,70 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
         onChange={inputFileOnChangeHandler}
         multiple={false}
       />
-      {resizedFile ? (
-        <button
-          className="absolute z-10 h-8 aspect-square flex items-center justify-center top-0 right-0 text-xl hover:text-red-500 border border-gray-600/50 bg-gray-500/50  text-white/50 rounded-sm"
-          onClick={resetCanvas}
+      {!resizedFile && (
+        <div
+          data-comment="Image Picker Button Container"
+          className="flex flex-col h-full items-center justify-center border border-white/20 bg-g lg:p-5"
         >
-          <MdDelete />
-        </button>
-      ) : (
-        <div className="flex flex-col lg:h-96 items-center justify-center border border-white/20">
           <button
-            className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto"
+            className="bg-blue-900 hover:bg-blue-800 border border-gray-600 text-white p-1 rounded-sm w-full ml-auto lg:p-3 cursor-pointer"
             onClick={() => inputRef.current?.showPicker()}
           >
-            <div className="m-1 p-1 border border-dashed border-white/30 flex flex-row items-center justify-center gap-2 lg:h-fit">
-              <FaRegFileImage /> Upload Foto Struk
+            <div className="m-1 p-1 border border-dashed border-white/50 flex flex-row items-center justify-center gap-6 lg:p-3 ">
+              <FaRegFileImage />
+              <div>Upload Foto Struk</div>
             </div>
           </button>
         </div>
       )}
+
+      {resizedFile && (
+        <button
+          data-comment="DELETE BUTTON --> Clearing Image"
+          className="absolute z-10 h-8 aspect-square flex items-center justify-center top-0 right-0 text-xl hover:text-red-500 border border-gray-600/50 bg-gray-500/50  text-white/50 rounded-sm cursor-pointer"
+          onClick={resetCanvas}
+        >
+          <MdDelete />
+        </button>
+      )}
+
       <div
         data-comment="Canvas container"
-        className={`flex flex-col relative  ${
-          isMinimized && "max-h-40 lg:max-h-96 overflow-y-scroll"
-        }`}
+        className={clsx(
+          `relative flex flex-col overflow-y-scroll lg:max-h-full`,
+          isExpanded ? "max-h-max" : "max-h-40"
+        )}
       >
         <canvas
-          className="object-contain"
+          className="w-full"
           ref={canvasRef}
           width={0}
           height={0}
           data-comment="Active image will displayed here"
         />
+        {resizedFile && (
+          <div className="sticky bottom-0 w-full flex flex-row bg-black lg:hidden">
+            <button
+              className="text-xs w-full border border-white flex flex-row items-center justify-center gap-5"
+              onClick={() => setIsExpanded((prev) => !prev)}
+            >
+              {isExpanded ? (
+                <>
+                  <MdExpandLess />
+                  <div>Minimize Image</div>
+                  <MdExpandLess />
+                </>
+              ) : (
+                <>
+                  <MdExpandMore className="text-base" />
+                  <div>Expand Image</div>
+                  <MdExpandMore className="text-base" />
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
-      {resizedFile && (
-        <div className="flex flex-row">
-          <button
-            className="text-xs w-full border border-white flex flex-row items-center justify-center gap-5"
-            onClick={() => setMinimize((prev) => !prev)}
-          >
-            {isMinimized ? (
-              <>
-                <MdExpandMore className="text-base" />
-                <div>Expand Image</div>
-                <MdExpandMore className="text-base" />
-              </>
-            ) : (
-              <>
-                <MdExpandLess />
-                <div>Minimize Image</div>
-                <MdExpandLess />
-              </>
-            )}
-          </button>
-        </div>
-      )}
     </div>
   );
 }
