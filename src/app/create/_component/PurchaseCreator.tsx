@@ -91,6 +91,7 @@ export default function PurchaseCreator({
     <div className="flex flex-col p-0.5 pt-2 gap-2 w-full max-w-md mx-auto bg-black h-full relative lg:max-w-screen lg:w-full lg:grid lg:grid-cols-3 lg:gap-8 lg:max-h-screen lg:h-screen">
       {isSavePurchaseActionPending && <SavePurchasePendingOverlay />}
 
+      {/* Image Section */}
       <Suspense
         fallback={<span>loading...</span>}
         data-comment="Image Selector"
@@ -101,6 +102,7 @@ export default function PurchaseCreator({
         />
       </Suspense>
 
+      {/* Cart Section */}
       <div
         data-comment="cart container"
         className="flex flex-col max-h-[70dvh] gap-3"
@@ -108,7 +110,6 @@ export default function PurchaseCreator({
         <div className="hidden lg:inline font-bold text-center">
           Keranjang Pembelian
         </div>
-        {/* Cart Section */}
         {itemsCart.length === 0 && <EmptyPurchaseCart />}
 
         {itemsCart.length > 0 && (
@@ -132,7 +133,10 @@ export default function PurchaseCreator({
             ))}
           </div>
         )}
-        <div className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight ">
+        <div
+          data-comment="cart bottom info container"
+          className="sticky bottom-0 flex flex-col gap-2 mb-3 text-base/tight "
+        >
           <div className="w-full flex flex-row gap-2 items-center justify-end">
             <button
               className={`${
@@ -159,10 +163,9 @@ export default function PurchaseCreator({
             </h4>
           </div>
         </div>
-
-        {/* Item input section */}
       </div>
 
+      {/* Item input section */}
       <div
         data-comment="input-container"
         className="flex flex-col items-center gap-3 w-full"
