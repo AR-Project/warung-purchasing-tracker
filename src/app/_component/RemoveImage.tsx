@@ -1,44 +1,35 @@
 "use client";
-
-import React, { useEffect, useState } from "react";
-import { useFormState } from "react-dom";
-import { removeImage } from "../_globalAction/image.action";
+import { usePathname } from "next/navigation";
 import { toast } from "react-toastify";
 import { HiOutlineTrash } from "react-icons/hi";
+
+import { useServerAction } from "@/presentation/hooks/useServerAction";
+import { removeImage } from "@/app/_globalAction/image.action";
 
 type Props = {
   id: string;
 };
 
+// TODO: MAKE this into a modal with warning
+
 export default function RemoveImage({ id }: Props) {
-  const [state, formAction] = useFormState<FormState<string>, FormData>(
+  const currentPath = usePathname();
+
+  const [removeImageWrapped, isRemoveImagePending] = useServerAction(
     removeImage,
-    {}
+    (msg, data) => {
+      toast.success(msg);
+    },
+    (err) => toast.error(err)
   );
-
-  const [isStateChanged, setStatedChanged] = useState(false);
-
-  if (isStateChanged) {
-    if (state.message) {
-      if (state.data) {
-        toast.success(JSON.stringify(state));
-      }
-    } else if (state.error) {
-      toast.error(state.error);
-    }
-    setStatedChanged(false);
-  }
-
-  useEffect(() => {
-    setStatedChanged(true);
-  }, [state]);
 
   return (
     <form
-      action={formAction}
+      action={removeImageWrapped}
       className="absolute right-0 top-0 flex flex-col z-10"
     >
       <input type="hidden" name="id" value={id} />
+      <input type="hidden" name="current-path" value={currentPath} />
       <button
         className="transition-all group flex flex-row items-center gap-2 hover:bg-red-800 hover:border hover:border-gray-600 text-white p-1 rounded-sm w-full ml-auto"
         type="submit"
