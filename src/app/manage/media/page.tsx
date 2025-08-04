@@ -16,8 +16,8 @@ export default async function UploadImage() {
   const imagesList = await imagesLoader(session.user.parentId);
 
   return (
-    <>
-      <h1 className="mb-4 py-2 text-center font-bold text-xl border-b">
+    <div className="flex flex-col gap-3">
+      <h1 className="py-2 text-center font-bold text-xl border-b">
         Manage Media
       </h1>
       <div className="grid grid-cols-3 gap-4">
@@ -29,7 +29,7 @@ export default async function UploadImage() {
         ))}
       </div>
       <ImageUploader />
-    </>
+    </div>
   );
 }
 
