@@ -69,6 +69,7 @@ export default function ImageSelector({ resizedFile, setResizedFile }: Props) {
   }, [canvasRef, setResizedFile]);
 
   useEffect(() => {
+    // Monitor if current resizedFile (not yet uploaded) is cleared from parent component
     if (resizedFile === null) resetCanvas();
   }, [resizedFile, resetCanvas]);
 
