@@ -1,6 +1,6 @@
 import { MdCategory } from "react-icons/md";
 
-import ManageCategoryNavigation from "./category/_component/CategoryNavigation";
+import ManageCategoryNavigation from "./_component/CategoryNavigation";
 
 export default function DashboardLayout({
   children,
