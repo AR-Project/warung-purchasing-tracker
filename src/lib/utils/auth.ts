@@ -24,15 +24,11 @@ export async function getUserRoleAuth(): Promise<
 > {
   const session = await auth();
   if (!session || !session.user || !session.user.userId) {
-    console.log("getUserRoleAuth session null");
     return [null, "not authenticated"];
   }
 
   const [role, getRoleError] = await getUserRole(session.user.userId);
-  if (getRoleError != null) {
-    console.log("getUserRoleAuth repo error");
-    return [null, "repo error"];
-  }
+  if (getRoleError != null) return [null, "repo error"];
 
   return [{ ...session.user, role }, null];
 }
