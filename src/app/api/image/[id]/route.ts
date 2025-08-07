@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import path from "path";
 import { promises as fs } from "fs";
-import db from "@/infrastructure/database/db";
+import { DateTime } from "luxon";
 import { eq } from "drizzle-orm";
+
+import db from "@/infrastructure/database/db";
 import { image } from "@/lib/schema/image";
+import { generateImageFilePath } from "@/lib/utils/fileSystem";
 
 type Params = { params: Promise<SearchParams> };
 
@@ -19,10 +21,14 @@ export async function GET(req: Request, { params }: Params) {
   if (!imagesResult)
     return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
 
-  const imagePath = path.join(process.cwd(), imagesResult.path);
+  const uploadedDate = DateTime.fromJSDate(imagesResult.uploadedAt).toISODate();
+  if (!uploadedDate)
+    return NextResponse.json({ error: "Image Not Found" }, { status: 404 });
 
   try {
-    const imageBuffer = await fs.readFile(imagePath);
+    const imageBuffer = await fs.readFile(
+      generateImageFilePath(id, uploadedDate)
+    );
     return new NextResponse(imageBuffer, {
       headers: { "Content-Type": "image/jpeg" },
     });
