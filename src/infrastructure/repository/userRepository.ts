@@ -4,6 +4,7 @@ import { NewUserDbPayload, user } from "@/lib/schema/user";
 import db from "../database/db";
 import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import { generateId } from "@/lib/utils/generator";
+import ClientError from "@/lib/exception/ClientError";
 
 type CreatedUser = {
   id: string;
@@ -73,14 +74,20 @@ export async function createUserRepo(
 export async function getUserRole(
   requestedUserId: string
 ): Promise<SafeResult<AvailableUserRole>> {
-  const userInfo = await db.query.user.findFirst({
-    where: eq(user.id, requestedUserId),
-    columns: { id: true, role: true },
-  });
+  try {
+    const userInfo = await db.query.user.findFirst({
+      where: eq(user.id, requestedUserId),
+      columns: { id: true, role: true },
+    });
 
-  if (userInfo === undefined) return [null, "user_repo.user-not-exist"];
+    if (userInfo === undefined) throw new ClientError("user not exist");
 
-  return [userInfo.role, null];
+    return [userInfo.role, null];
+  } catch (error) {
+    return error instanceof ClientError
+      ? [null, error.message]
+      : [null, "internal error"];
+  }
 }
 
 export type CreateChildUserRepoPayload = {
