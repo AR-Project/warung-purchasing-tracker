@@ -11,8 +11,10 @@ type Failure<E> = {
 
 type Result<T, E = Error> = Success<T> | Failure<E>;
 
-// Main wrapper function
-export async function tryCatch<T, E = Error>(
+/** Wrapper around promise function. Instead throwing error, it safely return value as `data` or error object as `error`.
+ * @param promise A promise function without await.
+ */
+export async function safePromise<T, E = Error>(
   promise: Promise<T>
 ): Promise<Result<T, E>> {
   try {
