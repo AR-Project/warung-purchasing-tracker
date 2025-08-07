@@ -5,6 +5,7 @@ import db from "../database/db";
 import { category, CreateCategoryDbPayload } from "@/lib/schema/category";
 import { generateId } from "@/lib/utils/generator";
 import ClientError from "@/lib/exception/ClientError";
+import { logger } from "@/lib/logger";
 
 type CreatedUser = {
   id: string;
@@ -84,9 +85,12 @@ export async function getUserRole(
 
     return [userInfo.role, null];
   } catch (error) {
-    return error instanceof ClientError
-      ? [null, error.message]
-      : [null, "internal error"];
+    if (error instanceof ClientError) {
+      return [null, error.message];
+    } else {
+      logger.error("userRepository.getUserRole", { error });
+      return [null, "internal error"];
+    }
   }
 }
 
