@@ -20,12 +20,10 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [userSessionWithRole] = await getUserRoleAuth();
-
   return (
     <html lang="en">
       <body className={`${inter.className} flex flex-col bg-black text-white`}>
-        <Navigation userData={userSessionWithRole} />
+        <Navigation />
         {children}
         <ToastContainer
           aria-label="notification"

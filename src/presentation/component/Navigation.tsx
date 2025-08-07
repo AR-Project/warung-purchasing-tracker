@@ -4,13 +4,11 @@ import { TbChecklist } from "react-icons/tb";
 
 import LoginRegisterModal from "@/app/_component/auth/LoginRegisterModal";
 import UserInfo from "@/app/_component/auth/UserInfo";
-import { UserSessionWithRole } from "@/lib/utils/auth";
+import { getUserRoleAuth } from "@/lib/utils/auth";
 
-type Props = {
-  userData: UserSessionWithRole | null;
-};
+export async function Navigation() {
+  const [userData] = await getUserRoleAuth();
 
-export async function Navigation({ userData }: Props) {
   const links = [
     {
       href: "/",
