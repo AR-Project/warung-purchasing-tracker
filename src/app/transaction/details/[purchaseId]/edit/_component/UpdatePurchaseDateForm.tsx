@@ -1,41 +1,41 @@
 "use client";
 
-import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
-import { MdSave, MdUndo } from "react-icons/md";
+import { MdSave } from "react-icons/md";
+import { LuLoaderCircle } from "react-icons/lu";
 
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 import { updatePurchaseDate } from "../_action/updatePurchaseDate.action";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props<T> = {
   purchaseId: string;
   newPurchaseDate: string;
+  currentPurchaseDate: string;
   onSuccess: () => void;
 };
 
 export default function UpdatePurchaseDateHiddenForm({
   purchaseId,
   newPurchaseDate,
+  currentPurchaseDate,
   onSuccess,
 }: Props<Vendor>) {
-  const [state, formAction] = useFormState<FormState<void>, FormData>(
+  const [wrappedUpdatePurchaseDate, isPending] = useServerAction(
     updatePurchaseDate,
-    {}
+    (msg) => {
+      toast.success(msg);
+      onSuccess();
+    },
+    (err) => {
+      toast.error(err);
+    }
   );
 
-  useStateChanged(() => {
-    if (state.message) {
-      toast.success(state.message);
-      onSuccess();
-    }
-
-    if (state.error) {
-      toast.error(state.error);
-    }
-  }, state);
-
   return (
-    <form action={formAction} className="flex flex-row ">
+    <form
+      action={wrappedUpdatePurchaseDate}
+      className="relative flex flex-row "
+    >
       <input
         type="hidden"
         name="purchase-id"
@@ -50,9 +50,10 @@ export default function UpdatePurchaseDateHiddenForm({
       />
       <button
         type="submit"
-        className=" flex flex-row gap-2 px-2 h-10 items-center bg-green-900 border-t border-b border-gray-500  w-fit hover:bg-green-800"
+        disabled={currentPurchaseDate === newPurchaseDate}
+        className=" flex flex-row gap-2 px-2 h-10 items-center bg-green-900 border-t border-b border-gray-500  w-fit hover:bg-green-800 text-xl disabled:bg-gray-700 disabled:text-white/30"
       >
-        <MdSave className="text-xl" />
+        {isPending ? <LuLoaderCircle className="animate-spin " /> : <MdSave />}
       </button>
     </form>
   );
