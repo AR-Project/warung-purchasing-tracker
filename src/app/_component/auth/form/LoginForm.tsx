@@ -2,13 +2,15 @@
 
 import { toast } from "react-toastify";
 
-import { loginUserAction } from "@/app/_globalAction/loginUser.action";
+import { signInAction } from "@/app/_globalAction/signIn.action";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 export default function LoginForm() {
   const [formAction] = useServerAction(
-    loginUserAction,
-    () => {},
+    signInAction,
+    () => {
+      // automatic refresh and redirect
+    },
     (err) => {
       toast.error(err);
     }

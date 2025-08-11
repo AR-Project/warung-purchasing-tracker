@@ -5,7 +5,7 @@ import { AuthError } from "next-auth";
 import { signIn } from "@/auth";
 import { safePromise } from "@/lib/utils/safePromise";
 
-export async function loginUserAction(formData: FormData) {
+export async function signInAction(formData: FormData) {
   const { error: signInRes } = await safePromise(
     signIn("credentials", formData)
   );
