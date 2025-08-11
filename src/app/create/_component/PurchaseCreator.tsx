@@ -11,7 +11,7 @@ import DatePicker from "./DatePicker";
 import useCartManager from "./_hooks/useCartManager";
 import { MdExpandLess, MdExpandMore } from "react-icons/md";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { savePurchaseAction } from "../_action/savePurchase.action";
+import { createPurchaseAction } from "../_action/createPurchase.action";
 import { ImSpinner5 } from "react-icons/im";
 import Link from "next/link";
 import clsx from "clsx";
@@ -75,9 +75,9 @@ export default function PurchaseCreator({
     return error;
   }
 
-  const [savePurchaseWrappedAction, isSavePurchaseActionPending] =
+  const [createPurchaseWrappedAction, isCreatePurchasePending] =
     useServerAction(
-      savePurchaseAction,
+      createPurchaseAction,
       (msg, data) => {
         toast.success(SuccessMessage, {
           data,
@@ -90,7 +90,7 @@ export default function PurchaseCreator({
 
   return (
     <div className="relative flex flex-col p-0.5 lg:p-2 pt-2 gap-2 w-full max-w-md lg:max-w-screen mx-auto bg-black h-full lg:h-screen lg:flex-row lg:max-h-screen">
-      {isSavePurchaseActionPending && <SavePurchasePendingOverlay />}
+      {isCreatePurchasePending && <SavePurchasePendingOverlay />}
 
       {/* Image Section */}
       <div className="flex flex-col basis-1/3 gap-3 h-full">
@@ -208,7 +208,7 @@ export default function PurchaseCreator({
           totalPurchase={cartTotalPrice}
           image={resizedImage}
           clearFrom={resetAll}
-          formAction={savePurchaseWrappedAction}
+          formAction={createPurchaseWrappedAction}
         />
         <button
           tabIndex={-1}

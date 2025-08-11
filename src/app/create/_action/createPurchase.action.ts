@@ -11,7 +11,7 @@ import { saveNewPurchase } from "@/infrastructure/repository/purchaseRepository"
 import { verifyUserAccess } from "@/lib/utils/auth";
 import { adminManagerStaffRole } from "@/lib/const";
 
-export async function savePurchaseAction(formData: FormData) {
+export async function createPurchaseAction(formData: FormData) {
   const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
   if (authError) return { error: authError };
 
