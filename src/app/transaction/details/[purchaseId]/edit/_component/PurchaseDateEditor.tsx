@@ -1,7 +1,9 @@
+"use client";
+
 import { useState } from "react";
+import { DateTime } from "luxon";
 
 import { stringToDate } from "@/lib/utils/formatter";
-import { EditorType } from "./PurchaseDataEditor";
 import SingleDatePicker from "./SingleDatePicker";
 import CloseEditorButton from "../_presentation/CloseEditorButton";
 import ShowEditorButton from "../_presentation/ShowEditorButton";
@@ -10,27 +12,22 @@ import UpdatePurchaseDateHiddenForm from "./UpdatePurchaseDateForm";
 type Props = {
   currentDate: Date;
   purchaseId: string;
-  activeEditor: EditorType | null;
-  selectEditor: (type: EditorType | null) => void;
 };
 
-export default function PurchaseDateEditor({
-  purchaseId,
-  currentDate,
-  selectEditor,
-  activeEditor,
-}: Props) {
-  const [newDate, setNewDate] = useState<string>();
-
-  const isActive = activeEditor === "purchase-date";
+export default function PurchaseDateEditor({ purchaseId, currentDate }: Props) {
+  const [newDate, setNewDate] = useState<string>("");
+  const [isActive, setIsActive] = useState(false);
 
   function closeEditor() {
-    selectEditor(null);
+    setIsActive(false);
+    setNewDate("");
   }
 
-  function setDate(dateString: string | undefined) {
+  function setDate(dateString: string) {
     setNewDate(dateString);
   }
+  const currDateRaw = DateTime.fromJSDate(currentDate).toISODate();
+  const currentDateISO = currDateRaw ? currDateRaw : "";
 
   return (
     <div>
@@ -39,7 +36,7 @@ export default function PurchaseDateEditor({
         {/* Displayer */}
         <div className="z-10 flex flex-row justify-between items-center w-full border border-gray-600/30">
           <div className="px-2">{stringToDate(currentDate)}</div>
-          <ShowEditorButton onClick={() => selectEditor("purchase-date")} />
+          <ShowEditorButton onClick={() => setIsActive(true)} />
         </div>
 
         {/* Pop Up */}
@@ -50,13 +47,13 @@ export default function PurchaseDateEditor({
         >
           <CloseEditorButton onClick={closeEditor} />
           <SingleDatePicker
-            isEditorActive={isActive}
             newDate={newDate}
-            originalDate={stringToDate(currentDate)}
+            originalDate={currentDateISO}
             setDate={setDate}
           />
           {newDate && (
             <UpdatePurchaseDateHiddenForm
+              currentPurchaseDate={currentDateISO}
               newPurchaseDate={newDate}
               onSuccess={closeEditor}
               purchaseId={purchaseId}
