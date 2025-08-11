@@ -3,20 +3,23 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import { NewPlanDbPayload } from "@/lib/schema/plan";
 import { saveNewPlan } from "@/infrastructure/repository/planRepo";
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { allRole } from "@/lib/const";
 
-export async function createPlanAction(formData: FormData) {
-  const session = await auth();
-  if (!session) return { error: "Forbidden" };
+export async function createPlanAction(
+  formData: FormData
+): Promise<FormState<string>> {
+  const [user, authError] = await verifyUserAccess(allRole);
+  if (authError) return { error: authError };
 
-  const [validatedNewPlanInput] = validateFormData(formData);
-  if (!validatedNewPlanInput) return { error: "Invalid Payload" };
+  const [validatedNewPlanInput, validatePlanError] = validateFormData(formData);
+  if (validatePlanError !== null) return { error: "Invalid Payload" };
 
   const { totalPrice, listOfPlanItem } = validatedNewPlanInput;
   const newPlanDbPayload: NewPlanDbPayload = {
-    creatorId: session.user.userId,
+    creatorId: user.userId,
     totalPrice: totalPrice,
   };
 
@@ -43,25 +46,27 @@ export type SavePlanActionPayload = {
   listOfPlanItem: ListOfPlanItemInput;
 };
 
+/** ---------- internal ---------- */
+
+const payloadSchema = z.object({
+  listOfPlanItemAsStr: z.string(),
+  totalPrice: z.coerce.number(),
+});
+
+const planItemArraySchema = z.array(
+  z.object({
+    itemId: z.string(),
+    quantityInHundreds: z.coerce.number(),
+    pricePerUnit: z.coerce.number(),
+    totalPrice: z.coerce.number(),
+  })
+);
+
 function validateFormData(
   formData: FormData
 ): [SavePlanActionPayload, null] | [null, string] {
   const listOfPlanItemAsStrRaw = formData.get("plan-item-stringify");
   const totalPriceRaw = formData.get("total-price");
-
-  const payloadSchema = z.object({
-    listOfPlanItemAsStr: z.string(),
-    totalPrice: z.coerce.number(),
-  });
-
-  const planItemArraySchema = z.array(
-    z.object({
-      itemId: z.string(),
-      quantityInHundreds: z.coerce.number(),
-      pricePerUnit: z.coerce.number(),
-      totalPrice: z.coerce.number(),
-    })
-  );
 
   const { data: newPlanUserInput } = payloadSchema.safeParse({
     listOfPlanItemAsStr: listOfPlanItemAsStrRaw,
