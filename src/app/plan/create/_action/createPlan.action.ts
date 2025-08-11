@@ -7,7 +7,7 @@ import { auth } from "@/auth";
 import { NewPlanDbPayload } from "@/lib/schema/plan";
 import { saveNewPlan } from "@/infrastructure/repository/planRepo";
 
-export async function savePlanAction(formData: FormData) {
+export async function createPlanAction(formData: FormData) {
   const session = await auth();
   if (!session) return { error: "Forbidden" };
 

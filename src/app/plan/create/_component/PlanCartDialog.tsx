@@ -18,8 +18,8 @@ import { formatNumberToIDR } from "@/lib/utils/formatter";
 import clsx from "clsx";
 import {
   ListOfPlanItemInput,
-  savePlanAction,
-} from "../_action/savePlan.action";
+  createPlanAction,
+} from "../_action/createPlan.action";
 
 type Props = {
   purchaseItems: PurchaseItemDisplay[];
@@ -84,7 +84,7 @@ function Panel({ closeDialog, purchaseItems, totalPrice }: PanelProps) {
   const router = useRouter();
 
   const [formAction, isPending] = useServerAction(
-    savePlanAction,
+    createPlanAction,
     (msg) => {
       toast.success(msg);
       setTimeout(() => router.push("/plan/"), 1500);
