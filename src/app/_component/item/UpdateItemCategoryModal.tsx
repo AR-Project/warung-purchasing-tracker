@@ -13,7 +13,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { updateItemCategory } from "@/app/_globalAction/item/updateItemCategory.action";
-import { getCategory } from "@/app/_globalAction/category/getCategory.action";
+import { getCategory } from "@/app/_globalAction/category/getCategory.loader";
 import { createCategoryAndMoveItem } from "@/app/_globalAction/categoryItem/createCategoryAndMoveItem.action";
 
 type Props = {
