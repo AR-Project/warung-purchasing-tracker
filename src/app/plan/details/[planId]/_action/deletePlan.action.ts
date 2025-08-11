@@ -1,96 +1,44 @@
 "use server";
 
-import { z } from "zod";
-import { DrizzleError, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+import { eq } from "drizzle-orm";
 
 import db from "@/infrastructure/database/db";
-import { getUserInfo } from "@/lib/utils/auth";
-import { user } from "@/lib/schema/user";
-import {
-  NewPurchaseArchiveDbPayload,
-  purchaseArchive,
-} from "@/lib/schema/archive";
-import { generateId } from "@/lib/utils/generator";
-import { item } from "@/lib/schema/item";
-import { auth } from "@/auth";
+import { verifyUserAccess } from "@/lib/utils/auth";
 import { plan } from "@/lib/schema/plan";
+import { allRole } from "@/lib/const";
+import ClientError from "@/lib/exception/ClientError";
 
-export async function deletePlanAction(
-  formData: FormData
-): Promise<FormState<void>> {
-  const planIdRaw = formData.get("plan-id");
+import { actionErrorDecoder } from "@/lib/exception/errorDecoder";
 
-  const session = await auth();
-  if (!session) return { error: "Need to Login first" };
-  const { userId } = session.user;
+const schema = z.string();
 
-  const schema = z.string();
-  const { data: planIdToDelete } = schema.safeParse(planIdRaw);
-  if (!planIdToDelete) return { error: "Invalid Payload" };
+export async function deletePlanAction(formData: FormData): Promise<FormState> {
+  const [user, authError] = await verifyUserAccess(allRole);
+  if (authError) return { error: authError };
 
-  const allowedRole: AvailableUserRole[] = [
-    "admin",
-    "manager",
-    "staff",
-    "guest",
-  ];
+  const { data: planIdToDelete, error: payloadError } = schema.safeParse(
+    formData.get("plan-id")
+  );
+  if (payloadError) return { error: "Invalid Payload" };
 
   let invariantError: string | undefined;
   try {
     await db.transaction(async (tx) => {
-      // Validate user role
-      const [userData] = await tx
-        .select({
-          role: user.role,
-        })
-        .from(user)
-        .where(eq(user.id, session.user.userId));
-      if (!allowedRole.includes(userData.role)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
+      const planToDelete = await tx.query.plan.findFirst({
+        where: (plan, { eq }) => eq(plan.id, planIdToDelete),
+      });
+      if (!planToDelete) throw new ClientError("Invalid Plan id");
+      if (planToDelete.creatorId !== user.userId)
+        throw new ClientError("Not Allowed");
 
-      // Validate current plan
-      const planToDelete = await tx
-        .select()
-        .from(plan)
-        .where(eq(plan.id, planIdToDelete));
-      if (planToDelete.length == 0) {
-        invariantError = "invalid Plan id";
-        tx.rollback();
-      }
-
-      // Validate authorization on current plan
-      const { creatorId } = planToDelete[0];
-      if (![creatorId].includes(userId)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
-
-      //   // Archival step
-      //   const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
-      //     id: generateId(20),
-      //     description: "Purchase Deletion",
-      //     ownerId: parentId,
-      //     creatorId: userId,
-      //     data: {
-      //       purchase: planToDelete[0],
-      //       listOfPurchaseItem,
-      //     },
-      //   };
-
-      // Commit action to database
-      //   await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
       await tx.delete(plan).where(eq(plan.id, planIdToDelete));
-      //   await tx
-      //     .delete(purchasedItems)
-      //     .where(eq(purchasedItems.purchaseId, purchaseIdToDelete));
     });
 
     revalidatePath(`/plan`);
     return { message: `Plan deleted` };
   } catch (error) {
-    return { error: invariantError || "Internal Error" };
+    return actionErrorDecoder(error);
   }
 }
