@@ -1,134 +1,99 @@
 "use server";
 
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
 import { purchasedItem, purchase } from "@/lib/schema/purchase";
-import { getUserInfo } from "@/lib/utils/auth";
-import { user } from "@/lib/schema/user";
+import { verifyUserAccess } from "@/lib/utils/auth";
+
 import {
   NewPurchaseArchiveDbPayload,
   purchaseArchive,
 } from "@/lib/schema/archive";
 import { generateId } from "@/lib/utils/generator";
-import { item } from "@/lib/schema/item";
+import ClientError from "@/lib/exception/ClientError";
+import { adminManagerRole } from "@/lib/const";
+
+const userPayloadSchema = z.object({
+  purchaseId: z.string(),
+  purchasedItemIdToDelete: z.string(),
+});
 
 export async function deleteSingleItemAction(
   formData: FormData
 ): Promise<FormState<void>> {
+  const [user, authError] = await verifyUserAccess(adminManagerRole);
+  if (authError) return { error: authError };
+
   const purchaseIdRaw = formData.get("purchase-id");
   const purchasedItemIdToDeleteRaw = formData.get("purchase-item-id");
 
-  const userPayloadSchema = z.object({
-    purchaseId: z.string(),
-    purchasedItemIdToDelete: z.string(),
+  const { data: payload, error: payloadError } = userPayloadSchema.safeParse({
+    purchaseId: purchaseIdRaw,
+    purchasedItemIdToDelete: purchasedItemIdToDeleteRaw,
   });
-
-  let invariantError: string | undefined;
-  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
+  if (payloadError) return { error: "Invalid Payload" };
   try {
-    const { userId: loggedInUserId, parentId } = await getUserInfo();
-    const { data: payload } = userPayloadSchema.safeParse({
-      purchaseId: purchaseIdRaw,
-      purchasedItemIdToDelete: purchasedItemIdToDeleteRaw,
-    });
-    if (!payload) {
-      invariantError = "Invalid Payload";
-      throw new Error(invariantError);
-    }
-
     await db.transaction(async (tx) => {
-      // Validate user role
-      const [currentUser] = await tx
-        .select({ role: user.role })
-        .from(user)
-        .where(eq(user.id, loggedInUserId));
-      if (!allowedRole.includes(currentUser.role)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
-
       // Validate existance of purchase
-      const currentPurchase = await tx
-        .select()
-        .from(purchase)
-        .where(eq(purchase.id, payload.purchaseId));
-      if (currentPurchase.length == 0) {
-        invariantError = "Invalid Purchase";
-        tx.rollback();
-      }
+      const currentPurchase = await tx.query.purchase.findFirst({
+        where: (purchase, { eq }) => eq(purchase.id, payload.purchaseId),
+      });
+      if (!currentPurchase) throw new ClientError("Invalid Purchase");
+      const { creatorId, ownerId, purchasedItemId, totalPrice } =
+        currentPurchase;
 
-      // Validate if loggedInUser is have authorization on current purchase
-      const { creatorId, ownerId } = currentPurchase[0];
-      if (![creatorId, ownerId].includes(loggedInUserId)) {
-        invariantError = "Not an owner / creator";
-        tx.rollback();
-      }
+      // Validate authorization
+      if (![creatorId, ownerId].includes(user.userId))
+        throw new ClientError("Not allowed");
 
-      // Validate existance of purchaseItem
-      const purchaseItemToDelete = await tx
-        .select()
-        .from(purchasedItem)
-        .where(eq(purchasedItem.id, payload.purchasedItemIdToDelete));
-      if (purchaseItemToDelete.length == 0) {
-        invariantError = "Invalid purchase item";
-        tx.rollback();
-      }
+      // Validate existence of purchaseItem
+      const purchaseItemToDelete = await tx.query.purchasedItem.findFirst({
+        where: (purchaseItem, { eq }) =>
+          eq(purchaseItem.id, payload.purchasedItemIdToDelete),
+        with: { item: { columns: { name: true } } },
+      });
+      if (!purchaseItemToDelete) throw new ClientError("Invalid purchase item");
 
-      // Validate purchase item to delete is exist on current purchase
-      const oldListOfPurchaseItemId = structuredClone(
-        currentPurchase[0].purchasedItemId
-      );
-      const isExistOnPurchase = oldListOfPurchaseItemId.includes(
+      const isItemExistOnPurchase = purchasedItemId.includes(
         payload.purchasedItemIdToDelete
       );
-      if (!isExistOnPurchase) {
-        invariantError = "Purchase Item not exist";
-        tx.rollback();
-      }
+      if (!isItemExistOnPurchase)
+        throw new ClientError("Purchase Item not exist");
 
-      // Generate new listOfPurchaseItemId
-      const newListOfPurchaseItemId = oldListOfPurchaseItemId.filter(
+      // Update list of PurchaseItemId
+      const updatedPurchaseItemIds = purchasedItemId.filter(
         (id) => id !== payload.purchasedItemIdToDelete
       );
 
-      // Temporary store deleted purchase
-      const [deletedPurchaseItem] = purchaseItemToDelete;
+      // Calculate price
+      const { pricePerUnit, quantityInHundreds } = purchaseItemToDelete;
+      const updatedPurchasePrice =
+        totalPrice - pricePerUnit * (quantityInHundreds / 100);
 
-      // Calculate changed data (purchase total price)
-      const deletedPurchaseItemTotalPrice =
-        deletedPurchaseItem.pricePerUnit *
-        (deletedPurchaseItem.quantityInHundreds / 100);
-      const newPurchaseTotalPrice =
-        currentPurchase[0].totalPrice - deletedPurchaseItemTotalPrice;
-
-      // Prepare Archival payload
-      const [itemResult] = await tx
-        .select({ name: item.name })
-        .from(item)
-        .where(eq(item.id, deletedPurchaseItem.itemId));
-      const data = {
-        ...deletedPurchaseItem,
-        ...itemResult,
-      };
+      // Archive
+      const { item, ...rest } = purchaseItemToDelete;
       const purchaseArchiveDbPayload: NewPurchaseArchiveDbPayload = {
         id: generateId(20),
-        ownerId: parentId,
-        creatorId: loggedInUserId,
+        ownerId: user.parentId,
+        creatorId: user.userId,
         description: "purchase item deletion",
-        data,
+        data: {
+          ...rest,
+          itemName: item.name,
+        },
       };
 
-      // Append change to database
+      // Persist action
       await tx.insert(purchaseArchive).values(purchaseArchiveDbPayload);
       await tx
         .update(purchase)
         .set({
-          purchasedItemId: newListOfPurchaseItemId,
+          purchasedItemId: updatedPurchaseItemIds,
           modifiedAt: new Date(),
-          totalPrice: newPurchaseTotalPrice,
+          totalPrice: updatedPurchasePrice,
         })
         .where(eq(purchase.id, payload.purchaseId))
         .returning({ id: purchase.id });
@@ -141,18 +106,8 @@ export async function deleteSingleItemAction(
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Item deleted` };
   } catch (error) {
-    if (invariantError) {
-      return { error: invariantError };
-    }
-
-    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
-      return { error: "Login first" };
-    }
-
-    if (error instanceof DrizzleError) {
-      return { error: error.message };
-    }
-
-    return { error: "internal error" };
+    return {
+      error: error instanceof ClientError ? error.message : "Internal Error",
+    };
   }
 }

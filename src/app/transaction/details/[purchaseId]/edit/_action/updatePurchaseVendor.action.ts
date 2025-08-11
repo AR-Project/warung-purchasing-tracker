@@ -1,72 +1,47 @@
 "use server";
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
-import { vendor } from "@/lib/schema/vendor";
 import { purchase } from "@/lib/schema/purchase";
-import { revalidatePath } from "next/cache";
-import { user } from "@/lib/schema/user";
-import { getUserInfo } from "@/lib/utils/auth";
+
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { adminManagerRole } from "@/lib/const";
+import ClientError from "@/lib/exception/ClientError";
+import { actionErrorDecoder } from "@/lib/exception/errorDecoder";
+
+const schema = z.object({
+  purchaseId: z.string(),
+  newVendorId: z.string(),
+});
 
 export async function updatePurchaseVendor(formData: FormData) {
+  const [user, authError] = await verifyUserAccess(adminManagerRole);
+  if (authError) return { error: authError };
+
   const purchaseId = formData.get("purchase-id");
   const newVendorId = formData.get("new-purchase-vendor-id");
 
-  const schema = z.object({
-    purchaseId: z.string(),
-    newVendorId: z.string(),
+  const { data: payload, error: pyError } = schema.safeParse({
+    purchaseId,
+    newVendorId,
   });
-
-  let invariantError: string | undefined;
-
-  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
+  if (pyError) return { error: "Invalid Payload" };
 
   try {
-    const { userId } = await getUserInfo();
-
-    const { data: payload } = schema.safeParse({
-      purchaseId,
-      newVendorId,
-    });
-    if (!payload) {
-      invariantError = "Invalid Payload";
-      throw new Error(invariantError);
-    }
-
     await db.transaction(async (tx) => {
-      // Validate role
-      const [currentUser] = await tx
-        .select({ role: user.role })
-        .from(user)
-        .where(eq(user.id, userId));
-      if (!allowedRole.includes(currentUser.role)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
+      const currPurchase = await tx.query.purchase.findFirst({
+        where: (purchase, { eq }) => eq(purchase.id, payload.purchaseId),
+      });
+      if (!currPurchase) throw new ClientError("Purchase Not Exist");
+      if (![currPurchase.creatorId, currPurchase.ownerId].includes(user.userId))
+        throw new ClientError("Not Allowed");
 
-      const currentPurchase = await tx
-        .select()
-        .from(purchase)
-        .where(eq(purchase.id, payload.purchaseId));
-      if (currentPurchase.length == 0) {
-        invariantError = "Purchase Not Exist";
-        tx.rollback();
-      }
-      const { creatorId, ownerId } = currentPurchase[0];
-      if (![creatorId, ownerId].includes(userId)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
-
-      const vendorResult = await tx
-        .select()
-        .from(vendor)
-        .where(eq(vendor.id, payload.newVendorId));
-      if (vendorResult.length == 0) {
-        invariantError = "Vendor not exist";
-        tx.rollback();
-      }
+      const pickedVendor = await tx.query.vendor.findFirst({
+        where: (vendor, { eq }) => eq(vendor.id, payload.newVendorId),
+      });
+      if (!pickedVendor) throw new ClientError("Vendor not exist");
 
       await tx
         .update(purchase)
@@ -77,18 +52,6 @@ export async function updatePurchaseVendor(formData: FormData) {
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Vendor changed` };
   } catch (error) {
-    if (invariantError) {
-      return { error: invariantError };
-    }
-
-    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
-      return { error: "Login first" };
-    }
-
-    if (error instanceof DrizzleError) {
-      return { error: error.message };
-    }
-
-    return { error: "internal error" };
+    return actionErrorDecoder(error);
   }
 }

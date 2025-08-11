@@ -6,21 +6,18 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 import { createCategory } from "@/infrastructure/repository/categoryRepo";
 import { CreateCategoryDbPayload } from "@/lib/schema/category";
 import { generateId } from "@/lib/utils/generator";
+import { adminManagerStaffRole } from "@/lib/const";
 
 const createCtgryReqSchema = z.string();
 
 export default async function createCategoryAction(formData: FormData) {
-  const [userInfo, error] = await verifyUserAccess([
-    "admin",
-    "staff",
-    "manager",
-  ]);
-  if (error !== null) return { error: "forbidden" };
+  const [userInfo, authError] = await verifyUserAccess(adminManagerStaffRole);
+  if (authError) return { error: "forbidden" };
 
-  const { data: categoryName, success: isReqValid } =
+  const { data: categoryName, error: payloadErr } =
     createCtgryReqSchema.safeParse(formData.get("category-name"));
 
-  if (isReqValid === false) return { error: "invalid Request" };
+  if (payloadErr) return { error: "invalid Request" };
 
   const payload: CreateCategoryDbPayload = {
     id: `cat-${generateId(9)}`,

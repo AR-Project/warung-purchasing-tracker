@@ -1,7 +1,7 @@
 "use server";
 
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
@@ -11,48 +11,46 @@ import {
   purchase,
 } from "@/lib/schema/purchase";
 import { generateId } from "@/lib/utils/generator";
-import { user } from "@/lib/schema/user";
 import { adminManagerRole } from "@/lib/const";
-import { auth } from "@/auth";
+
+import { verifyUserAccess } from "@/lib/utils/auth";
+import ClientError from "@/lib/exception/ClientError";
+
+const userPayloadSchema = z.object({
+  purchaseId: z.string(),
+  listOfPurchaseItemAsStr: z.string(),
+});
+
+const listOfPurchaseItemSchema = z.array(
+  z.object({
+    itemId: z.string(),
+    quantityInHundreds: z.number(),
+    pricePerUnit: z.number(),
+    totalPrice: z.number(),
+  })
+);
 
 export async function updatePurchaseItemAction(formData: FormData) {
-  const session = await auth();
-  if (!session) return { error: "Forbidden" };
+  const [user, authError] = await verifyUserAccess(adminManagerRole);
+  if (authError) return { error: authError };
 
-  const purchaseIdRaw = formData.get("purchase-id");
-  const listOfPurchaseItemRaw = formData.get("items-to-add");
-
-  const userPayloadSchema = z.object({
-    purchaseId: z.string(),
-    listOfPurchaseItemAsStr: z.string(),
+  const { data: payload, error: payloadErr } = userPayloadSchema.safeParse({
+    purchaseId: formData.get("purchase-id"),
+    listOfPurchaseItemAsStr: formData.get("items-to-add"),
   });
+  if (payloadErr) return { error: "Invalid Payload" };
 
-  const listOfPurchaseItemSchema = z.array(
-    z.object({
-      itemId: z.string(),
-      quantityInHundreds: z.number(),
-      pricePerUnit: z.number(),
-      totalPrice: z.number(),
-    })
-  );
-
-  const { data: payload } = userPayloadSchema.safeParse({
-    purchaseId: purchaseIdRaw,
-    listOfPurchaseItemAsStr: listOfPurchaseItemRaw,
-  });
-  if (!payload) return { error: "Invalid Payload" };
-
-  const { data: listOfPurchaseItemPayload } =
+  const { data: listOfPurchaseItemPayload, error: listItemPyError } =
     listOfPurchaseItemSchema.safeParse(
       JSON.parse(payload.listOfPurchaseItemAsStr)
     );
 
-  if (!listOfPurchaseItemPayload) return { error: "Invalid Payload" };
+  if (listItemPyError) return { error: "Invalid Payload" };
 
   const databaseError = await updatePurchaseItem({
-    requester: session.user,
+    requester: user,
     purchaseId: payload.purchaseId,
-    purchaseItemList: listOfPurchaseItemPayload,
+    newPurchaseItemList: listOfPurchaseItemPayload,
   });
 
   if (databaseError) return { error: databaseError };
@@ -64,80 +62,57 @@ export async function updatePurchaseItemAction(formData: FormData) {
 type UpdatePurchaseItemPayload = {
   requester: UserSession;
   purchaseId: string;
-  purchaseItemList: CreatePurchaseItemPayload[];
+  newPurchaseItemList: CreatePurchaseItemPayload[];
 };
 
 async function updatePurchaseItem({
   requester,
   purchaseId,
-  purchaseItemList,
+  newPurchaseItemList,
 }: UpdatePurchaseItemPayload): Promise<string | null> {
   const { userId, parentId } = requester;
 
-  let invariantError: string | undefined;
-
   try {
     await db.transaction(async (tx) => {
-      // Validate role
-      const [currentUser] = await tx
-        .select({ role: user.role })
-        .from(user)
-        .where(eq(user.id, userId));
-      if (!adminManagerRole.includes(currentUser.role)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
-
       // Validate Purchase
-      const currentPurchase = await tx
-        .select()
-        .from(purchase)
-        .where(eq(purchase.id, purchaseId));
-      if (currentPurchase.length == 0) {
-        invariantError = "Purchase not exist";
-        tx.rollback();
-      }
+      const curPurchase = await tx.query.purchase.findFirst({
+        where: (purchase, { eq }) => eq(purchase.id, purchaseId),
+      });
+      if (!curPurchase) throw new ClientError("Purchase not exist");
 
-      // Validate authorization on current purchase
-      const { creatorId, ownerId } = currentPurchase[0];
-      if (![creatorId, ownerId].includes(userId)) {
-        invariantError = "Not an owner / creator";
-        tx.rollback();
-      }
+      const { creatorId, ownerId } = curPurchase;
+      if (![creatorId, ownerId].includes(userId))
+        throw new ClientError("not allowed");
 
-      const currentPurchaseItemLength =
-        currentPurchase[0].purchasedItemId.length;
+      const currPurchaseItemLen = curPurchase.purchasedItemId.length;
 
-      const listOfPurchaseItemDbPayload: NewPurchaseItemDbPayload[] =
-        purchaseItemList.map((item, index) => ({
+      const newPcItDbPayload: NewPurchaseItemDbPayload[] =
+        newPurchaseItemList.map((item, index) => ({
           ...item,
           creatorId: userId,
           ownerId: parentId,
           purchaseId: purchaseId,
-          purchasedAt: currentPurchase[0].purchasedAt,
-          sortOrder: index + currentPurchaseItemLength,
+          purchasedAt: curPurchase.purchasedAt,
+          sortOrder: currPurchaseItemLen + index,
           id: generateId(14),
         }));
 
-      const listOfPurchaseItemTotalPrice = listOfPurchaseItemDbPayload.reduce(
+      const newListTotalPrice = newPcItDbPayload.reduce(
         (total, item) => total + item.totalPrice,
         0
       );
 
-      const newPurchaseTotalPrice =
-        currentPurchase[0].totalPrice + listOfPurchaseItemTotalPrice;
+      const updatedPcTotPrice = curPurchase.totalPrice + newListTotalPrice;
 
-      const newListOfPurchaseItemId = listOfPurchaseItemDbPayload.map(
-        (item) => item.id
-      );
+      const newListOfPurchaseItemId = newPcItDbPayload.map((item) => item.id);
 
-      await tx.insert(purchasedItem).values(listOfPurchaseItemDbPayload);
+      await tx.insert(purchasedItem).values(newPcItDbPayload);
       await tx
         .update(purchase)
         .set({
-          totalPrice: newPurchaseTotalPrice,
+          totalPrice: updatedPcTotPrice,
           purchasedItemId: [
-            ...currentPurchase[0].purchasedItemId,
+            ...curPurchase.purchasedItemId,
             ...newListOfPurchaseItemId,
           ],
           modifiedAt: new Date(),
@@ -147,6 +122,6 @@ async function updatePurchaseItem({
     });
     return null;
   } catch (error) {
-    return invariantError ? invariantError : "internal error";
+    return error instanceof ClientError ? error.message : "Internal Error";
   }
 }

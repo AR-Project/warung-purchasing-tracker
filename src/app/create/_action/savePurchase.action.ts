@@ -3,53 +3,46 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
-import { auth } from "@/auth";
 import { NewImageDbPayload } from "@/lib/schema/image";
 import { NewPurchaseDbPayload } from "@/lib/schema/purchase";
 import { generateId } from "@/lib/utils/generator";
-import {
-  ImageMetadata,
-  writeImageFile,
-} from "@/infrastructure/storage/localStorage";
+import { writeImageFile } from "@/infrastructure/storage/localStorage";
 import { saveNewPurchase } from "@/infrastructure/repository/purchaseRepository";
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { adminManagerStaffRole } from "@/lib/const";
 
 export async function savePurchaseAction(formData: FormData) {
-  const session = await auth();
-  if (!session) return { error: "Forbidden" };
+  const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
+  if (authError) return { error: authError };
 
   const [validatedPayload] = validateFormData(formData);
   if (!validatedPayload) return { error: "Invalid Payload" };
   const { newPurchasePayload, listOfPurchaseItem } = validatedPayload;
 
-  const imageRaw = formData.get("image");
-  const [validatedImage] = validateFormImage(imageRaw);
-
-  let imageMetadata: ImageMetadata | null = null;
+  const [validatedImage] = validateFormDataImage(formData.get("image"));
   let newImageDbPayload: NewImageDbPayload | null = null;
 
   if (validatedImage) {
     const [metadata] = await writeImageFile(validatedImage);
-    imageMetadata = metadata;
+    if (metadata) {
+      newImageDbPayload = {
+        ...metadata,
+        creatorId: user.userId,
+        ownerId: user.parentId,
+        originalFileName: "from-create-purchase",
+      };
+    }
   }
 
   const newPurchaseDbPayload: NewPurchaseDbPayload = {
     id: generateId(10),
-    creatorId: session.user.userId,
-    ownerId: session.user.parentId,
-    imageId: imageMetadata ? imageMetadata.id : null,
+    creatorId: user.userId,
+    ownerId: user.parentId,
+    imageId: newImageDbPayload ? newImageDbPayload.id : null,
     vendorId: newPurchasePayload.vendorId,
     purchasedAt: new Date(newPurchasePayload.purchasedAt),
     totalPrice: newPurchasePayload.totalPrice,
   };
-
-  if (imageMetadata) {
-    newImageDbPayload = {
-      ...imageMetadata,
-      creatorId: session.user.userId,
-      ownerId: session.user.parentId,
-      originalFileName: "transaction",
-    };
-  }
 
   const [savedPurchaseId] = await saveNewPurchase(
     newPurchaseDbPayload,
@@ -74,16 +67,16 @@ type NewPurchasePayload = {
   listOfPurchaseItemAsStr: string;
 };
 
-type ListOfPurchaseItem = {
+type PurchaseItem = {
   totalPrice: number;
   itemId: string;
   quantityInHundreds: number;
   pricePerUnit: number;
-}[];
+};
 
 type ValidatedData = {
   newPurchasePayload: NewPurchasePayload;
-  listOfPurchaseItem: ListOfPurchaseItem;
+  listOfPurchaseItem: PurchaseItem[];
 };
 
 function validateFormData(
@@ -126,7 +119,7 @@ function validateFormData(
   return [{ newPurchasePayload, listOfPurchaseItem }, null];
 }
 
-function validateFormImage(
+function validateFormDataImage(
   data: FormDataEntryValue | null
 ): [Blob, null] | [null, string] {
   const imageSchema = z.custom<Blob>(

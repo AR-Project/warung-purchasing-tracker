@@ -1,60 +1,38 @@
 "use server";
 import { z } from "zod";
-import { DrizzleError, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 import db from "@/infrastructure/database/db";
 import { purchase } from "@/lib/schema/purchase";
-import { user } from "@/lib/schema/user";
-import { getUserInfo } from "@/lib/utils/auth";
+import { verifyUserAccess } from "@/lib/utils/auth";
+import ClientError from "@/lib/exception/ClientError";
+import { actionErrorDecoder } from "@/lib/exception/errorDecoder";
 
-export async function updatePurchaseDate(prevState: any, formData: FormData) {
-  const purchaseIdRaw = formData.get("purchase-id");
-  const newPurchaseDateStringRaw = formData.get("new-purchase-date");
+const schema = z.object({
+  purchaseId: z.string(),
+  newPurchaseDateString: z.iso.date(),
+});
 
-  const schema = z.object({
-    purchaseId: z.string(),
-    newPurchaseDateString: z.string().date(),
+export async function updatePurchaseDate(formData: FormData) {
+  const [user, authError] = await verifyUserAccess(["admin", "manager"]);
+  if (authError) return { error: authError };
+
+  const { data: payload, error: payloadErr } = schema.safeParse({
+    purchaseId: formData.get("purchase-id"),
+    newPurchaseDateString: formData.get("new-purchase-date"),
   });
-
-  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
-  let invariantError: string | undefined;
-
+  if (payloadErr) return { error: "Invalid Payload" };
   try {
-    const { userId: loggedInUserId } = await getUserInfo();
-
-    const { data: payload } = schema.safeParse({
-      purchaseId: purchaseIdRaw,
-      newPurchaseDateString: newPurchaseDateStringRaw,
-    });
-    if (!payload) {
-      invariantError = "Invalid Payload Format";
-      throw new Error(invariantError);
-    }
-
     await db.transaction(async (tx) => {
-      // Validate role
-      const [currentUser] = await tx
-        .select({ role: user.role })
-        .from(user)
-        .where(eq(user.id, loggedInUserId));
-      if (!allowedRole.includes(currentUser.role)) {
-        invariantError = "Not Allowed";
-        tx.rollback();
-      }
+      const currPurchase = await tx.query.purchase.findFirst({
+        where: (purchase, { eq }) => eq(purchase.id, payload.purchaseId),
+      });
 
-      // Validate Purchase
-      const purchaseResult = await tx
-        .select()
-        .from(purchase)
-        .where(eq(purchase.id, payload.purchaseId));
+      if (!currPurchase) throw new ClientError("Purchase Not Exist");
+      if (![currPurchase.ownerId, currPurchase.creatorId].includes(user.userId))
+        throw new ClientError("Not Allowed");
 
-      if (purchaseResult.length == 0) {
-        invariantError = "Purchase Not Exist";
-        tx.rollback();
-      }
-
-      // Commit database change
       await tx
         .update(purchase)
         .set({
@@ -67,18 +45,6 @@ export async function updatePurchaseDate(prevState: any, formData: FormData) {
     revalidatePath(`/transaction/details/${payload.purchaseId}`);
     return { message: `Purchase Date changed` };
   } catch (error) {
-    if (invariantError) {
-      return { error: invariantError };
-    }
-
-    if (error instanceof Error && error.message == "USER_LOGGED_OUT") {
-      return { error: "Login first" };
-    }
-
-    if (error instanceof DrizzleError) {
-      return { error: error.message };
-    }
-
-    return { error: "internal error" };
+    return actionErrorDecoder(error);
   }
 }
