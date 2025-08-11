@@ -6,7 +6,7 @@ import { PiCaretDoubleRightBold } from "react-icons/pi";
 import { toast } from "react-toastify";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { changeUserRole } from "../_action/changeUserRole.action";
+import { updateUserRole } from "../_action/updateUserRole.action";
 import { updateUserUsername } from "../_action/updateUserUsername.action";
 
 type Props = {
@@ -43,7 +43,7 @@ export default function ChildUserRoleEditor({
   ];
 
   const [changeUserRoleAction] = useServerAction(
-    changeUserRole,
+    updateUserRole,
     (msg) => toast.success(msg),
     (err) => toast.error(err)
   );

@@ -9,7 +9,7 @@ import db from "@/infrastructure/database/db";
 import { user } from "@/lib/schema/user";
 import { adminOnlyRole } from "@/lib/const";
 
-export async function changeUserRole(formdata: FormData): Promise<FormState> {
+export async function updateUserRole(formdata: FormData): Promise<FormState> {
   const session = await auth();
   if (!session) return { error: "Forbidden" };
 
