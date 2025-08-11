@@ -10,7 +10,7 @@ import { generateId } from "@/lib/utils/generator";
 import { safePromise } from "@/lib/utils/safePromise";
 import { adminManagerStaffRole } from "@/lib/const";
 
-export async function newVendor(formData: FormData) {
+export async function createVendor(formData: FormData) {
   const nameRaw = formData.get("name");
 
   const [user, authError] = await verifyUserAccess(adminManagerStaffRole);

@@ -3,7 +3,7 @@ import { type SetStateAction } from "react";
 import { toast } from "react-toastify";
 import { FiPlusSquare } from "react-icons/fi";
 import { ImCancelCircle } from "react-icons/im";
-import { newVendor } from "@/app/_globalAction/newVendor.action";
+import { createVendor } from "@/app/_globalAction/createVendor.action";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props<T> = {
@@ -18,7 +18,7 @@ export default function AddVendorHiddenForm<T>({
   setNewName,
 }: Props<Vendor>) {
   const [formAction] = useServerAction(
-    newVendor,
+    createVendor,
     (msg, data) => {
       if (!data || !name) return;
       toast.success(msg);

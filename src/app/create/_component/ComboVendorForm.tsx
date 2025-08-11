@@ -12,7 +12,7 @@ import { MdAdd } from "react-icons/md";
 
 import useList from "@/presentation/hooks/useList";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { newVendor } from "@/app/_globalAction/newVendor.action";
+import { createVendor } from "@/app/_globalAction/createVendor.action";
 
 type Props = {
   initialVendors: { id: string; name: string }[];
@@ -40,7 +40,7 @@ export default function ComboVendorForm({
     selectedVendor !== null && selectedVendor.id === "pending";
 
   const [newVendorAction] = useServerAction(
-    newVendor,
+    createVendor,
     (msg, data) => {
       if (!data) return;
       toast.success(msg);
