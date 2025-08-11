@@ -1,30 +1,22 @@
 "use client";
 
 import { useRef } from "react";
+import clsx from "clsx";
 
 import { shortDateWithDay } from "@/lib/utils/formatter";
-import { useStateChanged } from "@/presentation/hooks/useStateChanged";
 
 type Props = {
   originalDate: string;
   newDate: string | undefined;
-  setDate: (dateString: string | undefined) => void;
-  isEditorActive: boolean;
+  setDate: (dateString: string) => void;
 };
 
 export default function SingleDatePicker({
   originalDate,
   newDate,
   setDate,
-  isEditorActive,
 }: Props) {
   const dateInputRef = useRef<HTMLInputElement>(null);
-
-  useStateChanged(() => {
-    if (!isEditorActive) {
-      setDate(undefined);
-    }
-  }, isEditorActive);
 
   return (
     <div className="group flex flex-row grow relative">
@@ -34,12 +26,13 @@ export default function SingleDatePicker({
         type="date"
         placeholder={originalDate}
         value={newDate}
-        onChange={(e) => {
-          setDate(e.target.value);
-        }}
+        onChange={(e) => setDate(e.target.value)}
       />
       <button
-        className=" grow border bg-gray-800 border-gray-400 hover:bg-blue-700/30 h-10 px-2"
+        className={clsx(
+          " grow border border-gray-400 hover:bg-blue-700/30 h-10 px-2",
+          newDate === originalDate ? "bg-red-950" : " bg-gray-800"
+        )}
         onClick={() => dateInputRef.current?.showPicker()}
       >
         {newDate ? (
