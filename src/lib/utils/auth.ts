@@ -1,7 +1,9 @@
 import { auth } from "@/auth";
 import { getUserRole } from "@/infrastructure/repository/userRepository";
 
-/** Return user info from session, or throw error when session is null */
+/** Return user info from session, or throw error when session is null
+ * @deprecated use `validateUser` or `verifyUserAccess`
+ */
 export async function getUserInfo(): Promise<UserSession> {
   const session = await auth();
   if (!session) throw new Error("USER_LOGGED_OUT");
@@ -10,7 +12,9 @@ export async function getUserInfo(): Promise<UserSession> {
 
 export async function validateUser(): Promise<SafeResult<UserSession>> {
   const session = await auth();
-  return session ? [session.user, null] : [null, "not_authenticated"];
+  const isAuth = session && session.user;
+  if (!isAuth) return [null, "not authenticated"];
+  return [session.user, null];
 }
 
 export type UserSessionWithRole = UserSession & { role: string };
@@ -22,15 +26,13 @@ export type UserSessionWithRole = UserSession & { role: string };
 export async function getUserRoleAuth(): Promise<
   SafeResult<UserSessionWithRole>
 > {
-  const session = await auth();
-  if (!session || !session.user || !session.user.userId) {
-    return [null, "not authenticated"];
-  }
+  const [user, authError] = await validateUser();
+  if (authError !== null) return [null, authError];
 
-  const [role, getRoleError] = await getUserRole(session.user.userId);
+  const [role, getRoleError] = await getUserRole(user.userId);
   if (getRoleError != null) return [null, "repo error"];
 
-  return [{ ...session.user, role }, null];
+  return [{ ...user, role }, null];
 }
 
 type VerifyUserAccessError =
@@ -51,8 +53,7 @@ export async function verifyUserAccess(
   const [user, validateUserError] = await validateUser();
   if (validateUserError !== null) return [null, "not_authenticated"];
 
-  // auth fron authjs only check from jwt. This line make sure active role
-  // is verified directly from database
+  // Verify role from database
   const [currentUserRole, getUserRoleError] = await getUserRole(user.userId);
   if (getUserRoleError !== null) return [null, "internal_error"];
 
