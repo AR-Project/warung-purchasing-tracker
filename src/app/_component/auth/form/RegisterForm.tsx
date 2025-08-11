@@ -2,7 +2,7 @@
 
 import { toast } from "react-toastify";
 
-import { registerUserAction } from "@/app/_globalAction/registerUser.action";
+import { createUserAction } from "@/app/_globalAction/createUser.action";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 
 type Props = {
@@ -11,7 +11,7 @@ type Props = {
 
 export default function RegisterForm({ onSuccess = () => {} }: Props) {
   const [formAction] = useServerAction(
-    registerUserAction,
+    createUserAction,
     (msg) => {
       onSuccess();
       toast.success(msg);

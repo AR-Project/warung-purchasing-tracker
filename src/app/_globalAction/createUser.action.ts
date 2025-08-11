@@ -14,9 +14,7 @@ const reqSchema = z.object({
   confirmPassword: z.string(),
 });
 
-export async function registerUserAction(
-  formData: FormData
-): Promise<FormState> {
+export async function createUserAction(formData: FormData): Promise<FormState> {
   const registrationUserStatus = await flag.userRegistration();
   if (registrationUserStatus === false)
     return { error: "Registration is closed" };
