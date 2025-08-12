@@ -4,8 +4,16 @@ import { AuthError } from "next-auth";
 
 import { signIn } from "@/auth";
 import { safePromise } from "@/lib/utils/safePromise";
+import { rateLimit } from "@/lib/rateLimit";
 
 export async function signInAction(formData: FormData) {
+  const { error: rateLimitError } = await rateLimit({
+    key: "login",
+    limit: 3,
+    window: "6 s",
+  });
+  if (rateLimitError) return { error: rateLimitError };
+
   const { error: signInRes } = await safePromise(
     signIn("credentials", formData)
   );
