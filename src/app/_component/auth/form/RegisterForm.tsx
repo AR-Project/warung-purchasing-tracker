@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { toast } from "react-toastify";
 
 import { createUserAction } from "@/app/_globalAction/createUser.action";
@@ -9,8 +10,21 @@ type Props = {
   onSuccess?: () => void;
 };
 
+type SignInCredentials = {
+  username: string;
+  password: string;
+  confirmPassword: string;
+};
+
 export default function RegisterForm({ onSuccess = () => {} }: Props) {
-  const [formAction] = useServerAction(
+  const [err, setErr] = useState("");
+  const [credentials, setCredentials] = useState<SignInCredentials>({
+    username: "",
+    password: "",
+    confirmPassword: "",
+  });
+
+  const [formAction, isPending] = useServerAction(
     createUserAction,
     (msg) => {
       onSuccess();
@@ -28,6 +42,11 @@ export default function RegisterForm({ onSuccess = () => {} }: Props) {
           name="username"
           placeholder="Username"
           id="register-username"
+          min={3}
+          value={credentials.username}
+          onChange={(e) =>
+            setCredentials((prev) => ({ ...prev, username: e.target.value }))
+          }
           required
         />
       </div>
@@ -38,6 +57,10 @@ export default function RegisterForm({ onSuccess = () => {} }: Props) {
           name="password"
           placeholder="Password"
           id="register-pasword"
+          value={credentials.password}
+          onChange={(e) =>
+            setCredentials((prev) => ({ ...prev, password: e.target.value }))
+          }
           required
         />
       </div>
@@ -48,10 +71,32 @@ export default function RegisterForm({ onSuccess = () => {} }: Props) {
           name="confirm-password"
           placeholder="Confirm Password"
           id="register-confirm-password"
+          value={credentials.confirmPassword}
+          onChange={(e) => {
+            setCredentials((prev) => ({
+              ...prev,
+              confirmPassword: e.target.value,
+            }));
+          }}
+          onBlur={() => {
+            if (credentials.password !== credentials.confirmPassword) {
+              setErr("Password Is Not Match");
+            } else {
+              setErr("");
+            }
+          }}
+          onFocus={() => setErr("")}
           required
         />
       </div>
-      <button type="submit">Daftar</button>
+      <div>{err}</div>
+      <button
+        type="submit"
+        className="bg-blue-500 p-2 text-lg rounded-sm border border-blue-800 font-bold disabled:bg-gray-500"
+        disabled={isPending}
+      >
+        Daftar
+      </button>
     </form>
   );
 }
