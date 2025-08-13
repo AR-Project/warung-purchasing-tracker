@@ -30,7 +30,6 @@ export async function signInAction(formData: FormData) {
     throw signInRes;
   } else {
     // SignIn Failure due server error
-    console.error(signInRes);
     return { error: "internal error" };
   }
 }
