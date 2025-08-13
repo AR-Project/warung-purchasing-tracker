@@ -15,7 +15,7 @@ import {
 import { adminManagerRole } from "@/lib/const";
 import { generateId } from "@/lib/utils/generator";
 import { verifyUserAccess } from "@/lib/utils/auth";
-import { generateImageFilePath } from "@/lib/utils/fileSystem";
+import { generateImagePathOnServer } from "@/lib/utils/fileSystem";
 import ClientError from "@/lib/exception/ClientError";
 
 const schema = z.string();
@@ -88,7 +88,10 @@ export async function deletePurchase(
         const uploadAtDateString = DateTime.fromJSDate(uploadedAt).toISODate();
         if (!uploadAtDateString) throw new Error("Date Invalid");
 
-        const imageFilePath = generateImageFilePath(id, uploadAtDateString);
+        const imageFilePath = generateImagePathOnServer(
+          user.parentId,
+          purchaseToDelete.image.serverFileName
+        );
         await fs.stat(imageFilePath);
         await fs.unlink(imageFilePath);
       }

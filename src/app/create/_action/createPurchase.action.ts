@@ -23,7 +23,7 @@ export async function createPurchaseAction(formData: FormData) {
   let newImageDbPayload: NewImageDbPayload | null = null;
 
   if (validatedImage) {
-    const [metadata] = await writeImageFile(validatedImage);
+    const [metadata] = await writeImageFile(validatedImage, user.parentId);
     if (metadata) {
       newImageDbPayload = {
         ...metadata,
