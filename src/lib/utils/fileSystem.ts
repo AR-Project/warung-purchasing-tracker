@@ -1,6 +1,9 @@
 import { join } from "path";
 
-export function generateImageFilePath(imageId: string, uploadedDate: string) {
+export function generateImagePathOnServer(
+  userId: string,
+  serverFileName: string
+) {
   const DEFAULT_FOLDER = "images";
-  return join(process.cwd(), DEFAULT_FOLDER, uploadedDate, `${imageId}.jpg`);
+  return join(process.cwd(), DEFAULT_FOLDER, userId, `${serverFileName}.jpg`);
 }
