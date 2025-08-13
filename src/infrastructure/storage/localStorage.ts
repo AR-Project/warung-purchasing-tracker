@@ -3,43 +3,42 @@ import { join } from "path";
 import { DateTime } from "luxon";
 
 import { generateId } from "@/lib/utils/generator";
+import { logger } from "@/lib/logger";
 
-export type ImageMetadata = {
-  id: string;
-  path: string;
-};
+const DEFAULT_FOLDER_NAME = "images";
+const LOCATION = (process.cwd(), DEFAULT_FOLDER_NAME);
 
 export async function writeImageFile(
-  image: Blob
-): Promise<SafeResult<ImageMetadata>> {
-  const DEFAULT_FOLDER_NAME = "images";
-  const DEFAULT_LOCATION = (process.cwd(), DEFAULT_FOLDER_NAME);
+  image: Blob,
+  userId: string
+): Promise<SafeResult<{ id: string; url: string; serverFileName: string }>> {
+  const time = DateTime.now().toFormat("yyMMdd"); // 251230
 
   // Prepare Metadata
-  const finalImageId = `${generateId(10)}`;
-  const finalFileName = finalImageId + ".jpg";
-  const currentDateString = DateTime.now().toISODate();
+  const id = `${generateId(10)}`;
+  const targetName = `${time}_${id}`;
 
   // Check target location
-  const targetDir = join(DEFAULT_LOCATION, currentDateString);
-  const isTargetDirExist = await checkDir(targetDir);
-  if (!isTargetDirExist) await fs.mkdir(targetDir);
+  const userDir = join(LOCATION, userId);
+  const isTargetDirExist = await checkDir(userDir);
+  if (!isTargetDirExist) await fs.mkdir(userDir);
 
   // Prepare full path for target file
-  const targetFilePath = join(targetDir, finalFileName);
+  const targetFilePath = join(userDir, `${targetName}.jpg`);
 
   try {
     const buffer = Buffer.from(await image.arrayBuffer());
     await fs.writeFile(targetFilePath, buffer);
     return [
       {
-        id: finalImageId,
-        path: join(DEFAULT_FOLDER_NAME, currentDateString, finalFileName),
+        id: id,
+        url: `${userId}/${targetName}`,
+        serverFileName: targetName,
       },
       null,
     ];
   } catch (error) {
-    console.error("LOCAL_STORAGE: Cannot write file to disk");
+    logger.error("LOCAL_STORAGE: Cannot write file to disk");
     return [null, "Fail to write image"];
   }
 }
