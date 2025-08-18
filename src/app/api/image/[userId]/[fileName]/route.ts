@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
-import { DateTime } from "luxon";
-import { eq } from "drizzle-orm";
-
-import db from "@/infrastructure/database/db";
-import { image } from "@/lib/schema/image";
-import { generateImagePathOnServer } from "@/lib/utils/fileSystem";
 import z from "zod";
+
+import { generateImagePathOnServer } from "@/lib/utils/fileSystem";
 
 type Params = { params: Promise<SearchParams> };
 
@@ -28,7 +24,10 @@ export async function GET(req: Request, { params }: Params) {
     );
     const imageBuffer = await fs.readFile(serverPath);
     return new NextResponse(imageBuffer, {
-      headers: { "Content-Type": "image/jpeg" },
+      headers: {
+        "Content-Type": "image/jpeg",
+        "Cache-Control": "max-age=31536000",
+      },
     });
   } catch (error) {
     console.error("Error serving image:", error);
