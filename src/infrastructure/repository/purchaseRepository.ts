@@ -11,6 +11,7 @@ import {
 import { generateId } from "@/lib/utils/generator";
 import { user } from "@/lib/schema/user";
 import { adminManagerRole } from "@/lib/const";
+import { logger } from "@/lib/logger";
 
 export async function saveNewPurchase(
   purchasePayload: NewPurchaseDbPayload,
@@ -54,6 +55,9 @@ export async function saveNewPurchase(
     });
     return [savedPurchaseId, null];
   } catch (error) {
+    logger.debug("PurchaseRepo.createPurchaseError", {
+      error: error instanceof Error && error.message,
+    });
     return [null, "Fail to save transaction"];
   }
 }
@@ -134,6 +138,9 @@ export async function updateOrderOfPurchaseItem({
     });
     return null;
   } catch (error) {
+    logger.debug("PurchaseRepo.createPurchaseError", {
+      error: error instanceof Error && error.message,
+    });
     return invariantError ? invariantError : "Internal Error";
   }
 }
