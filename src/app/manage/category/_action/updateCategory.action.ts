@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@/auth";
 import { updateCategoryRepo } from "@/infrastructure/repository/categoryRepo";
 import { adminManagerStaffRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";

@@ -1,23 +1,22 @@
-import { auth } from "@/auth";
+import { auth } from "@/auth"; // Only auth import allowed
 import { getUserRole } from "@/infrastructure/repository/userRepository";
 
-/** Return user info from session, or throw error when session is null
- * @deprecated use `validateUser` or `verifyUserAccess`
- */
-export async function getUserInfo(): Promise<UserSession> {
-  const session = await auth();
-  if (!session) throw new Error("USER_LOGGED_OUT");
-  return session.user;
-}
+type VerifyUserAccessError =
+  | "not_authenticated"
+  | "not_authorized"
+  | "internal_error";
 
-export async function validateUser(): Promise<SafeResult<UserSession>> {
+/** Check user auth.
+ * @returns UserInfo or null
+ */
+export async function validateUser(): Promise<
+  SafeResult<UserSession, VerifyUserAccessError>
+> {
   const session = await auth();
   const isAuth = session && session.user;
-  if (!isAuth) return [null, "not authenticated"];
+  if (!isAuth) return [null, "not_authenticated"];
   return [session.user, null];
 }
-
-export type UserSessionWithRole = UserSession & { role: string };
 
 /**
  * Check user authentication and role in single call
@@ -35,10 +34,6 @@ export async function getUserRoleAuth(): Promise<
   return [{ ...user, role }, null];
 }
 
-type VerifyUserAccessError =
-  | "not_authenticated"
-  | "not_authorized"
-  | "internal_error";
 /**
  * Check if user had role specified in params.
  *

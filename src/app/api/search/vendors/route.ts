@@ -1,28 +1,22 @@
 import Fuse from "fuse.js";
 import db from "@/infrastructure/database/db";
 import { vendor } from "@/lib/schema/vendor";
-import { unstable_cache } from "next/cache";
-import { auth } from "@/auth";
 import { eq } from "drizzle-orm";
-
-const getCachedVendorsLoaders = unstable_cache(
-  async () => await db.select().from(vendor),
-  [],
-  { tags: ["vendors"] }
-);
+import { allRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) {
+  const [user, authError] = await verifyUserAccess(allRole);
+
+  if (authError) {
     return Response.json({ error: "Forbidden" }, { status: 403 });
   }
-  const { parentId } = session.user;
+  const { parentId } = user;
 
   const { keyword } = (await req.json()) as unknown as {
     keyword: string;
   };
 
-  // const allVendors = await getCachedVendorsLoaders();
   const allVendors = await db
     .select()
     .from(vendor)

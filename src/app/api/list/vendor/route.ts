@@ -1,12 +1,14 @@
-import { auth } from "@/auth";
 import getUserVendors from "@/app/_loader/getUserVendors.loader";
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { allRole } from "@/lib/const";
 
 export async function GET() {
-  const session = await auth();
-  if (!session) {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
+  const [user, authError] = await verifyUserAccess(allRole);
+
+  if (authError) {
+    return Response.json({ error: authError }, { status: 401 });
   }
-  const { parentId } = session.user;
+  const { parentId } = user;
 
   const result = await getUserVendors(parentId);
   return Response.json(result);

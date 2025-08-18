@@ -1,28 +1,24 @@
 import Fuse from "fuse.js";
 import db from "@/infrastructure/database/db";
-import { unstable_cache } from "next/cache";
 import { eq } from "drizzle-orm";
-import { auth } from "@/auth";
+
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { allRole } from "@/lib/const";
 import { item } from "@/lib/schema/item";
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json({ error: "Forbidden" }, { status: 403 });
+  const [user, authError] = await verifyUserAccess(allRole);
+
+  if (authError) {
+    return Response.json({ error: authError }, { status: 401 });
   }
 
-  const { parentId } = session.user;
+  const { parentId } = user;
 
   const { keyword } = (await req.json()) as unknown as {
     keyword: string;
   };
 
-  const getCachedItemsLoaders = unstable_cache(
-    async () => await db.select().from(item).where(eq(item.ownerId, parentId)),
-    [],
-    { tags: ["items"] }
-  );
-  // const allItems = await getCachedItemsLoaders();
   const allItems = await db
     .select()
     .from(item)

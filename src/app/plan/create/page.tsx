@@ -1,16 +1,15 @@
-import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import getUserCategoryWithItemLatestPrice from "@/app/_loader/getUserCategoryWithItemLatestPrice";
 
 import PlanCreator from "./_component/PlanCreator";
+import { allRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
 
 export default async function Page() {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [user, authError] = await verifyUserAccess(allRole);
+  if (authError) return <LoginRequiredWarning />;
 
-  const initialData = await getUserCategoryWithItemLatestPrice(
-    session.user.parentId
-  );
+  const initialData = await getUserCategoryWithItemLatestPrice(user.parentId);
 
   return (
     <section className="max-w-md mx-auto">

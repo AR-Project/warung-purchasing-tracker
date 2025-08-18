@@ -13,22 +13,10 @@ type UserObject = {
 export default async function getUserChildren(
   requesterUserId: string
 ): Promise<Result<UserObject[]>> {
-  const allowedRole: AvailableUserRole[] = ["admin", "manager"];
   let authorizationError: string | undefined;
 
   try {
     const listOfUser = await db.transaction(async (tx) => {
-      // Validate User Role
-      const [currentUser] = await tx
-        .select({ role: user.role })
-        .from(user)
-        .where(eq(user.id, requesterUserId));
-
-      if (!allowedRole.includes(currentUser.role)) {
-        authorizationError = "Forbidden";
-        tx.rollback();
-      }
-
       const listOfUser = await tx
         .select({
           id: user.id,
