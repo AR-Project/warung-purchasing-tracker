@@ -267,7 +267,7 @@ export default function ComboItemForm({
               const totalPrice = anyNumberToNumber(floatValue);
               if (totalPrice === 0) return;
               setTotalPrice(totalPrice);
-              setUnitPrice(totalPrice / anyNumberToNumber(quantity));
+              setUnitPrice(Math.ceil(totalPrice / anyNumberToNumber(quantity)));
             }}
           />
         </div>
