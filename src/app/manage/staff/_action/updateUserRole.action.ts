@@ -1,13 +1,12 @@
 "use server";
 
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
-import { auth } from "@/auth";
 import db from "@/infrastructure/database/db";
 import { user } from "@/lib/schema/user";
-import { adminManagerRole, adminOnlyRole } from "@/lib/const";
+import { adminManagerRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import ClientError from "@/lib/exception/ClientError";
 import { actionErrorDecoder } from "@/lib/exception/errorDecoder";

@@ -2,13 +2,14 @@ import { Suspense } from "react";
 
 import { parseSearchParams } from "@/lib/utils/validator";
 import { searchVendors } from "@/lib/api";
+import { adminManagerStaffRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
 
+import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
 import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
 import { transactionLoader } from "./listOfPurchase.loader";
-import { auth } from "@/auth";
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import TransactionNavigation from "../_component/TransactionNav";
 
 type Props = {
@@ -16,13 +17,13 @@ type Props = {
 };
 
 export default async function Page({ searchParams }: Props) {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
+  if (authError) return <LoginRequiredWarning />;
 
   const filterParam = await searchParams;
   const filter = parseSearchParams(filterParam);
 
-  const tx = await transactionLoader(filter, session.user.parentId);
+  const tx = await transactionLoader(filter, user.parentId);
 
   return (
     <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">

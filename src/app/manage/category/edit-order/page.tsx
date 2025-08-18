@@ -1,14 +1,15 @@
-import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { adminManagerStaffRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
 import categoriesLoader from "../_loader/category.loader";
 import CategoryOrderEditor from "../_component/CategoryOrderEditor";
 import EmptyCategory from "../_component/EmptyCategory";
 
 export default async function Page() {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
+  if (authError) return <LoginRequiredWarning />;
 
-  const categories = await categoriesLoader(session.user.parentId);
+  const categories = await categoriesLoader(user.parentId);
 
   return (
     <section className="max-w-md mx-auto">
@@ -16,9 +17,9 @@ export default async function Page() {
         Drag and drop your order, then click save when finished
       </div>
       {categories.length === 0 ? (
-        <EmptyCategory user={session.user} />
+        <EmptyCategory user={user} />
       ) : (
-        <CategoryOrderEditor categories={categories} user={session.user} />
+        <CategoryOrderEditor categories={categories} user={user} />
       )}
     </section>
   );

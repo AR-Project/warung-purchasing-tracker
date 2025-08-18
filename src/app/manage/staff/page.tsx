@@ -1,23 +1,19 @@
 import Link from "next/link";
 import { MdPerson } from "react-icons/md";
 
-import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { adminManagerRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
 import getUserChildren from "./_loader/getUserChild.loader";
 import DeleteUserHiddenForm from "./_component/DeleteUserHiddenForm";
 import ChildUserRoleEditorModal from "./_component/ChildUserRoleEditorModal";
 
 export default async function Page() {
-  const session = await auth();
-  if (!session) {
-    return <LoginRequiredWarning />;
-  }
+  const [authUser, authError] = await verifyUserAccess(adminManagerRole);
+  if (authError) return <LoginRequiredWarning />;
 
-  const [error, user] = await getUserChildren(session.user.userId);
-
-  if (error) {
-    return <>{error}</>;
-  }
+  const [getUserChildrenError, user] = await getUserChildren(authUser.userId);
+  if (getUserChildrenError) return <>{getUserChildrenError}</>;
 
   return (
     <main className="flex flex-col gap-2 max-w-md mx-auto">

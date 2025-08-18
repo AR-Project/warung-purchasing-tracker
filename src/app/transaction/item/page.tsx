@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 
-import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { allRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
+import { dateRangeValidator } from "@/lib/utils/validator";
+
 import { listOfItemsLoader } from "./_loader/listOfItem.loader";
 import ListOfItem from "./_component/ListOfItem";
 import TransactionNavigation from "../_component/TransactionNav";
-import { dateRangeValidator, parseSearchParams } from "@/lib/utils/validator";
 import DatePicker from "../_component/DatePicker";
 
 type Props = {
@@ -13,16 +15,13 @@ type Props = {
 };
 
 export default async function Page({ searchParams }: Props) {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [user, authError] = await verifyUserAccess(allRole);
+  if (authError) return <LoginRequiredWarning />;
 
   const dateFilterParam = await searchParams;
 
   const dateFilter = dateRangeValidator(dateFilterParam);
-  const listOfItems = await listOfItemsLoader(
-    session.user.parentId,
-    dateFilter
-  );
+  const listOfItems = await listOfItemsLoader(user.parentId, dateFilter);
 
   return (
     <div className="flex flex-col gap-1 max-w-md mx-auto">

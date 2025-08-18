@@ -1,15 +1,15 @@
-import React from "react";
-
-import { auth } from "@/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { adminManagerStaffRole } from "@/lib/const";
+import { verifyUserAccess } from "@/lib/utils/auth";
+
 import categoriesLoader from "../_loader/category.loader";
 import DeleteCategoryModal from "./DeleteCategoryModal";
 
 export default async function EditCategory() {
-  const session = await auth();
-  if (!session) return <LoginRequiredWarning />;
+  const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
+  if (authError) return <LoginRequiredWarning />;
 
-  const categories = await categoriesLoader(session.user.parentId);
+  const categories = await categoriesLoader(user.parentId);
 
   return (
     <main className="flex flex-col gap-2 max-w-md mx-auto">
@@ -25,7 +25,7 @@ export default async function EditCategory() {
               className="flex flex-row gap-2 bg-gray-700 rounded-md justify-between items-center pl-2"
             >
               <div>{cat.name}</div>
-              <DeleteCategoryModal category={cat} user={session.user} />
+              <DeleteCategoryModal category={cat} user={user} />
             </div>
           ))}
         </div>
