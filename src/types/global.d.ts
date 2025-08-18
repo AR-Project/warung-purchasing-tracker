@@ -35,6 +35,8 @@ declare global {
     username: string;
   };
 
+  type UserSessionWithRole = UserSession & { role: string };
+
   type Item = {
     id: string;
     name: string;
