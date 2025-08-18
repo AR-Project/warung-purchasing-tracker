@@ -11,7 +11,7 @@ import { writeImageFile } from "@/infrastructure/storage/localStorage";
 
 import { image, NewImageDbPayload } from "@/lib/schema/image";
 import { verifyUserAccess } from "@/lib/utils/auth";
-import { generateImageFilePath } from "@/lib/utils/fileSystem";
+import { generateImagePathOnServer } from "@/lib/utils/fileSystem";
 
 const imageSchema = z.custom<Blob>(
   (data) => data instanceof Blob && data.type === "image/jpeg"
@@ -38,12 +38,11 @@ export async function uploadImage(
   const { data: imageBlob } = imageSchema.safeParse(imageBlobRaw);
   if (!imageBlob) return { error: "Expect a image" };
 
-  const [metadata, writeError] = await writeImageFile(imageBlob);
+  const [metadata, writeError] = await writeImageFile(imageBlob, user.parentId);
   if (writeError !== null) return { error: "Fail to save the image" };
 
   const newImageDbPayload: NewImageDbPayload = {
-    id: metadata.id,
-    path: metadata.path,
+    ...metadata,
     ownerId: user.parentId,
     creatorId: user.userId,
     originalFileName: "blob",
@@ -98,9 +97,9 @@ export async function removeImage(
     ).toISODate();
     if (!uploadAtDateString) throw new Error("Date Invalid");
 
-    const imageFilePath = generateImageFilePath(
-      payload.imageId,
-      uploadAtDateString
+    const imageFilePath = generateImagePathOnServer(
+      user.parentId,
+      resultImage.serverFileName
     );
 
     await fs.stat(imageFilePath);

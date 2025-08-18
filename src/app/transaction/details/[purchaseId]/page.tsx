@@ -34,7 +34,7 @@ export default async function Page({ params }: Props) {
         <div>
           <div className="flex flex-row justify-between items-baseline w-full">
             <div className="text-lg font-bold">
-              {stringToDate(details.purchasesAt)}
+              {stringToDate(details.purchasedAt)}
             </div>
             <div className="italic text-gray-400">{details.vendorName}</div>
           </div>
@@ -56,9 +56,9 @@ export default async function Page({ params }: Props) {
         </div>
       )}
 
-      {details.imageId && (
+      {details.imageUrl && (
         <div className="flex flex-row gap-2 max-w-md mx-auto w-full">
-          <DisplayImage imageId={details.imageId} />
+          <DisplayImage url={details.imageUrl} />
         </div>
       )}
     </div>
@@ -66,14 +66,14 @@ export default async function Page({ params }: Props) {
 }
 
 type DisplayImageProps = {
-  imageId: string;
+  url: string;
 };
 
-function DisplayImage({ imageId }: DisplayImageProps) {
+function DisplayImage({ url }: DisplayImageProps) {
   return (
     <div className="max-w-[100px] object-contain">
-      <Link href={`/api/image/${imageId}`}>
-        <img src={`/api/image/${imageId}`} alt="" />
+      <Link href={`/api/image/${url}`}>
+        <img src={`/api/image/${url}`} alt="" />
       </Link>
     </div>
   );
