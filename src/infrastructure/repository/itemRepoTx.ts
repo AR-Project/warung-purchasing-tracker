@@ -20,6 +20,25 @@ export async function updateItemCategoryTx(
     })
     .where(eq(item.id, payload.itemId));
 }
+
+export type UpdateItemImageTxPayload = {
+  itemId: string;
+  targetImageId: string;
+};
+
+export async function updateItemImageTx(
+  payload: UpdateItemImageTxPayload,
+  tx: Tx
+) {
+  return await tx
+    .update(item)
+    .set({
+      imageId: payload.targetImageId,
+    })
+    .where(eq(item.id, payload.itemId))
+    .returning();
+}
+
 export type CreateItemTxPayload = {
   id: string;
   name: string;
@@ -47,6 +66,9 @@ export async function countItemUnderSingleCategoryTx(
 
 export async function readItemTx(itemId: string, tx: Tx) {
   return await tx.query.item.findMany({
+    with: {
+      image: true,
+    },
     where: (item, { eq }) => eq(item.id, itemId),
   });
 }

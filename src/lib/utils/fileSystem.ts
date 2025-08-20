@@ -1,5 +1,9 @@
 import { join } from "path";
 
+/**
+ * Relative path format: `./images/<user-id>/<server-file-name>.jpg`
+ */
+
 export function generateImagePathOnServer(
   userId: string,
   serverFileName: string

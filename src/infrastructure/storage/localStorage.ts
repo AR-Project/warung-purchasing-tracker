@@ -4,14 +4,22 @@ import { DateTime } from "luxon";
 
 import { generateId } from "@/lib/utils/generator";
 import { logger } from "@/lib/logger";
+import { safePromise } from "@/lib/utils/safePromise";
 
 const DEFAULT_FOLDER_NAME = "images";
 const LOCATION = (process.cwd(), DEFAULT_FOLDER_NAME);
 
+export type WriteImageFileResult = {
+  id: string;
+  url: string;
+  serverFileName: string;
+};
+
+/** Make sure user Id is parent Id so files is written under single parent folder */
 export async function writeImageFile(
   image: Blob,
   userId: string
-): Promise<SafeResult<{ id: string; url: string; serverFileName: string }>> {
+): Promise<SafeResult<WriteImageFileResult>> {
   const time = DateTime.now().toFormat("yyMMdd"); // 251230
 
   // Prepare Metadata
@@ -41,6 +49,18 @@ export async function writeImageFile(
     logger.error("LOCAL_STORAGE: Cannot write file to disk");
     return [null, "Fail to write image"];
   }
+}
+
+export async function deleteImageFile(
+  imageFilePath: string
+): Promise<SafeResult<"ok">> {
+  const { error: readError } = await safePromise(fs.stat(imageFilePath));
+  if (readError) return [null, "Image not exist"];
+
+  const { error: deleteError } = await safePromise(fs.unlink(imageFilePath));
+  if (deleteError) return [null, "Fail to delete"];
+
+  return ["ok", null];
 }
 
 async function checkDir(path: string) {
