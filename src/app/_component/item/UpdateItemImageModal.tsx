@@ -7,9 +7,9 @@ import {
   DialogPanel,
   DialogTitle,
 } from "@headlessui/react";
-import { SetStateAction, useState } from "react";
+import { useState } from "react";
 import { toast } from "react-toastify";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 
@@ -26,7 +26,6 @@ type Props = {
  */
 
 export default function UpdateItemImageModal(props: Props) {
-  // const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   function openModal() {
