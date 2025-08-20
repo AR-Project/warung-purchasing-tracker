@@ -12,6 +12,7 @@ type Data = {
   name: string;
   quantity: number;
   category: string | null;
+  imageUrl: string | null;
 };
 
 export async function listOfItemsLoader(
@@ -50,6 +51,11 @@ export async function listOfItemsLoader(
           name: true,
         },
       },
+      image: {
+        columns: {
+          url: true,
+        },
+      },
     },
   });
   return result
@@ -61,6 +67,7 @@ export async function listOfItemsLoader(
           return prev + current.quantityInHundreds;
         }, 0) / 100,
       category: item.category ? item.category.name : null,
+      imageUrl: item.image ? item.image.url : null,
     }))
     .sort((item, nextItem) => nextItem.quantity - item.quantity);
 }

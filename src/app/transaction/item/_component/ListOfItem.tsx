@@ -10,6 +10,7 @@ type Item = {
   name: string;
   quantity: number;
   category: string | null;
+  imageUrl: string | null;
 };
 
 type Props = {
@@ -90,6 +91,7 @@ function ItemLinkCard({ item }: ItemLinkCardProps) {
       href={`./item/detail/${item.id}`}
     >
       <div className="relative h-10 aspect-square bg-gray-600">
+        {item.imageUrl && <img src={`/api/image/${item.imageUrl}`} />}
         <div className="absolute bottom-0 right-0 font-black  px-0.1">
           {item.quantity}
         </div>
