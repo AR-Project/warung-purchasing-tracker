@@ -5,10 +5,9 @@ import {
   userTableHelper,
 } from "@/infrastructure/repository/_test/helper/userTableHelper";
 import {
-  createCategoryAndMoveItemFactory,
+  createCategoryAndMoveItemService,
   CreateCtgAndMoveItemPayload,
-} from "../createCategoryAndMoveItem";
-import db from "@/infrastructure/database/db";
+} from "../createCategoryAndMoveItem.service";
 
 describe("SERVICE: createCategoryAndMoveItem", () => {
   beforeEach(async () => {
@@ -36,7 +35,7 @@ describe("SERVICE: createCategoryAndMoveItem", () => {
       creatorId: defaultHelperUser.id,
     };
 
-    const [result, error] = await createCategoryAndMoveItemFactory(db)(payload);
+    const [result, error] = await createCategoryAndMoveItemService(payload);
 
     expect(error).toBe("itemId invalid");
     expect(result).toBeNull();
@@ -56,7 +55,7 @@ describe("SERVICE: createCategoryAndMoveItem", () => {
       creatorId: "user-test123",
     };
 
-    const [result, error] = await createCategoryAndMoveItemFactory(db)(payload);
+    const [result, error] = await createCategoryAndMoveItemService(payload);
 
     expect(error).toBe("user not authorized on this item");
     expect(result).toBeNull();
@@ -71,7 +70,7 @@ describe("SERVICE: createCategoryAndMoveItem", () => {
       creatorId: defaultHelperUser.id,
     };
 
-    const [result, error] = await createCategoryAndMoveItemFactory(db)(payload);
+    const [result, error] = await createCategoryAndMoveItemService(payload);
 
     expect(error).toBeNull();
     expect(result).toStrictEqual({
