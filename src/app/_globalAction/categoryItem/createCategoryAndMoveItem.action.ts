@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 
 import { verifyUserAccess } from "@/lib/utils/auth";
 import { generateId } from "@/lib/utils/generator";
-import { createCategoryAndMoveItemService } from "@/service/createCategoryAndMoveItem.service";
+import { createCategoryAndMoveItemService } from "@/service/database/createCategoryAndMoveItem.service";
 
 const schema = z.object({
   itemId: z.string(),
