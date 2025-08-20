@@ -34,6 +34,11 @@ export async function itemDetailLoader(requestedItemId: string) {
           name: true,
         },
       },
+      image: {
+        columns: {
+          url: true,
+        },
+      },
     },
   });
   if (!result) return null;
