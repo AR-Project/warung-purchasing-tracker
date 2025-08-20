@@ -47,7 +47,7 @@ export default function UpdateItemNameModal({
     <>
       <Button
         onClick={open}
-        className=" border border-gray-600 bg-gray-800 h-10 aspect-square flex items-center justify-center text-sm font-medium text-white focus:outline-none data-[hover]:bg-yellow-300/30 data-[focus]:outline-1 data-[focus]:outline-white"
+        className="h-8 border border-white/50 px-2 bg-green-950 rounded-sm text-white focus:outline-none data-[hover]:bg-green-800 data-[focus]:outline-1 data-[focus]:outline-white flex flex-row gap-2 justify-center items-center"
         tabIndex={-1}
         title="Edit Item"
       >
