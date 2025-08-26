@@ -4,8 +4,8 @@ import { z } from "zod";
 import { revalidatePath } from "next/cache";
 
 import { verifyUserAccess } from "@/lib/utils/auth";
-import { createCategoryAndMoveItemService } from "@/service";
 import { generateId } from "@/lib/utils/generator";
+import { createCategoryAndMoveItemService } from "@/service/database/createCategoryAndMoveItem.service";
 
 const schema = z.object({
   itemId: z.string(),
@@ -13,7 +13,7 @@ const schema = z.object({
   pathToRevalidate: z.string(),
 });
 
-export async function createCategoryAndMoveItem(formData: FormData) {
+export async function createCategoryAndMoveItemAction(formData: FormData) {
   const [user, verifyError] = await verifyUserAccess(["admin", "manager"]);
   if (verifyError) return { error: verifyError };
 

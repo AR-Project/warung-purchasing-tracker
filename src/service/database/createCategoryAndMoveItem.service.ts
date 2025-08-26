@@ -1,4 +1,4 @@
-import { Db, Tx } from "@/infrastructure/database/db";
+import { Tx } from "@/infrastructure/database/db";
 import {
   countCategoryByUserTx,
   createCategoryTx,
@@ -9,8 +9,8 @@ import {
   UpdateItemCategoryTxPayload,
 } from "@/infrastructure/repository/itemRepoTx";
 import { updateItemCategoryTx } from "@/infrastructure/repository/itemRepoTx";
-import { errorDecoder } from "@/lib/exception/errorDecoder";
 import { InvariantError } from "@/lib/exception/InvariantError";
+import { dbTxWrapper } from "./lib/factory";
 
 export type CreateCtgAndMoveItemPayload = {
   itemId: string;
@@ -20,9 +20,10 @@ export type CreateCtgAndMoveItemPayload = {
   creatorId: string;
 };
 
-type Result = SafeResult<{ itemName: string; categoryName: string }>;
-
-async function txLogic(tx: Tx, payload: CreateCtgAndMoveItemPayload) {
+async function createCategoryAndMoveItemTxLogic(
+  tx: Tx,
+  payload: CreateCtgAndMoveItemPayload
+) {
   const currentItem = await readItemTx(payload.itemId, tx);
   if (currentItem.length === 0) throw new InvariantError("itemId invalid");
 
@@ -58,15 +59,6 @@ async function txLogic(tx: Tx, payload: CreateCtgAndMoveItemPayload) {
   };
 }
 
-export function createCategoryAndMoveItemFactory(db: Db) {
-  return async function (
-    payload: CreateCtgAndMoveItemPayload
-  ): Promise<Result> {
-    try {
-      const result = await db.transaction(async (tx) => txLogic(tx, payload));
-      return [result, null];
-    } catch (error) {
-      return errorDecoder(error);
-    }
-  };
-}
+export const createCategoryAndMoveItemService = dbTxWrapper(
+  createCategoryAndMoveItemTxLogic
+);

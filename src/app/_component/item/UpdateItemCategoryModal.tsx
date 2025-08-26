@@ -14,7 +14,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { updateItemCategory } from "@/app/_globalAction/item/updateItemCategory.action";
 import { getCategory } from "@/app/_globalAction/category/getCategory.loader";
-import { createCategoryAndMoveItem } from "@/app/_globalAction/categoryItem/createCategoryAndMoveItem.action";
+import { createCategoryAndMoveItemAction } from "@/app/_globalAction/categoryItem/createCategoryAndMoveItem.action";
 
 type Props = {
   item: { id: string; name: string };
@@ -111,7 +111,7 @@ function Panel({
   const currentPath = usePathname();
 
   const [secondAction] = useServerAction(
-    createCategoryAndMoveItem,
+    createCategoryAndMoveItemAction,
     (msg) => {
       toast.success(msg);
       closeDialog();

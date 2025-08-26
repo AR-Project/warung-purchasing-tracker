@@ -13,6 +13,7 @@ export const itemTableHelper = {
       creatorId,
       ownerId,
       name = "Test",
+      imageId,
       sortOrder,
     } = payload;
 
@@ -24,6 +25,7 @@ export const itemTableHelper = {
         creatorId,
         ownerId,
         name,
+        imageId,
         sortOrder,
       })
       .returning();
