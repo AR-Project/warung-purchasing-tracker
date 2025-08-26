@@ -15,6 +15,9 @@ declare global {
     timestamp?: string | number;
   };
 
+  /**
+   * String format `YYYY-MM-DD`
+   */
   type RangeFilter = { from: string; to: string };
 
   type SearchFilter = {
