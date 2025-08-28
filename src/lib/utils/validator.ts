@@ -53,25 +53,24 @@ export function isValidDate(value: unknown): string {
 export function dateRangeValidator(
   params: SearchParams
 ): RangeFilter | undefined {
-  const dateSchema = z.string().date();
-  try {
-    const from = dateSchema.parse(params.from);
-    const to = dateSchema.parse(params.to);
+  const rangeFilterSchema = z.object({
+    from: z.iso.date(),
+    to: z.iso.date(),
+  });
 
-    const fromDate = DateTime.fromISO(from).toMillis();
-    const toDate = DateTime.fromISO(to).toMillis();
+  const { data: range, error: paramsError } = rangeFilterSchema.safeParse({
+    from: params.from,
+    to: params.to,
+  });
 
-    if (toDate - fromDate < 0) {
-      throw new Error("Invalid Date");
-    }
+  if (paramsError) return;
 
-    return {
-      from: from,
-      to: to,
-    };
-  } catch {
-    return;
-  }
+  const fromDate = DateTime.fromISO(range.from).toMillis();
+  const toDate = DateTime.fromISO(range.to).toMillis();
+
+  if (toDate - fromDate < 0) return;
+
+  return range;
 }
 
 function queryValidator(params: SearchParams): string | undefined {
