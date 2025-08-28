@@ -42,7 +42,7 @@ export async function GET(req: NextRequest) {
     })}`,
   ]);
 
-  return NextResponse.json(data);
+  // return NextResponse.json(data);
 
   return new NextResponse(xlsxFile, {
     headers: {
