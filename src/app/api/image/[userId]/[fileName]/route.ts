@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
-import { promises as fs } from "fs";
+import { stat } from "node:fs/promises";
+import { createReadStream } from "node:fs";
+import { Readable } from "node:stream";
 import z from "zod";
 
 import { generateImagePathOnServer } from "@/lib/utils/fileSystem";
@@ -22,10 +24,14 @@ export async function GET(req: Request, { params }: Params) {
       imageMeta.userId,
       imageMeta.fileName
     );
-    const imageBuffer = await fs.readFile(serverPath);
-    return new NextResponse(imageBuffer, {
+    const { size } = await stat(serverPath);
+    const nodeStream = createReadStream(serverPath);
+    const webStream = Readable.toWeb(nodeStream) as ReadableStream<Uint8Array>;
+
+    return new NextResponse(webStream, {
       headers: {
         "Content-Type": "image/jpeg",
+        "Content-Length": String(size),
         "Cache-Control": "max-age=31536000",
       },
     });
