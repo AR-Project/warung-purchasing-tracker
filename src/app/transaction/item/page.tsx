@@ -9,6 +9,7 @@ import { listOfItemsLoader } from "./_loader/listOfItem.loader";
 import ListOfItem from "./_component/ListOfItem";
 import TransactionNavigation from "../_component/TransactionNav";
 import DatePicker from "../_component/DatePicker";
+import ExportButton from "./_component/ExportButton";
 
 type Props = {
   searchParams: Promise<SearchParams>;
@@ -26,6 +27,10 @@ export default async function Page({ searchParams }: Props) {
   return (
     <div className="flex flex-col gap-1 max-w-md mx-auto">
       <TransactionNavigation />
+      <div className="py-3 flex flex-row justify-between border-b border-white/20">
+        <div className="text-xl">Daftar Pembelian per Item</div>
+        <ExportButton range={dateFilter} />
+      </div>
       <div>
         <DatePicker activeDateRange={dateFilter} />
       </div>
