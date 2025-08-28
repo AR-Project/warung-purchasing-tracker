@@ -15,7 +15,8 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "types": [
-      "vitest/globals"
+      "vitest/globals",
+      "node"
     ],
     "jsx": "preserve",
     "incremental": true,
