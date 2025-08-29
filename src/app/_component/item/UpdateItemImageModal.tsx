@@ -112,18 +112,18 @@ function Panel({ closeDialog, itemId }: PanelProps) {
         <input type="hidden" name="path-to-revalidate" value={currentPath} />
         <input type="hidden" name="item-id" value={itemId} />
         <Button
-          className="inline-flex items-center gap-2 rounded-sm bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
+          type="submit"
+          className="inline-flex items-center gap-2 rounded-sm bg-blue-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-blue-500 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed cursor-pointer"
+          disabled={resizedFile === null || isPending}
+        >
+          {isPending ? "menyimpan" : "simpan"}
+        </Button>
+        <Button
+          className="inline-flex items-center gap-2 rounded-sm bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 cursor-pointer"
           onClick={closeDialog}
         >
           <RxCross2 />
           Batal
-        </Button>
-        <Button
-          type="submit"
-          className="inline-flex items-center gap-2 rounded-sm bg-blue-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-blue-500 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 disabled:text-gray-400 disabled:cursor-not-allowed"
-          disabled={resizedFile === null || isPending}
-        >
-          {isPending ? "menyimpan" : "simpan"}
         </Button>
       </form>
     </DialogPanel>

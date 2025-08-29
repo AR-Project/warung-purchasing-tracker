@@ -3,7 +3,13 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { FiEdit } from "react-icons/fi";
 import { ImCancelCircle, ImCheckmark } from "react-icons/im";
-import { Button, Dialog, DialogPanel, DialogTitle } from "@headlessui/react";
+import {
+  Button,
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  DialogTitle,
+} from "@headlessui/react";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { updateItemName } from "@/app/_globalAction/item/updateItemName.action";
@@ -59,6 +65,8 @@ export default function UpdateItemNameModal({
         className="relative z-10 focus:outline-none"
         onClose={close}
       >
+        <DialogBackdrop className="fixed inset-0 bg-black/20 backdrop-blur-sm" />
+
         <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
           <div className="flex min-h-full items-center justify-center p-4">
             <DialogPanel
@@ -67,9 +75,9 @@ export default function UpdateItemNameModal({
             >
               <DialogTitle
                 as="h3"
-                className="text-base/7 font-medium text-white"
+                className="text-base/7 font-medium text-white text-center"
               >
-                Masukkan nama baru:
+                Ubah Item
               </DialogTitle>
               <form action={editItemAction} className="flex flex-col gap-4">
                 <input
@@ -79,29 +87,28 @@ export default function UpdateItemNameModal({
                   id="item-name"
                   value={selectedItem.id}
                 />
-                <div>
-                  <input
-                    className="bg-gray-800 w-full p-2"
-                    type="text"
-                    name="name"
-                    id="item-name"
-                    value={newName}
-                    onChange={(event) => setNewName(event.target.value)}
-                  />
-                  <div className="flex flex-row w-full items-end gap-2">
-                    <Button
-                      type="submit"
-                      className=" flex flex-row gap-2 p-2 items-center bg-green-900 border border-gray-500 rounded-md  w-fit hover:bg-green-800"
-                    >
-                      <ImCheckmark className="text-xl" /> Ganti
-                    </Button>
-                    <Button
-                      className="BTN-CANCEL flex flex-row gap-2 p-2 items-center bg-gray-500 border border-gray-500 rounded-md  w-fit hover:bg-gray-400"
-                      onClick={close}
-                    >
-                      <ImCancelCircle className="text-xl text-gray-300" /> Batal
-                    </Button>
-                  </div>
+                <input
+                  className="bg-gray-800 w-full p-2 border border-white/20"
+                  type="text"
+                  name="name"
+                  id="item-name"
+                  placeholder="Ketik Nama baru..."
+                  value={newName}
+                  onChange={(event) => setNewName(event.target.value)}
+                />
+                <div className="flex flex-row w-full justify-center items-end gap-4">
+                  <Button
+                    type="submit"
+                    className="inline-flex items-center gap-2 rounded-sm bg-blue-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-blue-500 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 cursor-pointer"
+                  >
+                    <ImCheckmark className="text-xl" /> Ganti
+                  </Button>
+                  <Button
+                    className="inline-flex items-center gap-2 rounded-sm bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700 cursor-pointer"
+                    onClick={close}
+                  >
+                    <ImCancelCircle className="text-xl text-gray-300" /> Batal
+                  </Button>
                 </div>
               </form>
             </DialogPanel>
