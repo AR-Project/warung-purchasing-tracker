@@ -22,7 +22,7 @@ type Props = {
   }[];
 };
 
-export default function PurchaseHistory({ data }: Props) {
+export default function PurchaseHistoryChart({ data }: Props) {
   const elementColor = "#737373";
   const mainColor = "#60a5fa";
 
