@@ -1,8 +1,12 @@
 import { useState } from "react";
 
+import { useLocalStorage } from "usehooks-ts";
+
 export default function useCartManager(listOfItemId?: string[]) {
   const listOfItemIdOnExternal = listOfItemId ? listOfItemId : [];
-  const [itemsCart, setItemsCart] = useState<CreatePurchaseItemWithName[]>([]);
+  const [itemsCart, setItemsCart] = useLocalStorage<
+    CreatePurchaseItemWithName[]
+  >("user-cart", []);
   const [activeItemOnCart, setActiveItemOnCart] = useState<string>("");
 
   const cartTotalPrice = itemsCart.reduce(
