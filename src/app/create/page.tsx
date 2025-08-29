@@ -1,11 +1,11 @@
 import { verifyUserAccess } from "@/lib/utils/auth";
 
 import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
-import PurchaseCreator from "./_component/PurchaseCreator";
 import getUserVendors from "../_loader/getUserVendors.loader";
 import getUserItems from "../_loader/getUserItems.loader";
 import NotAllowedWarning from "../_component/auth/NotAllowedWarning";
 import { Metadata } from "next";
+import PurchaseCreatorClient from "./PurchaseCreatorClient";
 
 export const metadata: Metadata = {
   title: "WPT - Create Purchase",
@@ -29,7 +29,7 @@ export default async function Create() {
   const itemsInitialData = await getUserItems(userInfo.parentId);
 
   return (
-    <PurchaseCreator
+    <PurchaseCreatorClient
       initialVendors={vendorsInitialData}
       initialItems={itemsInitialData}
     />
