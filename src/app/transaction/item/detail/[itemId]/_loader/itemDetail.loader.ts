@@ -1,23 +1,43 @@
 import db from "@/infrastructure/database/db";
-import { asc, desc, eq } from "drizzle-orm";
 import { DateTime } from "luxon";
 
-import { item } from "@/lib/schema/item";
-import { purchasedItem } from "@/lib/schema/purchase";
+import { parseRangeFilterToJSDate } from "@/lib/utils/validator";
 
-export async function itemDetailLoader(requestedItemId: string) {
+export async function itemDetailLoader(
+  requestedItemId: string,
+  dateFilter: RangeFilter | undefined
+) {
+  const filter = parseRangeFilterToJSDate(dateFilter);
+
   const result = await db.query.item.findFirst({
-    where: eq(item.id, requestedItemId),
+    where: (item, { eq }) => eq(item.id, requestedItemId),
     with: {
       purchaseItem: {
         columns: {
+          id: true,
           purchaseId: true,
           quantityInHundreds: true,
           pricePerUnit: true,
           totalPrice: true,
           purchasedAt: true,
         },
-        orderBy: [asc(purchasedItem.purchasedAt)],
+        where: (purchasedItem, { between }) =>
+          filter
+            ? between(purchasedItem.purchasedAt, filter.from, filter.to)
+            : undefined,
+        with: {
+          purchase: {
+            columns: {},
+            with: {
+              vendor: {
+                columns: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: (purchaseItem, { desc }) => desc(purchaseItem.purchasedAt),
       },
       owner: {
         columns: {
@@ -47,12 +67,13 @@ export async function itemDetailLoader(requestedItemId: string) {
 
   return {
     itemDetail: rest,
-    purchaseHistory: purchaseItem.map((ph) => ({
+    purchaseHistory: purchaseItem.map(({ purchase, ...ph }) => ({
       ...ph,
       purchasedAt: DateTime.fromJSDate(ph.purchasedAt)
         .setLocale("id")
-        .toLocaleString(),
+        .toFormat("dd/LL"),
       quantity: ph.quantityInHundreds / 100,
+      vendorName: purchase.vendor.name,
     })),
   };
 }
