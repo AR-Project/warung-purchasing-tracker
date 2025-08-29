@@ -1,7 +1,5 @@
-"use server";
-
 import db from "@/infrastructure/database/db";
-import { DateTime } from "luxon";
+import { parseRangeFilterToJSDate } from "@/lib/utils/validator";
 
 type Data = {
   id: string;
@@ -15,18 +13,7 @@ export async function listOfItemsLoader(
   requesterId: string,
   dateFilter?: RangeFilter
 ): Promise<Data[]> {
-  const DEFAULT_DATE_FROM = DateTime.now()
-    .startOf("day")
-    .minus({ years: 5 })
-    .toJSDate();
-  const DEFAULT_DATE_TO = DateTime.now().endOf("day").toJSDate();
-
-  const dateFilterFrom = dateFilter
-    ? DateTime.fromISO(dateFilter.from).startOf("day").toJSDate()
-    : DEFAULT_DATE_FROM;
-  const dateFilterTo = dateFilter
-    ? DateTime.fromISO(dateFilter.to).endOf("day").toJSDate()
-    : DEFAULT_DATE_TO;
+  const filter = parseRangeFilterToJSDate(dateFilter);
 
   const result = await db.query.item.findMany({
     where: (item, { eq }) => eq(item.ownerId, requesterId),
@@ -41,7 +28,9 @@ export async function listOfItemsLoader(
           quantityInHundreds: true,
         },
         where: (purchasedItem, { between }) =>
-          between(purchasedItem.purchasedAt, dateFilterFrom, dateFilterTo),
+          filter
+            ? between(purchasedItem.purchasedAt, filter.from, filter.to)
+            : undefined,
       },
       category: {
         columns: {
