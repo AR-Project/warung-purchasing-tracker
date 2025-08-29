@@ -1,19 +1,29 @@
 import { notFound } from "next/navigation";
 
 import { BackButton } from "@/app/_component/BackButton";
+import DatePicker from "@/app/transaction/_component/DatePicker";
+
+import { dateRangeValidator } from "@/lib/utils/validator";
+
 import { itemDetailLoader } from "./_loader/itemDetail.loader";
 import ItemDetailCard from "./_component/ItemDetailCard";
-import PurchaseHistory from "./_component/PurchaseHistory";
+import PurchaseHistoryTable from "./_component/PurchaseHistoryTable";
+import PurchaseHistoryChart from "./_component/PurchaseHistoryChart";
 
 type Params = { itemId: string };
 
 type Props = {
   params: Promise<Params>;
+  searchParams: Promise<SearchParams>;
 };
 
-export default async function Page({ params }: Props) {
+export default async function Page({ params, searchParams }: Props) {
   const { itemId } = await params;
-  const item = await itemDetailLoader(itemId);
+  const dateFilterParam = await searchParams;
+
+  const dateFilter = dateRangeValidator(dateFilterParam);
+
+  const item = await itemDetailLoader(itemId, dateFilter);
   if (!item) return notFound();
 
   return (
@@ -24,9 +34,11 @@ export default async function Page({ params }: Props) {
 
       <ItemDetailCard itemData={item.itemDetail} />
       <div className="text-center text-xl font-black p-4 border-b">
-        Laporan item
+        Riwayat Pembelian
       </div>
-      <PurchaseHistory data={item.purchaseHistory} />
+      <DatePicker activeDateRange={dateFilter} />
+      <PurchaseHistoryTable purchaseHistories={item.purchaseHistory} />
+      <PurchaseHistoryChart data={item.purchaseHistory} />
     </div>
   );
 }
