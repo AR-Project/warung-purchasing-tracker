@@ -1,5 +1,9 @@
 import { auth } from "@/auth"; // Only auth import allowed
+import redis from "@/infrastructure/cache/redis";
 import { getUserRole } from "@/infrastructure/repository/userRepository";
+
+import { safePromise } from "@/lib/utils/safePromise";
+import { logger } from "@/lib/logger";
 
 type VerifyUserAccessError =
   | "not_authenticated"
@@ -28,8 +32,16 @@ export async function getUserRoleAuth(): Promise<
   const [user, authError] = await validateUser();
   if (authError !== null) return [null, authError];
 
+  const roleCacheKey = `role-${user.userId}`;
+
+  const { data: roleCache } = await safePromise(redis.get(roleCacheKey));
+  if (roleCache) return [{ ...user, role: roleCache }, null]; // early return if cache exist
+
   const [role, getRoleError] = await getUserRole(user.userId);
   if (getRoleError != null) return [null, "repo error"];
+
+  const { error } = await safePromise(redis.set(roleCacheKey, role, "EX", 5));
+  if (error) logger.error("Redis cache error when setting key");
 
   return [{ ...user, role }, null];
 }
