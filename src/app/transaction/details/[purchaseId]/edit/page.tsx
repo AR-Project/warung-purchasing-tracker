@@ -51,7 +51,7 @@ export default async function Page({ params }: Props) {
       </div>
 
       <PurchaseDateEditor
-        currentDate={details.purchasesAt}
+        currentDate={details.purchasedAt}
         purchaseId={details.id}
       />
       <VendorEditor
