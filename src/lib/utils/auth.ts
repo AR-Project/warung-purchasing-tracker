@@ -40,7 +40,7 @@ export async function getUserRoleAuth(): Promise<
   const [role, getRoleError] = await getUserRole(user.userId);
   if (getRoleError != null) return [null, "repo error"];
 
-  const { error } = await safePromise(redis.set(roleCacheKey, role, "EX", 5));
+  const { error } = await safePromise(redis.set(roleCacheKey, role, "EX", 120));
   if (error) logger.error("Redis cache error when setting key");
 
   return [{ ...user, role }, null];
@@ -60,9 +60,21 @@ export async function verifyUserAccess(
   const [user, validateUserError] = await validateUser();
   if (validateUserError !== null) return [null, "not_authenticated"];
 
+  const roleCacheKey = `role-${user.userId}`;
+
+  const { data: roleCache } = await safePromise(redis.get(roleCacheKey));
+  if (roleCache && allowedRole.includes(roleCache as AvailableUserRole))
+    return [user, null]; // early return if cache exist
+
   // Verify role from database
   const [currentUserRole, getUserRoleError] = await getUserRole(user.userId);
   if (getUserRoleError !== null) return [null, "internal_error"];
+
+  // set new key
+  const { error } = await safePromise(
+    redis.set(roleCacheKey, currentUserRole, "EX", 120)
+  );
+  if (error) logger.error("Redis cache error when setting key");
 
   if (allowedRole.includes(currentUserRole) === false)
     return [null, "not_authorized"];
