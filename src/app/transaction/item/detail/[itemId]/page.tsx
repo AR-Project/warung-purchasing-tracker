@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
 import { BackButton } from "@/app/_component/BackButton";
 import DatePicker from "@/app/transaction/_component/DatePicker";
@@ -15,6 +16,10 @@ type Params = { itemId: string };
 type Props = {
   params: Promise<Params>;
   searchParams: Promise<SearchParams>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT -Item Detail",
 };
 
 export default async function Page({ params, searchParams }: Props) {

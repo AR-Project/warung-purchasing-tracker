@@ -1,9 +1,15 @@
+import { Metadata } from "next";
+
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { adminManagerStaffRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";
 
 import categoriesLoader from "../_loader/category.loader";
 import DeleteCategoryModal from "./DeleteCategoryModal";
+
+export const metadata: Metadata = {
+  title: "WPT - Delete Category",
+};
 
 export default async function EditCategory() {
   const [user, authError] = await verifyUserAccess(adminManagerStaffRole);

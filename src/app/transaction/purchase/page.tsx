@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 
 import { parseSearchParams } from "@/lib/utils/validator";
 import { searchVendors } from "@/lib/api";
@@ -14,6 +15,10 @@ import TransactionNavigation from "../_component/TransactionNav";
 
 type Props = {
   searchParams: Promise<SearchParams>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Purchase List",
 };
 
 export default async function Page({ searchParams }: Props) {

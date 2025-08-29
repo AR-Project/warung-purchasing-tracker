@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CgReorder } from "react-icons/cg";
+import { Metadata } from "next";
 
 import { validateUser } from "@/lib/utils/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
@@ -18,6 +19,10 @@ import PurchaseDateEditor from "./_component/PurchaseDateEditor";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Purchase Editor",
 };
 
 export default async function Page({ params }: Props) {
@@ -51,7 +56,7 @@ export default async function Page({ params }: Props) {
       </div>
 
       <PurchaseDateEditor
-        currentDate={details.purchasesAt}
+        currentDate={details.purchasedAt}
         purchaseId={details.id}
       />
       <VendorEditor

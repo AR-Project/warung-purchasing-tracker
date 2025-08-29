@@ -1,10 +1,11 @@
+import { Metadata } from "next";
+
 import { verifyUserAccess } from "@/lib/utils/auth";
 
 import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
 import getUserVendors from "../_loader/getUserVendors.loader";
 import getUserItems from "../_loader/getUserItems.loader";
 import NotAllowedWarning from "../_component/auth/NotAllowedWarning";
-import { Metadata } from "next";
 import PurchaseCreatorClient from "./PurchaseCreatorClient";
 
 export const metadata: Metadata = {

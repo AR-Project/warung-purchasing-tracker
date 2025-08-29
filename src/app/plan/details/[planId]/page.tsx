@@ -1,5 +1,5 @@
-import React from "react";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
 import { BackButton } from "@/app/_component/BackButton";
 
@@ -11,6 +11,10 @@ type Params = { planId: string };
 
 type Props = {
   params: Promise<Params>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Plan Details",
 };
 
 export default async function Page({ params }: Props) {
