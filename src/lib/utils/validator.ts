@@ -52,8 +52,8 @@ export function parseRangeFilterToJSDate(
 ): JSDateRangeFilter | null {
   if (!rangeFilter) return null;
 
-  const from = DateTime.fromISO(rangeFilter.from);
-  const to = DateTime.fromISO(rangeFilter.to);
+  const from = DateTime.fromISO(rangeFilter.from).startOf("day");
+  const to = DateTime.fromISO(rangeFilter.to).endOf("day");
 
   if (!from.isValid || !to.isValid) return null;
 
