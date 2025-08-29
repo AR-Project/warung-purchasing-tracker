@@ -101,6 +101,7 @@ declare global {
     items: PurchaseItemDisplay[];
     createdAt: Date;
     imageId: string | null;
+    imageUrl: string | null;
   };
 
   type PurchaseToEdit = {
