@@ -10,6 +10,7 @@ import { adminManagerRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import ClientError from "@/lib/exception/ClientError";
 import { actionErrorDecoder } from "@/lib/exception/errorDecoder";
+import redis from "@/infrastructure/cache/redis";
 
 const schema = z.object({
   childUserId: z.string().min(1),
@@ -28,6 +29,8 @@ export async function updateUserRole(formdata: FormData): Promise<FormState> {
   });
   if (!payload) return { error: "Invalid Payload" };
 
+  const roleCacheKey = `role-${payload.childUserId}`;
+
   try {
     await db.transaction(async (tx) => {
       const userToUpdate = await tx.query.user.findFirst({
@@ -45,6 +48,8 @@ export async function updateUserRole(formdata: FormData): Promise<FormState> {
         })
         .where(eq(user.id, payload.childUserId));
     });
+
+    await redis.set(roleCacheKey, payload.newRole, "EX", 60);
 
     revalidatePath("/manage/staff");
     return {
