@@ -1,3 +1,5 @@
+import { Metadata } from "next";
+
 import { BackButton } from "@/app/_component/BackButton";
 
 import PurchaseItemOrderEditor from "./_component/PurchaseItemOrderEditor";
@@ -5,6 +7,10 @@ import { sortPurchaseItemsLoader } from "./_loader/sortPurchaseItems.loader";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Purchase Order Editor",
 };
 
 export default async function Page({ params }: Props) {

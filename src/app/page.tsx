@@ -1,4 +1,10 @@
+import { Metadata } from "next";
+
 import { flag } from "@/lib/flag";
+
+export const metadata: Metadata = {
+  title: "WPT - Home",
+};
 
 export default async function Home() {
   const registrationUserStatus = await flag.userRegistration();

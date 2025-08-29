@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Metadata } from "next";
 
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { adminManagerStaffRole } from "@/lib/const";
@@ -6,6 +7,10 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 import EditCategoryModal from "./_component/EditCategoryModal";
 import CreateCategoryModal from "./_component/CreateCategoryModal";
 import categoriesLoader from "./_loader/category.loader";
+
+export const metadata: Metadata = {
+  title: "WPT - Manage Category",
+};
 
 export default async function EditCategory() {
   const [user, authError] = await verifyUserAccess(adminManagerStaffRole);

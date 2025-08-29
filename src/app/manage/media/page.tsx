@@ -1,4 +1,5 @@
 import React from "react";
+import { Metadata } from "next";
 
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import ImageUploader from "@/app/_component/ImageUploader";
@@ -7,6 +8,10 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 import { allRole } from "@/lib/const";
 
 import { imagesLoader } from "./_loader/imagesLoader";
+
+export const metadata: Metadata = {
+  title: "WPT - Manage Media",
+};
 
 export default async function UploadImage() {
   const [user, authError] = await verifyUserAccess(allRole);

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { Metadata } from "next";
 
 import { BackButton } from "@/app/_component/BackButton";
 import CreateItemModal from "@/app/_component/item/CreateItemModal";
@@ -11,6 +12,10 @@ type Params = { categoryId: string };
 
 type Props = {
   params: Promise<Params>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Manage Category",
 };
 
 export default async function Page({ params }: Props) {

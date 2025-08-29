@@ -1,9 +1,13 @@
-import React from "react";
 import { redirect } from "next/navigation";
+import { Metadata } from "next";
 
 import NotAllowedWarning from "@/app/_component/auth/NotAllowedWarning";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import ChildUserCreator from "./_component/ChildUserCreator";
+
+export const metadata: Metadata = {
+  title: "WPT - Create New Staff",
+};
 
 export default async function Page() {
   const [userSession, error] = await verifyUserAccess(["admin", "manager"]);

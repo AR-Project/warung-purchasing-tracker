@@ -1,9 +1,15 @@
+import { Metadata } from "next";
+
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { adminManagerStaffRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import categoriesLoader from "../_loader/category.loader";
 import CategoryOrderEditor from "../_component/CategoryOrderEditor";
 import EmptyCategory from "../_component/EmptyCategory";
+
+export const metadata: Metadata = {
+  title: "WPT - Change Category Order",
+};
 
 export default async function Page() {
   const [user, authError] = await verifyUserAccess(adminManagerStaffRole);

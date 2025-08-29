@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Metadata } from "next";
 
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { allRole } from "@/lib/const";
@@ -13,6 +14,10 @@ import ExportButton from "./_component/ExportButton";
 
 type Props = {
   searchParams: Promise<SearchParams>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Item List",
 };
 
 export default async function Page({ searchParams }: Props) {

@@ -1,9 +1,16 @@
+import { Metadata } from "next";
+
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import getUserCategoryWithItemLatestPrice from "@/app/_loader/getUserCategoryWithItemLatestPrice";
 
-import PlanCreator from "./_component/PlanCreator";
 import { allRole } from "@/lib/const";
 import { verifyUserAccess } from "@/lib/utils/auth";
+
+import PlanCreator from "./_component/PlanCreator";
+
+export const metadata: Metadata = {
+  title: "WPT - Plan Creator",
+};
 
 export default async function Page() {
   const [user, authError] = await verifyUserAccess(allRole);

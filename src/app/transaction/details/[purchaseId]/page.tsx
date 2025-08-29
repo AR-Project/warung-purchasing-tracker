@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 
 import { stringToDate } from "@/lib/utils/formatter";
 
@@ -11,6 +12,10 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
+};
+
+export const metadata: Metadata = {
+  title: "WPT - Purchase Details",
 };
 
 export default async function Page({ params }: Props) {

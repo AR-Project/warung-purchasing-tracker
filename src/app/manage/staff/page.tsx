@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { MdPerson } from "react-icons/md";
+import { Metadata } from "next";
 
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { adminManagerRole } from "@/lib/const";
@@ -7,6 +8,10 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 import getUserChildren from "./_loader/getUserChild.loader";
 import DeleteUserHiddenForm from "./_component/DeleteUserHiddenForm";
 import ChildUserRoleEditorModal from "./_component/ChildUserRoleEditorModal";
+
+export const metadata: Metadata = {
+  title: "WPT - Staff List",
+};
 
 export default async function Page() {
   const [authUser, authError] = await verifyUserAccess(adminManagerRole);

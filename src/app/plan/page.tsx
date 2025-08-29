@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MdAdd } from "react-icons/md";
 import { TbChecklist } from "react-icons/tb";
+import { Metadata } from "next";
 
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { allRole } from "@/lib/const";
@@ -8,6 +9,10 @@ import { verifyUserAccess } from "@/lib/utils/auth";
 
 import { planLoader } from "./_loader/plan.loader";
 import SinglePlanCard from "./_component/SinglePlanCard";
+
+export const metadata: Metadata = {
+  title: "WPT - Plan List",
+};
 
 export default async function Page() {
   const [user, authError] = await verifyUserAccess(allRole);
