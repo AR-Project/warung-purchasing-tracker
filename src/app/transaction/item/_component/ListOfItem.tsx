@@ -86,12 +86,14 @@ type ItemLinkCardProps = {
 function ItemLinkCard({ item }: ItemLinkCardProps) {
   return (
     <Link
-      className="h-12 bg-gray-800 hover:bg-gray-700 border border-gray-700 flex flex-row gap-1 justify-start items-start text-sm"
+      className="h-12 bg-gray-900 hover:bg-gray-700 border border-gray-700 flex flex-row gap-1 justify-start items-start text-sm"
       key={item.id}
       href={`./item/detail/${item.id}`}
     >
       <div className="relative h-10 aspect-square bg-gray-600">
-        {item.imageUrl && <img src={`/api/image/${item.imageUrl}`} />}
+        {item.imageUrl && (
+          <img src={`/api/image/${item.imageUrl}`} className="opacity-20" />
+        )}
         <div className="absolute bottom-0 right-0 font-black  px-0.1">
           {item.quantity}
         </div>
