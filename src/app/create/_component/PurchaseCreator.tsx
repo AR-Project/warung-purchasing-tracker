@@ -1,20 +1,21 @@
 "use client";
 import { Suspense, useRef, useState } from "react";
+import dynamic from "next/dynamic";
+import Link from "next/link";
 import { DateTime } from "luxon";
 import { toast } from "react-toastify";
-import dynamic from "next/dynamic";
+import clsx from "clsx";
+import { ImSpinner5 } from "react-icons/im";
+import { MdExpandLess, MdExpandMore } from "react-icons/md";
 
 import { formatNumberToIDR } from "@/lib/utils/formatter";
+import { useServerAction } from "@/presentation/hooks/useServerAction";
+
 import { ItemOnCartCard } from "../_presentation/ItemOnCartCard";
 import MakePurchaseHiddenForm from "./MakePurchaseHiddenForm";
 import DatePicker from "./DatePicker";
 import useCartManager from "./_hooks/useCartManager";
-import { MdExpandLess, MdExpandMore } from "react-icons/md";
-import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { createPurchaseAction } from "../_action/createPurchase.action";
-import { ImSpinner5 } from "react-icons/im";
-import Link from "next/link";
-import clsx from "clsx";
 
 const ImageSelector = dynamic(() => import("./ImageSelector"));
 const ComboItemForm = dynamic(() => import("./ComboItemForm"));
@@ -94,10 +95,7 @@ export default function PurchaseCreator({
 
       {/* Image Section */}
       <div className="flex flex-col basis-1/3 gap-3 h-full">
-        <Suspense
-          fallback={<span>loading...</span>}
-          data-comment="Image Selector"
-        >
+        <Suspense fallback={<LoadingSpinner />} data-comment="Image Selector">
           <ImageSelector
             resizedFile={resizedImage}
             setResizedFile={setResizedImage}
@@ -178,7 +176,7 @@ export default function PurchaseCreator({
         <div className="hidden lg:inline font-bold">
           Tambah Item Ke Keranjang
         </div>
-        <Suspense fallback={<span>loading...</span>}>
+        <Suspense fallback={<LoadingSpinner />}>
           <ComboItemForm
             initialItems={initialItems}
             appendItemOnCart={appendItemOnCartWrapper}
@@ -190,7 +188,7 @@ export default function PurchaseCreator({
           Lokasi dan waktu transaksi
         </div>
         <div className="flex flex-row gap-1 items-center w-full">
-          <Suspense fallback={<span>loading...</span>}>
+          <Suspense fallback={<LoadingSpinner />}>
             <ComboVendorForm
               initialVendors={initialVendors}
               selectedVendor={selectedVendor}
@@ -251,4 +249,8 @@ function SuccessMessage({ data }: { data: string }) {
       <p>Sukses! Lihat transaksi</p>
     </Link>
   );
+}
+
+function LoadingSpinner() {
+  return <ImSpinner5 className="animate-spin text-3xl/tight mb-4" />;
 }
