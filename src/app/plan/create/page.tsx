@@ -19,7 +19,7 @@ export default async function Page() {
   const initialData = await getUserCategoryWithItemLatestPrice(user.parentId);
 
   return (
-    <section className="max-w-md mx-auto">
+    <section className="max-w-md mx-auto w-full">
       <div className="bg-blue-900 p-2 ">Plan Creator Page</div>
       <PlanCreator availableData={initialData} />
     </section>
