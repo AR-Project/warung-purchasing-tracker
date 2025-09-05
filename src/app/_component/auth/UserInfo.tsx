@@ -80,7 +80,7 @@ export default function UserInfo({ username, userId, role }: Props) {
         <MenuItem as="div" className="w-full flex flex-col items-end h-15">
           {({ close }) => (
             <Link
-              href="/manage"
+              href="/manage/account"
               onClick={close}
               className=" hover:underline text-md h-8 cursor-pointer flex flex-row items-center gap-2 justify-between w-full hover:bg-white/20 p-2 rounded-sm"
             >
