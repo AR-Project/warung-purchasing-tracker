@@ -1,14 +1,11 @@
-import { desc, eq } from "drizzle-orm";
-
 import db from "@/infrastructure/database/db";
-import { item } from "@/lib/schema/item";
-import { purchasedItem } from "@/lib/schema/purchase";
 
 export type ItemWithPrice = {
   id: string;
   name: string;
   lastPrice: number;
   purchasedAt: Date;
+  imageUrl?: string;
 };
 
 export type CategoryWithItems = {
@@ -50,12 +47,21 @@ export default async function getUserCategoryWithItemLatestPrice(
                 },
               },
             },
-            orderBy: [desc(purchasedItem.purchasedAt)],
+            orderBy: (purchasedItem, { desc }) => [
+              desc(purchasedItem.purchasedAt),
+            ],
             limit: 1,
           },
+          image: {
+            columns: {
+              url: true,
+            },
+          },
         },
+        orderBy: (items, { asc }) => [asc(items.sortOrder)],
       },
     },
+    orderBy: (category, { asc }) => [asc(category.sortOrder)],
   });
 
   return result.map(({ id, items, name }) => {
@@ -70,6 +76,7 @@ export default async function getUserCategoryWithItemLatestPrice(
             name: item.name,
             lastPrice: item.purchaseItem[0].pricePerUnit,
             purchasedAt: item.purchaseItem[0].purchasedAt,
+            imageUrl: item.image?.url,
           };
         }),
     };
