@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { updateUserRole } from "../_action/updateUserRole.action";
-import { updateUserUsername } from "../_action/updateUserUsername.action";
+import { updateStaffUserUsername } from "../_action/updateStaffUserUsername.action";
 
 type Props = {
   user: UserObject;
@@ -49,7 +49,7 @@ export default function ChildUserRoleEditor({
   );
 
   const [changeUsernameAction] = useServerAction(
-    updateUserUsername,
+    updateStaffUserUsername,
     (msg) => toast.success(msg),
     (err) => toast.error(err)
   );
