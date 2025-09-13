@@ -21,7 +21,7 @@ declare module "next-auth" {
   }
 }
 
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, signIn, signOut, auth, unstable_update } = NextAuth({
   providers: [
     Credentials({
       credentials: {
@@ -80,12 +80,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   debug: true,
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.parentId = user.parentId;
         token.userId = user.userId;
         token.username = user.username;
       }
+
+      if (trigger === "update" && session?.user) {
+        if (session.user.username) token.username = session.user.username;
+      }
+
       return token;
     },
     session({ session, token }) {

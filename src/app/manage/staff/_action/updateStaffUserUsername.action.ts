@@ -16,7 +16,7 @@ const schema = z.object({
   newUsername: z.string().min(1),
 });
 
-export async function updateUserUsername(
+export async function updateStaffUserUsername(
   formdata: FormData
 ): Promise<FormState> {
   const [userInfo, authError] = await verifyUserAccess(adminManagerRole);
