@@ -6,6 +6,7 @@ import { allRole } from "@/lib/const";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 
 import UpdateUserPasswordForm from "./UpdateUserPasswordForm";
+import UpdateUserUsernameForm from "./UpdateUserUsernameForm";
 
 export default async function Page() {
   const [userSession, error] = await verifyUserAccess(allRole);
@@ -26,7 +27,7 @@ export default async function Page() {
         </TabList>
         <TabPanels className="mt-3">
           <TabPanel key="profile" className="rounded-xl bg-white/5 p-3">
-            <div>Change Username</div>
+            <UpdateUserUsernameForm />
             <div>Change Default Category</div>
           </TabPanel>
           <TabPanel
