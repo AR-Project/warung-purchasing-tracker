@@ -23,3 +23,9 @@ export async function createCategoryTx(
     .values(payload)
     .returning({ id: category.id, name: category.name });
 }
+
+export async function readCategoryByIdTx(categoryId: string, tx: Tx) {
+  return await tx.query.category.findFirst({
+    where: (category, { eq }) => eq(category.id, categoryId),
+  });
+}
