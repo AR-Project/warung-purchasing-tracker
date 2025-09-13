@@ -94,6 +94,21 @@ export async function getUserRole(
   }
 }
 
+export async function readUser(userId: string) {
+  const user = await db.query.user.findFirst({
+    columns: {
+      username: true,
+      defaultCategory: true,
+      parentId: true,
+      id: true,
+      email: true,
+      role: true,
+    },
+    where: (user, { eq }) => eq(user.id, userId),
+  });
+  return user;
+}
+
 export type CreateChildUserRepoPayload = {
   username: string;
   id: string;
