@@ -6,6 +6,9 @@ import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 
 import UpdateUserPasswordForm from "./UpdateUserPasswordForm";
 import UpdateUserUsernameForm from "./UpdateUserUsernameForm";
+import UpdateUserDefaultCategoryForm from "./UpdateUserDefaultCtgForm";
+import { readUser } from "@/infrastructure/repository/userRepository";
+import { getCategoryByParentId } from "@/infrastructure/repository/categoryRepo";
 
 export default async function Page() {
   const [userSession, error] = await getUserRoleAuth();
@@ -13,6 +16,14 @@ export default async function Page() {
   if (error !== null) {
     return <LoginRequiredWarning />;
   }
+  const [categoryList, userFullInfo] = await Promise.all([
+    getCategoryByParentId(userSession.parentId),
+    readUser(userSession.userId),
+  ]);
+
+  const currentDefaultCatgoryId = userFullInfo?.defaultCategory
+    ? userFullInfo.defaultCategory
+    : "";
 
   return (
     <div className="w-full max-w-md mx-auto py-5 ">
@@ -25,9 +36,15 @@ export default async function Page() {
           <TabButton tabKey="password">Ubah Password</TabButton>
         </TabList>
         <TabPanels className="mt-3">
-          <TabPanel key="profile" className="rounded-xl bg-white/5 p-3">
+          <TabPanel
+            key="profile"
+            className="rounded-xl bg-white/5 p-3 flex flex-col gap-4"
+          >
             <UpdateUserUsernameForm />
-            <div>Change Default Category</div>
+            <UpdateUserDefaultCategoryForm
+              categoryList={categoryList}
+              currentDefaultCatgoryId={currentDefaultCatgoryId}
+            />
           </TabPanel>
           <TabPanel
             key="password"
