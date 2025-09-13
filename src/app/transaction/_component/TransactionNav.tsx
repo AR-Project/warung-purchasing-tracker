@@ -14,19 +14,19 @@ export default function TransactionNavigation() {
 
   const links: Links[] = [
     {
-      href: "/transaction/purchase",
-      tag: "purchase",
-      label: "By Purchase",
-    },
-    {
       href: "/transaction/item",
       tag: "item",
-      label: "By Item",
+      label: "Item",
+    },
+    {
+      href: "/transaction/purchase",
+      tag: "purchase",
+      label: "Purchase",
     },
   ];
 
   return (
-    <div className="flex flex-row gap-2 mb-4 text-sm max-w-md mx-auto">
+    <div className="flex flex-row gap-2 mb-4 text-sm max-w-md mx-auto bg-blue-950/30  w-full py-2">
       {links.map((link) => (
         <Link
           className={`rounded-full h-8 flex flex-row justify-center items-center italic ${
