@@ -1,17 +1,16 @@
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from "@headlessui/react";
 import { ReactNode } from "react";
 
-import { verifyUserAccess } from "@/lib/utils/auth";
-import { allRole } from "@/lib/const";
+import { getUserRoleAuth } from "@/lib/utils/auth";
 import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 
 import UpdateUserPasswordForm from "./UpdateUserPasswordForm";
 import UpdateUserUsernameForm from "./UpdateUserUsernameForm";
 
 export default async function Page() {
-  const [userSession, error] = await verifyUserAccess(allRole);
+  const [userSession, error] = await getUserRoleAuth();
 
-  if (error) {
+  if (error !== null) {
     return <LoginRequiredWarning />;
   }
 
