@@ -30,9 +30,9 @@ export default async function Page({ searchParams }: Props) {
   const listOfItems = await listOfItemsLoader(user.parentId, dateFilter);
 
   return (
-    <div className="flex flex-col gap-1 max-w-md mx-auto">
+    <div className="flex flex-col max-w-md mx-auto">
       <TransactionNavigation />
-      <div className="py-3 flex flex-row justify-between border-b border-white/20">
+      <div className="py-2 flex flex-row justify-between border-b border-white/20 bg-gradient-to-t from-blue-900/50 to-black mb-2">
         <div className="text-xl">Daftar Pembelian per Item</div>
         <ExportButton range={dateFilter} />
       </div>

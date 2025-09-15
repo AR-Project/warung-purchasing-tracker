@@ -18,7 +18,7 @@ export default async function Page() {
   const categories = await categoriesLoader(user.parentId);
 
   return (
-    <section className="max-w-md mx-auto">
+    <section className="max-w-md mx-auto w-full">
       <div className="italic text-gray-500 text-sm w-full text-center border border-gray-500/50 my-4 py-4 text-balance">
         Drag and drop your order, then click save when finished
       </div>

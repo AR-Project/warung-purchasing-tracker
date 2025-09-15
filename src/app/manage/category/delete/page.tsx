@@ -18,13 +18,13 @@ export default async function EditCategory() {
   const categories = await categoriesLoader(user.parentId);
 
   return (
-    <main className="flex flex-col gap-2 max-w-md mx-auto">
+    <main className="flex flex-col gap-2 max-w-md mx-auto w-full">
       <div className="italic text-gray-500 text-sm w-full text-center border border-gray-500/50 my-4 py-4 text-balance">
         Press delete icon for deleting an category
       </div>
 
       <section className="">
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3 px-4">
           {categories.map((cat) => (
             <div
               key={cat.id}

@@ -31,7 +31,7 @@ export default function ManageCategoryNavigation() {
   ];
 
   return (
-    <div className="flex flex-row gap-2 mb-4 text-sm max-w-md mx-auto my-3 pb-3 border-b-2 border-white/10">
+    <div className="flex flex-row gap-2 mb-4 text-sm max-w-md mx-auto my-3 pb-3 border-b-2 border-white/10 w-full">
       {links.map((link) => (
         <Link
           className={`rounded-full h-8 flex flex-row justify-center items-center italic ${

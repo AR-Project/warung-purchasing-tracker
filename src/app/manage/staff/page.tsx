@@ -21,8 +21,10 @@ export default async function Page() {
   if (getUserChildrenError) return <>{getUserChildrenError}</>;
 
   return (
-    <main className="flex flex-col gap-2 max-w-md mx-auto">
-      <h1 className="font-bold text-xl text-center pt-2 pb-4">Manage Staff</h1>
+    <main className="flex flex-col gap-2 max-w-md mx-auto w-full">
+      <h1 className="font-bold text-xl text-center pt-2 pb-4 bg-gradient-to-t from-blue-900/50 to-black mb-2">
+        Manage Staff
+      </h1>
       {user &&
         user.map((user) => (
           <div

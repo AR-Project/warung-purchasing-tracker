@@ -31,8 +31,11 @@ export default async function Page({ searchParams }: Props) {
   const tx = await transactionLoader(filter, user.parentId);
 
   return (
-    <section className="max-w-[500px] w-full mx-auto flex flex-col gap-3 p-2">
+    <section className="max-w-md w-full mx-auto flex flex-col gap-3 p-2">
       <TransactionNavigation />
+      <div className="py-2 flex flex-row justify-between border-b border-white/20 bg-gradient-to-t from-blue-900/50 to-black mb-2">
+        <div className="text-xl">Aktifitas Transaksi</div>
+      </div>{" "}
       <Suspense>
         <SearchBox
           activeName={filter.keyword}

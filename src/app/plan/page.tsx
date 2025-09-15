@@ -21,21 +21,21 @@ export default async function Page() {
   const planList = await planLoader(user.userId);
 
   return (
-    <section className="flex flex-col gap-2 p-1">
-      <div className="flex flex-row justify-between max-w-md mx-auto items-center w-full">
-        <div className=" font-black text-lg flex flex-row gap-2">
+    <section className="flex flex-col gap-2 p-1 max-w-md mx-auto">
+      <div className="flex flex-row justify-between max-w-md mx-auto items-center w-full bg-gradient-to-t from-blue-900/50 to-black mb-2 py-2">
+        <div className=" font-black text-lg flex flex-row gap-2 ">
           <TbChecklist className="text-2xl" />
           <div>Plan List</div>
         </div>
         <Link
-          className="h-10 px-2 flex flex-row justify-center items-center bg-blue-600 gap-2 text-sm"
+          className="bg-blue-950 p-1 px-2 border border-white/30 rounded-sm cursor-pointer flex flex-row gap-3 items-center hover:bg-blue-700"
           href="/plan/create"
         >
           <MdAdd
             className="text-
         2xl"
           />
-          <div>Create a Plan</div>
+          <div>New Plan</div>
         </Link>
       </div>
       {planList.length === 0 && (

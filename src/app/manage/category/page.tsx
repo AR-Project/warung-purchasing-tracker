@@ -19,9 +19,9 @@ export default async function EditCategory() {
   const categories = await categoriesLoader(user.parentId);
 
   return (
-    <main className="flex flex-col gap-2 max-w-md mx-auto">
-      <section className="">
-        <div className="flex flex-col gap-3">
+    <main className="flex flex-col gap-2 max-w-md mx-auto w-full">
+      <section className="w-full">
+        <div className="flex flex-col gap-3 px-4">
           {categories.map((cat) => (
             <div
               key={cat.id}
@@ -43,7 +43,7 @@ export default async function EditCategory() {
           ))}
         </div>
       </section>
-      <div className="flex flex-col w-full items-end gap-3">
+      <div className="flex flex-col w-full items-end gap-3 px-4">
         <CreateCategoryModal user={user} />
       </div>
     </main>
