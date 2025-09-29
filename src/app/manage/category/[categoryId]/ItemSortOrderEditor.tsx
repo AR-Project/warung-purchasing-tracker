@@ -20,7 +20,7 @@ import { useRouter } from "next/navigation";
 
 import { useServerAction } from "@/presentation/hooks/useServerAction";
 import { SortableItem } from "./SortableItem";
-import updateItemSortOrderAction from "./edit-item-order/_action/updateItemSortOrder.action";
+import updateItemSortOrderAction from "./_action/updateItemSortOrder.action";
 
 export type ItemSortOrderEditorProps = {
   categoryId: string;
