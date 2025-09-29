@@ -6,7 +6,6 @@ import { z } from "zod";
 import { verifyUserAccess } from "@/lib/utils/auth";
 import { adminManagerStaffRole } from "@/lib/const";
 import itemRepo, { UpdateOrderItemRepoPayload } from "@/infrastructure/repository/itemRepo";
-import { error } from "console";
 
 const updateOrderReqSchema = z.object({
   categoryId: z.string(),
