@@ -1,11 +1,12 @@
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+
 import { auth } from "@/auth"; // Only auth import allowed
 import redis from "@/infrastructure/cache/redis";
 import { getUserRole } from "@/infrastructure/repository/userRepository";
 
 import { safePromise } from "@/lib/utils/safePromise";
 import { logger } from "@/lib/logger";
-import { headers } from "next/headers";
-import { redirect } from "next/navigation";
 import { allRole } from "../const";
 
 type VerifyUserAccessError =
@@ -88,7 +89,7 @@ export async function verifyUserAccess(
 /**
  * Auth helper for protecting a page. If user not signed in, it will redirect to `/login` page
  * 
- * @param allowedRole (optional) Array of role enum that allowed to have access
+ * @param allowedRole (optional) Array of role enum that allowed to have access. Default to allow all role
  * @returns `UserSession` object or redirect user to login page while append a `redirect` searchParam
  */
 export async function pageAuthAccess(
