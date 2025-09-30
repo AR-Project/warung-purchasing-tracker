@@ -3,8 +3,7 @@ import { notFound } from "next/navigation";
 import { CgReorder } from "react-icons/cg";
 import { Metadata } from "next";
 
-import { validateUser } from "@/lib/utils/auth";
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
+import { pageAuthAccess } from "@/lib/utils/auth";
 import { BackButton } from "@/app/_component/BackButton";
 
 import getUserItems from "@/app/_loader/getUserItems.loader";
@@ -26,10 +25,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ params }: Props) {
-  const [user] = await validateUser();
-  if (!user) {
-    return <LoginRequiredWarning />;
-  }
+  const user = await pageAuthAccess()
 
   const { purchaseId: purchaseIdParams } = await params;
   const details = await singlePurchaseLoader(purchaseIdParams);

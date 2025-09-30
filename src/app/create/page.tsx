@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
-import { verifyUserAccess } from "@/lib/utils/auth";
+import { pageAuthAccess } from "@/lib/utils/auth";
+import { adminManagerStaffRole } from "@/lib/const";
 
-import LoginRequiredWarning from "../_component/auth/LoginRequiredWarning";
 import getUserVendors from "../_loader/getUserVendors.loader";
 import getUserItems from "../_loader/getUserItems.loader";
-import NotAllowedWarning from "../_component/auth/NotAllowedWarning";
+
 import PurchaseCreatorClient from "./PurchaseCreatorClient";
 
 export const metadata: Metadata = {
@@ -13,21 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function Create() {
-  const [userInfo, verifyError] = await verifyUserAccess([
-    "admin",
-    "manager",
-    "staff",
-  ]);
-  if (verifyError !== null) {
-    if (verifyError === "not_authenticated") {
-      return <LoginRequiredWarning />;
-    } else if (verifyError === "not_authorized") {
-      return <NotAllowedWarning />;
-    } else return <>internal Error</>;
-  }
+  const user = await pageAuthAccess(adminManagerStaffRole)
 
-  const vendorsInitialData = await getUserVendors(userInfo.parentId);
-  const itemsInitialData = await getUserItems(userInfo.parentId);
+  const vendorsInitialData = await getUserVendors(user.parentId);
+  const itemsInitialData = await getUserItems(user.parentId);
 
   return (
     <PurchaseCreatorClient

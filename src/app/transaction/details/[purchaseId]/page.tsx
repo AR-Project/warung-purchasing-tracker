@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   title: "WPT - Purchase Details",
 };
 
+// Public page — no auth/session required
 export default async function Page({ params }: Props) {
   const { purchaseId: purchaseIdParam } = await params;
   const details = await singlePurchaseLoader(purchaseIdParam);

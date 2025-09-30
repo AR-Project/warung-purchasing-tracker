@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "WPT - Home",
 };
 
+// Public Route
 export default async function Home() {
   const registrationUserStatus = await flag.userRegistration();
 

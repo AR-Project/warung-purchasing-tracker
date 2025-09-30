@@ -1,9 +1,9 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
-import { allRole } from "@/lib/const";
-import { verifyUserAccess } from "@/lib/utils/auth";
+
+import { adminManagerRole } from "@/lib/const";
+import { pageAuthAccess } from "@/lib/utils/auth";
 import { dateRangeValidator } from "@/lib/utils/validator";
 
 import { listOfItemsLoader } from "./_loader/listOfItem.loader";
@@ -21,8 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ searchParams }: Props) {
-  const [user, authError] = await verifyUserAccess(allRole);
-  if (authError) return <LoginRequiredWarning />;
+  const user = await pageAuthAccess(adminManagerRole)
 
   const dateFilterParam = await searchParams;
 

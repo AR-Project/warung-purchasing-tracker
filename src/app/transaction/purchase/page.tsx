@@ -4,9 +4,8 @@ import { Metadata } from "next";
 import { parseSearchParams } from "@/lib/utils/validator";
 import { searchVendors } from "@/lib/api";
 import { adminManagerStaffRole } from "@/lib/const";
-import { verifyUserAccess } from "@/lib/utils/auth";
+import { pageAuthAccess } from "@/lib/utils/auth";
 
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import { SinglePurchaseCard } from "../_component/SinglePurchaseCard";
 import SearchBox from "../_component/SearchBox";
 import DatePicker from "../_component/DatePicker";
@@ -22,8 +21,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ searchParams }: Props) {
-  const [user, authError] = await verifyUserAccess(adminManagerStaffRole);
-  if (authError) return <LoginRequiredWarning />;
+  const user = await pageAuthAccess(adminManagerStaffRole)
 
   const filterParam = await searchParams;
   const filter = parseSearchParams(filterParam);

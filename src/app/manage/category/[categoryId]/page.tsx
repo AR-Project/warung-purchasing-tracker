@@ -6,6 +6,8 @@ import CreateItemModal from "@/app/_component/item/CreateItemModal";
 import { manageCategoryDetailLoader } from "./loader";
 import EditCategoryModal from "../_component/EditCategoryModal";
 import ItemSortOrderEditorClient from "./ItemSortOrderEditorClient";
+import { pageAuthAccess } from "@/lib/utils/auth";
+import { adminManagerStaffRole } from "@/lib/const";
 
 type Params = { categoryId: string };
 
@@ -18,7 +20,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ params }: Props) {
+  await pageAuthAccess(adminManagerStaffRole)
   const { categoryId } = await params;
+
   const data = await manageCategoryDetailLoader(categoryId);
   if (!data) return notFound();
 

@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "WPT - Login",
 };
 
+// Public Route - No Auth/session required.
 export default function Page() {
   return (
     <div className="w-full max-w-md mx-auto p-5 py-10">

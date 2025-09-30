@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   title: "WPT -Item Detail",
 };
 
+// Public page — no auth/session required
 export default async function Page({ params, searchParams }: Props) {
   const { itemId } = await params;
   const dateFilterParam = await searchParams;

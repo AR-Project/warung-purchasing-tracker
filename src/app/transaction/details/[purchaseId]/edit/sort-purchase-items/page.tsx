@@ -4,6 +4,8 @@ import { BackButton } from "@/app/_component/BackButton";
 
 import PurchaseItemOrderEditor from "./_component/PurchaseItemOrderEditor";
 import { sortPurchaseItemsLoader } from "./_loader/sortPurchaseItems.loader";
+import { pageAuthAccess } from "@/lib/utils/auth";
+import { adminManagerRole } from "@/lib/const";
 
 type Props = {
   params: Promise<{ purchaseId: string }>;
@@ -14,6 +16,7 @@ export const metadata: Metadata = {
 };
 
 export default async function Page({ params }: Props) {
+  await pageAuthAccess(adminManagerRole)
   const { purchaseId } = await params;
 
   const listOfPurchaseItem: PurchaseItemDisplay[] =

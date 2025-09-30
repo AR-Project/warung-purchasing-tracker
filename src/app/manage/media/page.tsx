@@ -1,11 +1,9 @@
-import React from "react";
 import { Metadata } from "next";
 
-import LoginRequiredWarning from "@/app/_component/auth/LoginRequiredWarning";
 import ImageUploader from "@/app/_component/ImageUploader";
 import RemoveImage from "@/app/_component/RemoveImage";
-import { verifyUserAccess } from "@/lib/utils/auth";
-import { allRole } from "@/lib/const";
+import { pageAuthAccess } from "@/lib/utils/auth";
+
 
 import { imagesLoader } from "./_loader/imagesLoader";
 
@@ -14,8 +12,7 @@ export const metadata: Metadata = {
 };
 
 export default async function UploadImage() {
-  const [user, authError] = await verifyUserAccess(allRole);
-  if (authError) return <LoginRequiredWarning />;
+  const user = await pageAuthAccess()
 
   const imagesList = await imagesLoader(user.parentId);
 
