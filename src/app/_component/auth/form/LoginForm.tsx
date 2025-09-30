@@ -1,11 +1,12 @@
 "use client";
 
 import { toast } from "react-toastify";
+import { useState } from "react";
+import { LuLoaderCircle } from "react-icons/lu";
+import { useSearchParams } from "next/navigation";
 
 import { signInAction } from "@/app/_globalAction/signIn.action";
 import { useServerAction } from "@/presentation/hooks/useServerAction";
-import { useState } from "react";
-import { LuLoaderCircle } from "react-icons/lu";
 
 type SignInCredentials = {
   username: string;
@@ -13,6 +14,9 @@ type SignInCredentials = {
 };
 
 export default function LoginForm() {
+  const searchParam = useSearchParams()
+  const redirect = searchParam.get("redirect")
+
   const [credentials, setCredentials] = useState<SignInCredentials>({
     username: "",
     password: "",
@@ -32,6 +36,7 @@ export default function LoginForm() {
     <form action={formAction} className="relative flex flex-col gap-3 ">
       {isPending && <LoadingOverlay />}
       <div className="flex flex-col ">
+        {redirect && <input type="hidden" name="redirect" value={redirect} />}
         <input
           className="bg-gray-700 text-white p-2 rounded-md"
           type="text"
