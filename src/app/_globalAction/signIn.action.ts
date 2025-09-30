@@ -1,6 +1,7 @@
 "use server";
 
 import { AuthError } from "next-auth";
+import z from "zod";
 
 import { signIn } from "@/auth";
 import { safePromise } from "@/lib/utils/safePromise";
@@ -14,8 +15,19 @@ export async function signInAction(formData: FormData) {
   });
   if (rateLimitError) return { error: rateLimitError };
 
+  const username = formData.get("username")
+  const password = formData.get("password")
+  const redirectFormValue = formData.get("redirect")
+
+  // Since `redirectTo` only accept string, the value need to be sanitized
+  const { data: redirectTo } = z.string().safeParse(redirectFormValue)
+
   const { error: signInRes } = await safePromise(
-    signIn("credentials", formData)
+    signIn("credentials", {
+      username,
+      password,
+      redirectTo,
+    })
   );
 
   const isAuthError = signInRes instanceof AuthError;
