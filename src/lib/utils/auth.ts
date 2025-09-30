@@ -4,6 +4,9 @@ import { getUserRole } from "@/infrastructure/repository/userRepository";
 
 import { safePromise } from "@/lib/utils/safePromise";
 import { logger } from "@/lib/logger";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
+import { allRole } from "../const";
 
 type VerifyUserAccessError =
   | "not_authenticated"
@@ -80,4 +83,29 @@ export async function verifyUserAccess(
     return [null, "not_authorized"];
 
   return [user, null];
+}
+
+/**
+ * Auth helper for protecting a page. If user not signed in, it will redirect to `/login` page
+ * 
+ * @param allowedRole (optional) Array of role enum that allowed to have access
+ * @returns `UserSession` object or redirect user to login page while append a `redirect` searchParam
+ */
+export async function pageAuthAccess(
+  allowedRole: AvailableUserRole[] = allRole
+) {
+  const [user, authError] = await verifyUserAccess(allowedRole);
+  const headerlist = await headers();
+  const pathname = headerlist.get("x-pathname");
+
+  const params = new URLSearchParams();
+  if (pathname) {
+    params.set("redirect", pathname);
+  }
+
+  if (authError) {
+    redirect(`/login${pathname && `?${params.toString()}`}`);
+  }
+
+  return user;
 }
